@@ -1,19 +1,26 @@
 # Firm Archive Assistant
 
-A working prototype of a private, model-agnostic "ask your archive" system for accounting firms.
-Staff upload years of client records (tax returns, financial statements, trial balances, audit
-files); the system normalises each file into a canonical JSON record, indexes it for retrieval, and
-lets a partner ask questions in plain English:
+A working prototype of a private, model-agnostic "ask your archive" system for tax practices.
+Staff upload years of client records (1040s with their schedules, 1065 partnership returns, 1120-S
+and 1120 corporate returns, K-1s, W-2s and 1099s, books, notices, preparer notes); the system
+recognises the return type and the forms present, normalises each file into a canonical JSON record,
+indexes it for retrieval, and lets a preparer ask questions in plain English:
 
-> "Pull up ABC Company's financial statements from last year's audit. For planning this year, which
-> areas look riskiest, and what should we expect the 2026 figures to look like?"
+> "Pull up ABC Company's 1120-S from last year. What should we watch when preparing this year's
+> return, and what should we expect the 2026 figures to look like?"
+
+The first release is tax-only. Audit and review engagements are a later expansion; the architecture
+does not change, only the fact vocabulary and the screens.
 
 The answer cites the source files, and every number comes from deterministic tools (ratio screens,
 trend projections) rather than from the language model's imagination.
 
-Beyond search, the prototype does two engagement-level jobs: **risk and forecast screens** per
-client, and **tax-season request lists** that read last year's return, draft the document request
-email, file the client's replies into their folder, and keep an "items pending" list.
+Beyond search, the prototype does two engagement-level jobs: **tax-planning screens and projections**
+per client (estimated-payment safe harbour, S-corp election candidates, reasonable compensation,
+distributions versus basis, accumulated earnings, itemize-versus-standard, year-over-year swings), and
+**tax-season request lists** that read last year's return, draft the document request email, file the
+client's replies into their folder, and keep an "items pending" list. Request lists know the difference
+between a 1040 client and a 1065 / 1120-S / 1120 client.
 
 ## What is in this repository
 
@@ -21,7 +28,7 @@ email, file the client's replies into their folder, and keep an "items pending" 
 |---|---|
 | `app/` | FastAPI backend, ingestion pipeline, RAG engine, provider adapters, browser UI |
 | `models.yaml` | The model registry. Swapping LLM / extractor / embedding model is a config edit |
-| `sample_data/` | Synthetic client files (an S-corp audit client and a 1040 client) for demos and tests |
+| `sample_data/` | Synthetic returns: a 1040 client, an 1120-S, a 1065 and an 1120, two years each, for demos and tests |
 | `scripts/seed_demo.py` | Loads the sample clients into a fresh database |
 | `tests/` | Pytest suite that runs fully offline |
 | `docs/ARCHITECTURE.md` | How the pieces fit, the canonical JSON schema, how model hot-swapping works |

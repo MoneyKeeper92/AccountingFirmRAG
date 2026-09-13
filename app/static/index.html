@@ -92,8 +92,8 @@
       <input name="name" placeholder="New client name" required>
       <div class="row">
         <select name="entity_type">
-          <option value="">type…</option><option>individual</option><option>s_corp</option><option>c_corp</option>
-          <option>partnership</option><option>llc</option><option>nonprofit</option><option>trust</option>
+          <option value="">return type…</option><option value="individual">1040 individual</option><option value="partnership">1065 partnership</option>
+          <option value="s_corp">1120-S S corporation</option><option value="c_corp">1120 C corporation</option><option value="trust">1041 trust</option><option value="nonprofit">990 nonprofit</option>
         </select>
         <input name="industry" placeholder="industry">
       </div>
@@ -107,8 +107,8 @@
     <div class="chips" id="chips"></div>
     <div class="messages" id="messages">
       <div class="msg bot">Select a client on the left (or none for firm-wide search), then ask something like
-“Summarise last year's financial statements”, “Which areas look riskiest for this year's audit?”,
-or “What should we expect 2026 revenue and net income to look like?”</div>
+“Summarise last year's return”, “What should we watch when preparing this year's return?”,
+“Is this client an S-corp election candidate?”, or “What should we expect 2026 AGI and total tax to look like?”</div>
     </div>
     <div class="composer">
       <textarea id="q" placeholder="Ask a question about this client's records…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ask();}"></textarea>
@@ -121,14 +121,14 @@ or “What should we expect 2026 revenue and net income to look like?”</div>
     <div class="tabs">
       <button class="on" onclick="tab('docs',this)">Documents</button>
       <button onclick="tab('cites',this)">Citations</button>
-      <button onclick="tab('risk',this)">Risk &amp; forecast</button>
+      <button onclick="tab('risk',this)">Planning</button>
       <button onclick="tab('check',this)">Checklist</button>
     </div>
     <div id="tab-docs" class="scroll">
       <div class="drop" id="drop">Drop files here or click to upload<br><small>PDF · CSV · XLSX · JSON · TXT</small>
         <input type="file" id="fileInput" multiple hidden></div>
       <div class="row" style="padding:0 10px 6px">
-        <select id="engagement"><option value="">engagement…</option><option>tax</option><option>audit</option><option>review</option><option>bookkeeping</option><option>advisory</option></select>
+        <select id="engagement"><option value="">engagement…</option><option value="tax_1040">1040</option><option value="tax_1065">1065</option><option value="tax_1120s">1120-S</option><option value="tax_1120">1120</option><option value="bookkeeping">bookkeeping</option><option value="planning">planning</option></select>
         <input id="taxYear" type="number" placeholder="tax year" style="max-width:110px">
       </div>
       <div class="row" style="padding:0 10px 6px"><input id="sourceUri" placeholder="source link (optional): \\\\server\\Clients\\… or SharePoint/DMS URL"></div>
@@ -136,8 +136,8 @@ or “What should we expect 2026 revenue and net income to look like?”</div>
       <div id="docList"></div>
     </div>
     <div id="tab-cites" class="scroll" hidden><div class="cite" style="color:var(--muted)">Citations for the latest answer appear here.</div></div>
-    <div id="tab-check" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a tax client to draft a document request list from last year's return.</div></div>
-    <div id="tab-risk" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to see deterministic ratio screens and projections computed from extracted facts.</div></div>
+    <div id="tab-check" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to draft a document request list from last year's return.</div></div>
+    <div id="tab-risk" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to see tax-planning screens and projections computed from the extracted return data.</div></div>
   </section>
 </main>
 
@@ -198,8 +198,8 @@ async function selectClient(id){
   const c = clients.find(x=>x.id===id);
   $('#chatTitle').textContent = c ? `Ask about ${c.name}` : 'Ask the archive (firm-wide)';
   $('#messages').innerHTML = '';
-  const chips = c ? ['Summarise the most recent financial statements','Which areas are riskiest for this year\'s engagement?','Forecast next year\'s revenue and net income','List every document we hold and its year','What changed most between the last two years?']
-                  : ['Which clients had a net loss last year?','Find engagement letters uploaded this year','Which clients have receivables growing faster than revenue?'];
+  const chips = c ? ['Summarise last year\'s return and the forms it included','What should we watch when planning this year\'s return?','What changed between the last two returns?','Forecast next year\'s income and total tax','Did they underpay estimates last year?']
+                  : ['Which clients paid an underpayment penalty last year?','Which Schedule C clients are S-corp election candidates?','Which S corporations had distributions above officer compensation?'];
   $('#chips').innerHTML = chips.map(t=>`<span class="chip" onclick="$('#q').value=this.textContent;ask()">${esc(t)}</span>`).join('');
   await loadClients(); await loadDocs(); await loadRisk(); await loadChecklists();
 }
@@ -212,7 +212,7 @@ async function loadDocs(){
   el.innerHTML = docs.length ? '' : '<div class="doc" style="color:var(--muted)">No documents yet. Upload last year\'s return or statements to get started.</div>';
   for (const d of docs) {
     const div = document.createElement('div'); div.className='doc';
-    div.innerHTML = `<b>${esc(d.filename)}</b><span class="tag ${d.status}">${d.status}</span><span class="tag">${esc(d.doc_type||'?')}</span>${d.tax_year?`<span class="tag">${d.tax_year}</span>`:''}${d.engagement?`<span class="tag">${esc(d.engagement)}</span>`:''}
+    div.innerHTML = `<b>${esc(d.filename)}</b><span class="tag ${d.status}">${d.status}</span><span class="tag">${esc(d.doc_type||'?')}</span>${d.tax_year?`<span class="tag">${d.tax_year}</span>`:''}${(()=>{try{const f=JSON.parse(d.canonical_json||'{}').forms_present;return f&&f.length?`<span class="tag" title="${esc(f.join(', '))}">${f.length} forms</span>`:''}catch{return ''}})()}${d.engagement?`<span class="tag">${esc(d.engagement)}</span>`:''}
       <small>${esc(d.summary||d.error||'')}</small>${d.source_uri?`<br><small>↗ ${esc(d.source_uri)}</small>`:''}
       <div class="row" style="margin-top:4px;align-items:center"><a class="btn open" href="${fileUrl(d.id)}" target="_blank" rel="noopener">Open file</a><button class="btn" onclick="viewDoc('${d.id}')">JSON</button><button class="btn danger" onclick="delDoc('${d.id}')">Delete</button></div>`;
     el.appendChild(div);
@@ -281,7 +281,7 @@ async function loadChecklists(){
   const c = clients.find(x=>x.id===activeClient) || {};
   const nextYear = (c.latest_year || new Date().getFullYear()-1) + 1;
   el.innerHTML = `<div class="ckhead"><input id="ckYear" type="number" value="${nextYear}" style="max-width:90px"><button class="btn primary" onclick="draftChecklist()">Draft request list</button></div>
-    <div style="padding:0 10px 6px;font-size:12px;color:var(--muted)">Reads last year's return and the folder, lists what to ask the client for, drafts the email, then tracks what comes back.</div>
+    <div style="padding:0 10px 6px;font-size:12px;color:var(--muted)">Reads last year's return (1040, 1065, 1120-S or 1120) and the folder, lists what to ask the client for, drafts the email, then tracks what comes back.</div>
     ${lists.map(l=>`<div class="doc" style="cursor:pointer" onclick="openChecklist('${l.id}')"><b>${l.tax_year} request list</b><span class="tag ${l.status==='complete'?'ready':'processing'}">${l.status}</span> <small>${l.pending} pending · ${l.received} received · ${l.total} items</small></div>`).join('')}
     <div id="ckDetail"></div>`;
   if (lists.length) openChecklist(lists[0].id);
@@ -323,11 +323,11 @@ async function loadRisk(){
   const el = $('#tab-risk');
   if(!activeClient){ el.innerHTML='<div style="padding:10px;color:var(--muted);font-size:13px">Select a client.</div>'; return; }
   const [risk, fc] = await Promise.all([api(`/api/clients/${activeClient}/risk`), api(`/api/clients/${activeClient}/forecast?periods_ahead=1`)]);
-  let html = `<h2>Risk screen ${risk.ratios?.year?'('+risk.ratios.year+')':''}</h2>`;
+  let html = `<h2>Planning screen ${risk.ratios?.year?'('+risk.ratios.year+')':''}${risk.profile?' · '+risk.profile:''}</h2>`;
   html += (risk.flags||[]).length ? risk.flags.map(f=>`<div class="flag ${f.severity}"><b>${esc(f.area)}</b> — ${esc(f.detail)}</div>`).join('') : `<div style="padding:0 10px;color:var(--muted);font-size:12px">${esc(risk.note||'No flags')}</div>`;
-  if (risk.ratios) { html += '<h2>Ratios</h2><table style="margin:0 10px;font-size:12px">' + Object.entries(risk.ratios).filter(([k,v])=>k!=='year'&&v!=null).map(([k,v])=>`<tr><td style="color:var(--muted);padding:2px 8px 2px 0">${k}</td><td>${v}</td></tr>`).join('') + '</table>'; }
+  if (risk.ratios) { html += '<h2>Key figures</h2><table style="margin:0 10px;font-size:12px">' + Object.entries(risk.ratios).filter(([k,v])=>k!=='year'&&v!=null).map(([k,v])=>`<tr><td style="color:var(--muted);padding:2px 8px 2px 0">${k}</td><td>${v}</td></tr>`).join('') + '</table>'; }
   const keys = Object.keys(fc);
-  if (keys.length) { html += '<h2>Projection (next period)</h2><table style="margin:0 10px 10px;font-size:12px"><tr><th style="text-align:left">metric</th><th>last</th><th>linear</th><th>CAGR</th></tr>' + keys.map(k=>{const p=fc[k]; const hist=Object.entries(p.history||{}); const last=hist.length?hist[hist.length-1][1]:''; return `<tr><td>${k}</td><td>${fmt(last)}</td><td>${fmt(p.linear)}</td><td>${fmt(p.cagr)}</td></tr>`;}).join('') + '</table><div style="padding:0 10px;font-size:11px;color:var(--muted)">Deterministic arithmetic over extracted facts. The chat model cites these numbers; it never invents its own.</div>'; }
+  if (keys.length) { html += '<h2>Projection (next year)</h2><table style="margin:0 10px 10px;font-size:12px"><tr><th style="text-align:left">metric</th><th>last</th><th>linear</th><th>CAGR</th></tr>' + keys.map(k=>{const p=fc[k]; const hist=Object.entries(p.history||{}); const last=hist.length?hist[hist.length-1][1]:''; return `<tr><td>${k}</td><td>${fmt(last)}</td><td>${fmt(p.linear)}</td><td>${fmt(p.cagr)}</td></tr>`;}).join('') + '</table><div style="padding:0 10px;font-size:11px;color:var(--muted)">Deterministic arithmetic over extracted facts. The chat model cites these numbers; it never invents its own.</div>'; }
   el.innerHTML = html;
 }
 const fmt = v => (v==null||v==='') ? '—' : Number(v).toLocaleString(undefined,{maximumFractionDigits:0});

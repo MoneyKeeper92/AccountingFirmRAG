@@ -19,8 +19,10 @@ Model API costs are passed through or bundled; they are small (see `docs/MODEL_R
 
 - Their data is spread across a file server, a DMS, tax software, and email. The vendor's AI
   only sees its own silo. This sees everything they choose to upload.
-- Forecasting and risk screens across years and across tax + audit are not something a document
-  management vendor builds.
+- Tax-planning screens across years (estimates, entity choice, reasonable compensation, basis)
+  and request lists derived from the prior return are not something a document management
+  vendor builds. Audit and review work is the natural second product once the tax version is
+  proven.
 - Vendor independence: model choice is a config line; if a better or cheaper model appears they
   get it next quarter.
 - A human who knows their practice and shows up every week. Small firms buy relationships.

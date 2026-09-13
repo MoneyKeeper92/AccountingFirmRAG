@@ -4,7 +4,7 @@ from tests.conftest import SAMPLE
 def _seed_john(client):
     c = client.post("/api/clients", json={"name": "John & Maria Doe", "entity_type": "individual"}).json()
     files = [("files", (f.name, f.read_bytes(), "application/json")) for f in sorted((SAMPLE / "john_doe").iterdir())]
-    r = client.post("/api/documents", data={"client_id": c["id"], "engagement": "tax"}, files=files)
+    r = client.post("/api/documents", data={"client_id": c["id"], "engagement": "tax_1040"}, files=files)
     assert r.status_code == 200 and all(x["status"] == "ready" for x in r.json()["results"])
     return c
 
@@ -14,12 +14,12 @@ def test_request_list_from_prior_return(client):
     r = client.post(f"/api/clients/{c['id']}/request-lists", json={})
     assert r.status_code == 200, r.text
     rl = r.json()
-    assert rl["tax_year"] == 2026 and rl["prior_year"] == 2025
+    assert rl["tax_year"] == 2026 and rl["prior_year"] == 2025 and rl["return_type"] == "1040"
     keys = {i["key"] for i in rl["items"]}
     for expected in ("engagement_letter", "w2", "1099_int", "1099_div", "1099_b", "sched_c_income", "home_office",
                      "1098_mortgage", "charitable", "childcare", "estimated_payments", "property_tax"):
         assert expected in keys, expected
-    assert not any(k in keys for k in ("hsa", "1095_a", "student_loan"))   # nothing in the file suggests these
+    assert not any(k in keys for k in ("hsa", "1095_a", "student_loan", "books", "payroll"))   # nothing suggests these; entity rules stay off
     assert "rental" in keys                                              # the preparer's note mentions a rental purchase
     followups = [i["item"] for i in rl["items"] if i["category"] == "Follow-up"]
     assert any("rental property" in f.lower() or "s-corp" in f.lower() for f in followups)
@@ -76,3 +76,33 @@ def test_request_list_needs_documents(client):
     c = client.post("/api/clients", json={"name": "Empty Client"}).json()
     r = client.post(f"/api/clients/{c['id']}/request-lists", json={})
     assert r.status_code == 400 and "upload last year" in r.json()["detail"]
+
+
+def _seed_folder(client, folder, name, entity_type, engagement):
+    c = client.post("/api/clients", json={"name": name, "entity_type": entity_type}).json()
+    files = [("files", (f.name, f.read_bytes(), "text/plain")) for f in sorted((SAMPLE / folder).iterdir())]
+    r = client.post("/api/documents", data={"client_id": c["id"], "engagement": engagement}, files=files)
+    assert all(x["status"] == "ready" for x in r.json()["results"]), r.text
+    return c
+
+
+def test_entity_request_lists(client):
+    s_corp = _seed_folder(client, "abc_company", "ABC Company, Inc.", "s_corp", "tax_1120s")
+    rl = client.post(f"/api/clients/{s_corp['id']}/request-lists", json={}).json()
+    keys = {i["key"] for i in rl["items"]}
+    assert rl["return_type"] == "1120-S" and rl["tax_year"] == 2026
+    for k in ("books", "bank_statements", "payroll", "officer_comp", "health_insurance", "loans", "fixed_assets", "1099s_issued", "entity_estimates"):
+        assert k in keys, k
+    assert not {"w2", "organizer", "1098_mortgage", "estimated_payments"} & keys
+    assert "$328,000" in rl["email_body"]                                  # distributions cited as the reason
+    assert any("7203" in i["item"] or "basis" in i["item"].lower() for i in rl["items"] if i["category"] == "Follow-up")
+
+    pship = _seed_folder(client, "riverbend_partners", "Riverbend Partners LLC", "partnership", "tax_1065")
+    rl = client.post(f"/api/clients/{pship['id']}/request-lists", json={}).json()
+    keys = {i["key"] for i in rl["items"]}
+    assert rl["return_type"] == "1065" and "guaranteed_payments" in keys and "health_insurance" not in keys
+
+    corp = _seed_folder(client, "northline_corp", "Northline Distribution Corp.", "c_corp", "tax_1120")
+    rl = client.post(f"/api/clients/{corp['id']}/request-lists", json={}).json()
+    keys = {i["key"] for i in rl["items"]}
+    assert rl["return_type"] == "1120" and "dividends_paid" in keys and "guaranteed_payments" not in keys

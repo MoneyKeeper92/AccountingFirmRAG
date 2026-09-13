@@ -15,22 +15,26 @@ from app.config import Settings  # noqa: E402
 from app.main import AppState  # noqa: E402
 
 CLIENTS = {
+    "john_doe": dict(name="John & Maria Doe", entity_type="individual", industry="W-2 employee + consulting Schedule C", fiscal_year_end="12-31",
+                     notes="1040 client since 2019. Consulting LLC may elect S-corp for 2026.", engagement="tax_1040"),
     "abc_company": dict(name="ABC Company, Inc.", entity_type="s_corp", industry="Wholesale distribution", fiscal_year_end="12-31",
-                        notes="Audit client since 2019. Line of credit with First Regional Bank."),
-    "john_doe": dict(name="John & Maria Doe", entity_type="individual", industry="W-2 + consulting Schedule C", fiscal_year_end="12-31",
-                     notes="1040 client. Consulting LLC may elect S-corp for 2026."),
+                        notes="1120-S client, two shareholders 60/40. Related-party warehouse lease.", engagement="tax_1120s"),
+    "riverbend_partners": dict(name="Riverbend Partners LLC", entity_type="partnership", industry="Landscaping services + rental building", fiscal_year_end="12-31",
+                               notes="1065 client, three partners. Possible partner buyout in 2026.", engagement="tax_1065"),
+    "northline_corp": dict(name="Northline Distribution Corp.", entity_type="c_corp", industry="Industrial distribution", fiscal_year_end="12-31",
+                           notes="1120 client. Accumulated earnings exposure; CFO handles estimates.", engagement="tax_1120"),
 }
-ENGAGEMENT = {"abc_company": "audit", "john_doe": "tax"}
 
 
 def main() -> None:
     state = AppState(Settings.load())
     print(f"profile={state.settings.profile_name} llm={state.llm.identity} embed={state.embedder.identity}")
     for folder, meta in CLIENTS.items():
+        meta = dict(meta)
+        engagement = meta.pop("engagement")
         client = state.store.upsert_client(client_id=folder, **meta)
         for f in sorted((ROOT / "sample_data" / folder).iterdir()):
-            r = state.pipeline.ingest_bytes(client_id=client["id"], filename=f.name, data=f.read_bytes(), uploaded_by="seed",
-                                            engagement=ENGAGEMENT[folder])
+            r = state.pipeline.ingest_bytes(client_id=client["id"], filename=f.name, data=f.read_bytes(), uploaded_by="seed", engagement=engagement)
             print(f"  {f.name}: {r['status']} type={r.get('doc_type')} year={r.get('tax_year')} chunks={r.get('chunks')} facts={r.get('facts')}")
     print(state.store.stats())
 

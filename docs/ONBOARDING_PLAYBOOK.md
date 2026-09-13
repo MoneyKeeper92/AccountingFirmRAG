@@ -11,8 +11,8 @@ with as little staff effort as possible.
    inference through that cloud's Claude offering, embeddings self-hosted or via Voyage under ZDR.
 3. **Install with the offline profile** and demo with the sample data on their machine. No
    client data involved. This is where staff learn the UI.
-4. **Agree the client list for the pilot.** Start with 10–25 clients: the ones with recurring
-   audits/reviews and the top individual returns by fee. Don't try to ingest the whole archive.
+4. **Agree the client list for the pilot.** Start with 10–25 clients: the entity returns
+   (1120-S, 1065, 1120) and the top individual returns by fee. Don't try to ingest the whole archive.
 
 ## Phase 1 – Inventory and triage (week 1)
 
@@ -26,15 +26,15 @@ For each pilot client, list what exists and where. A simple sheet:
 
 Rules of thumb for what to ingest first, in order of value per hour:
 
-1. **Final deliverables**: filed returns, issued financial statements, audit reports, management
-   letters. These have the numbers and the conclusions.
+1. **Final deliverables**: filed returns (1040, 1065, 1120-S, 1120 with all schedules), K-1s
+   issued, and the preparer's notes. These have the numbers and the conclusions.
 2. **Structured exports**: trial balances, general ledgers, fixed-asset registers as CSV/XLSX.
    Best source of facts and cheapest to extract.
-3. **Planning memos and prior-year risk assessments**: high value for "what did we worry about
-   last year".
+3. **Planning memos, review notes and prior-year organizers**: high value for "what did we worry
+   about last year".
 4. **Source documents** (bank statements, 1099s, W-2s): usually skip in the pilot; large volume,
    low query value. Add later, selectively.
-5. **Working papers with tick marks**: last. Often scanned, often noisy.
+5. **Tax workpapers with tick marks**: last. Often scanned, often noisy.
 
 Skip entirely: drafts superseded by finals, duplicate copies, email dumps.
 

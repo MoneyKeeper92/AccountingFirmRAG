@@ -1,32 +1,44 @@
 {
-  "document": "Form 1040 - U.S. Individual Income Tax Return (preparer summary)",
+  "document": "Form 1040 - U.S. Individual Income Tax Return (preparer summary, as filed)",
   "taxpayer": "John A. Doe",
   "spouse": "Maria L. Doe",
-  "filing_status": "Married filing jointly",
+  "filing_status": "married filing jointly",
   "tax_year": 2025,
-  "dependents": 2,
+  "dependents_count": 2,
+  "forms_present": ["1040", "Schedule 1", "Schedule 2", "Schedule A", "Schedule B", "Schedule C", "Schedule D", "Schedule SE", "Form 8949", "Form 8829", "Form 8995", "Form 2210", "Schedule 8812"],
   "income": {
     "wages": 142500,
-    "interest_income": 1860,
-    "dividend_income": 4210,
+    "taxable_interest": 1860,
+    "ordinary_dividends": 4210,
+    "qualified_dividends": 3600,
+    "capital_gain_loss": 6300,
     "schedule_c_net_profit": 38900,
-    "capital_gain": 6300
+    "total_income": 193770
   },
-  "adjusted_gross_income": 190020,
+  "adjustments_to_income": 2748,
+  "adjusted_gross_income": 191022,
   "itemized_deductions": {
-    "state_and_local_taxes": 10000,
-    "mortgage_interest": 14200,
-    "charitable": 6800
+    "salt_deduction": 10000,
+    "mortgage_interest_deduction": 14200,
+    "charitable_contributions": 6800,
+    "itemized_deductions_total": 31000
   },
-  "taxable_income": 156420,
+  "standard_or_itemized_deduction": 31000,
+  "qbi_deduction": 7780,
+  "home_office_deduction": 3120,
+  "taxable_income": 152242,
+  "self_employment_tax": 5496,
+  "child_tax_credit": 4000,
   "total_tax": 24870,
-  "estimated_payments": 9000,
-  "withholding": 18100,
-  "refund": 2230,
+  "federal_withholding": 18100,
+  "estimated_payments": 4000,
+  "underpayment_penalty": 96,
+  "amount_owed": 2866,
   "preparer_notes": [
-    "Schedule C business (Doe Consulting LLC) started 2023; home office deduction claimed for 14% of home.",
-    "Client sold RSUs in March 2025 - basis confirmed against broker 1099-B.",
-    "Estimated payments were late for Q2 and Q3; small underpayment penalty assessed.",
+    "Schedule C business (Doe Consulting LLC) grew; home office deduction claimed for 14% of home (Form 8829).",
+    "Client sold RSUs in March 2025 - basis confirmed against broker 1099-B; reported on Form 8949 / Schedule D.",
+    "Only two estimated payments made (Q1, Q2); Q3 and Q4 missed; Form 2210 penalty of 96 assessed.",
+    "Itemized this year (31,000 vs 30,000 standard); bunching charitable gifts into alternate years would help.",
     "Ask about 2026: client mentioned possible rental property purchase and S-corp election for the consulting LLC."
   ]
 }

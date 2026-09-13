@@ -22,20 +22,34 @@ def test_single_period_is_flat():
     assert p["linear"] == 50.0 and "Only one period" in p["method_note"]
 
 
-def test_risk_flags_liquidity_and_receivables():
+def test_individual_screens():
     r = forecast.assess_risk(facts(
-        revenue={2024: 1000.0, 2025: 1100.0},
-        accounts_receivable={2024: 100.0, 2025: 300.0},
-        current_assets={2025: 500.0},
-        current_liabilities={2025: 600.0},
-        total_liabilities={2025: 900.0},
-        total_equity={2025: 300.0},
+        adjusted_gross_income={2024: 150000.0, 2025: 200000.0},
+        taxable_income={2025: 160000.0},
+        total_tax={2025: 30000.0},
+        federal_withholding={2025: 20000.0},
+        estimated_payments={2025: 4000.0},
+        schedule_c_net_profit={2025: 90000.0},
     ))
-    areas = {f["area"] for f in r["flags"]}
-    assert "Liquidity" in areas
-    assert "Revenue recognition" in areas
-    assert r["ratios"]["current_ratio"] == 0.8333
+    assert r["profile"] == "individual"
+    areas = [f["area"] for f in r["flags"]]
+    assert "Estimated payments" in areas and "Entity choice" in areas and "Year-over-year" in areas
+    assert r["ratios"]["payments_to_total_tax"] == 0.8
+    assert r["ratios"]["se_tax_estimate"] == round(90000 * 0.9235 * 0.153, 0)
     assert r["flags"][0]["severity"] == "high"
+    assert any("Form 8995" in f["detail"] for f in r["flags"])          # QBI not recorded
+
+
+def test_s_corp_and_c_corp_screens():
+    s = forecast.assess_risk(facts(gross_receipts={2025: 1_000_000.0}, ordinary_business_income={2025: 300000.0},
+                                   officer_compensation={2025: 60000.0}, distributions={2025: 250000.0}, aaa_balance={2025: 200000.0}))
+    areas = {f["area"] for f in s["flags"]}
+    assert "Reasonable compensation" in areas and "Basis" in areas
+    assert s["ratios"]["distributions_to_officer_comp"] == 4.1667
+    c = forecast.assess_risk(facts(gross_receipts={2025: 5_000_000.0}, corporate_taxable_income={2025: 300000.0},
+                                   corporate_total_tax={2025: 63000.0}, estimated_payments={2025: 30000.0}, retained_earnings={2025: 900000.0}))
+    areas = {f["area"] for f in c["flags"]}
+    assert "Estimated payments" in areas and "Accumulated earnings" in areas
 
 
 def test_empty_facts():

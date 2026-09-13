@@ -3,8 +3,8 @@
 ## One-paragraph version
 
 Files come in through the UI or API, get parsed to text, and are sent to an **extractor** model
-that returns a small canonical JSON record (document type, tax year, summary, entities,
-`facts` triples, risk flags). The text is chunked and embedded with an **embedding** model and
+that returns a small canonical JSON record (document type, return type, forms and schedules
+present, tax year, filing status, summary, entities, `facts` triples, risk flags). The text is chunked and embedded with an **embedding** model and
 stored next to the facts in SQLite. When someone asks a question, the question is embedded,
 the closest chunks for that client are retrieved, and the **LLM** answers from that evidence,
 calling deterministic tools for anything numeric. Every upload, query, model switch and delete
@@ -57,24 +57,34 @@ Every document, regardless of source format, becomes:
 
 ```json
 {
-  "doc_type": "financial_statements",
+  "doc_type": "form_1120s",
+  "return_type": "1120-S",
   "tax_year": 2025,
-  "summary": "Audited statements for ABC Company... covenant breach waived post year-end.",
-  "entities": [{"name": "ABC Company, Inc.", "role": "entity"}, {"name": "First Regional Bank", "role": "bank"}],
+  "filing_status": null,
+  "forms_present": ["1120-S", "Schedule K", "Schedule L", "Schedule M-2", "Form 1125-A", "Form 1125-E", "Form 4562", "Form 7203"],
+  "summary": "ABC Company 1120-S for 2025: gross receipts 5.61M, ordinary income 268k, distributions 328k exceed ordinary income; new shareholder loan.",
+  "entities": [{"name": "ABC Company, Inc.", "role": "entity"}, {"name": "Majority shareholder", "role": "shareholder"}],
   "facts": [
-    {"name": "revenue", "value": 5610000, "period": 2025, "unit": "USD", "source_quote": "Revenue: 5,610,000"},
-    {"name": "accounts_receivable", "value": 1180000, "period": 2025, "unit": "USD", "source_quote": "Accounts receivable, net: 1,180,000"}
+    {"name": "gross_receipts", "value": 5610000, "period": 2025, "unit": "USD", "source_quote": "1a Gross receipts or sales: 5,610,000"},
+    {"name": "officer_compensation", "value": 120000, "period": 2025, "unit": "USD", "source_quote": "7 Compensation of officers (Form 1125-E): 120,000"},
+    {"name": "distributions", "value": 328000, "period": 2025, "unit": "USD", "source_quote": "16d Distributions: 328,000"}
   ],
-  "risk_flags": ["Current-ratio covenant breached at year end; waiver obtained Feb 2026"]
+  "risk_flags": ["Distributions exceed ordinary income; confirm shareholder basis on Form 7203", "Shareholder loan of 150,000 without a written note"]
 }
 ```
 
 Why this shape:
 
-- `facts` are flat `(name, value, period)` triples, so a 1040, a set of statements and a trial
-  balance all feed the same forecasting and ratio code.
-- The fact vocabulary (`FACT_NAMES` in `extractor.py`) is an enum the extractor must pick from.
-  That keeps "Sales", "Net sales" and "Revenues" from becoming three different series.
+- `facts` are flat `(name, value, period)` triples, so a 1040, an 1120-S and a trial balance all
+  feed the same planning and forecasting code.
+- The fact vocabulary (`FACT_NAMES` in `extractor.py`) is an enum the extractor must pick from,
+  split into 1040 line-item concepts (wages, AGI, taxable income, total tax, withholding,
+  estimates, QBI...) and entity concepts (gross receipts, officer compensation, guaranteed
+  payments, ordinary business income, distributions, AAA, retained earnings...). Names are
+  concepts, not line numbers, so they survive form changes.
+- `forms_present` is an enum of the 1040 schedules and forms (A, B, C, D, E, SE, 8949, 8995,
+  2210, 4562...) and the 1065 / 1120-S / 1120 schedules (K, K-1, L, M-1, M-2, 1125-A, 1125-E,
+  8825, 7203...), so "which clients filed a Schedule E" is a metadata query.
 - `source_quote` makes each number auditable back to the line it came from.
 - The whole record is also indexed as a chunk, so "what does the 2025 return say" questions hit
   the summary directly instead of a random page.
@@ -126,13 +136,17 @@ model versions on the same questions later (see the evaluation section below).
 - The LLM has a `search_documents` tool, so it can run a follow-up query (e.g. for a note
   disclosure) when the first retrieval did not contain what it needs.
 
-## Forecasting and risk
+## Projections and tax-planning screens
 
-`app/forecast.py` is deliberately boring arithmetic: least-squares linear trend, CAGR,
-year-over-year deltas, current ratio, debt-to-equity, AR days, inventory days, margins, and a
-set of analytical-review flags (receivables growing faster than revenue, large swings). The
-model must call these tools and is told to explain method and assumptions. Thresholds are
-generic starting points; tune them per industry with the engagement partner.
+`app/forecast.py` is deliberately boring arithmetic: least-squares linear trend, CAGR and
+year-over-year deltas for projections, plus tax-planning screens that depend on the return type
+found in the facts. For 1040 clients: estimated-payment coverage against the safe harbour,
+penalties, over-withholding, S-corp election candidates (with an SE-tax estimate), QBI check,
+itemize-versus-standard bunching, investment income, AGI / tax swings. For 1120-S: reasonable
+compensation (officer pay vs distributions), distributions vs AAA, shareholder loans, >2%
+health insurance. For 1065: negative capital, guaranteed payments vs ordinary income. For 1120:
+corporate estimates, accumulated earnings, NOLs. The model must call these tools and is told to
+explain method and assumptions. Thresholds are generic starting points; tune them with the firm.
 
 ## Tax-season request lists
 
@@ -144,7 +158,11 @@ generic starting points; tune them per industry with the engagement partner.
 2. **Rules.** Each rule is (condition, item, why, match words). Wages on the return produce
    "W-2 from each employer (wages of $142,500 on the 2025 return)"; the word "home office" in
    the folder produces the home-office item; a note containing "ask about" becomes a Follow-up
-   item. Rules are plain Python and are meant to be edited with the firm; see `RULES`.
+   item. Rules are gated by return type: a 1040 client gets source-document items; a 1065 /
+   1120-S / 1120 client gets books, bank statements, payroll filings, owner compensation and
+   distributions, 1099s issued, fixed-asset invoices, loans, and entity-specific items
+   (>2% shareholder health insurance, guaranteed payments, dividends and board minutes).
+   Rules are plain Python and are meant to be edited with the firm; see `RULES`.
 3. **Email.** A grouped, checkbox-style draft. With a real model profile the wording is
    polished by the LLM; it may not add or drop items.
 4. **Tracking.** `request_lists` / `request_items` tables. Items are pending, received or not

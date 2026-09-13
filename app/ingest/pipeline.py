@@ -54,12 +54,15 @@ class IngestPipeline:
             record["warnings"] = parsed.warnings
 
             # Prefix every chunk with a header so a retrieved passage is self-describing.
-            header = f"[client_id={client_id}] [file={filename}] [doc_type={record.get('doc_type')}] [year={record.get('tax_year') or tax_year}]"
+            header = (f"[client_id={client_id}] [file={filename}] [doc_type={record.get('doc_type')}] "
+                      f"[return={record.get('return_type', 'none')}] [year={record.get('tax_year') or tax_year}]")
             chunks = chunk_pages(parsed.pages)
             for c in chunks:
                 c["text"] = f"{header}\n{c['text']}"
             # The canonical JSON summary is itself a chunk, so 'what does the return say' questions hit it directly.
             chunks.insert(0, {"page": None, "section": "canonical_record", "text": header + "\nSUMMARY: " + record.get("summary", "") +
+                              ("\nFORMS: " + ", ".join(record.get("forms_present", [])) if record.get("forms_present") else "") +
+                              (f"\nFILING STATUS: {record['filing_status']}" if record.get("filing_status") else "") +
                               "\nFACTS: " + "; ".join(f"{f['name']}({f.get('period')})={f['value']}" for f in record.get("facts", [])) +
                               ("\nRISK FLAGS: " + "; ".join(record.get("risk_flags", [])) if record.get("risk_flags") else "")})
             vectors = self.embedder.embed_documents([c["text"] for c in chunks]) if chunks else []
@@ -70,7 +73,8 @@ class IngestPipeline:
                                        extractor_model=self.extractor.identity, canonical=record)
             self.store.log("upload", uploaded_by, client_id, document_id=doc_id, filename=filename, chunks=n_chunks, facts=n_facts,
                            extractor=self.extractor.identity, embedding=self.embedder.identity)
-            return {"document_id": doc_id, "status": "ready", "doc_type": record.get("doc_type"), "tax_year": record.get("tax_year") or tax_year,
+            return {"document_id": doc_id, "status": "ready", "doc_type": record.get("doc_type"), "return_type": record.get("return_type"),
+                    "forms_present": record.get("forms_present", []), "tax_year": record.get("tax_year") or tax_year,
                     "original_stored": keep_original, "source_uri": source_uri,
                     "summary": record.get("summary"), "chunks": n_chunks, "facts": n_facts, "risk_flags": record.get("risk_flags", []),
                     "warnings": parsed.warnings}

@@ -1,0 +1,50 @@
+FORM 1120-S  U.S. INCOME TAX RETURN FOR AN S CORPORATION
+ABC Company, Inc.   EIN 12-3456789   For calendar year 2025
+Preparer summary (as filed)
+
+INCOME
+1a Gross receipts or sales: 5,610,000
+1b Returns and allowances: 28,000
+2 Cost of goods sold (Form 1125-A): 3,640,000
+3 Gross profit: 1,942,000
+6 Total income: 1,942,000
+
+DEDUCTIONS
+7 Compensation of officers (Form 1125-E): 120,000
+8 Salaries and wages: 985,000
+11 Rents - related party: 168,000
+13 Interest expense: 58,000
+14 Depreciation (Form 4562): 96,000
+12 Taxes and licenses: 71,000
+19 Other deductions: 176,000
+20 Total deductions: 1,674,000
+21 Ordinary business income: 268,000
+
+SCHEDULE K
+16d Distributions: 328,000
+17 Shareholder health insurance: 19,500
+Number of shareholders: 2
+
+SCHEDULE L (BALANCE SHEET PER BOOKS, END OF YEAR)
+Cash: 148,000
+Trade notes and accounts receivable: 1,180,000
+Inventories: 790,000
+Buildings and other depreciable assets, net: 1,472,000
+Total assets: 3,590,000
+Loans from shareholders: 150,000
+Total liabilities: 2,535,000
+Retained earnings: 1,005,000
+
+SCHEDULE M-2
+Accumulated adjustments account: 920,000
+
+STATE
+State income tax: 7,900
+
+PREPARER NOTES
+Distributions of 328,000 exceeded ordinary income of 268,000; confirm shareholder basis on Form 7203 before 2026 distributions.
+Majority shareholder loaned the company 150,000 in November 2025; no written note yet. Ask about terms and interest.
+Officer compensation unchanged at 120,000 for the fourth year while distributions rose; reasonable compensation exposure.
+Lease with the shareholder's LLC amended March 2025; rent increased to 168,000. Obtain the amendment for the file.
+Ask about 2026: new production line financed in January 2026 (450,000); plan Section 179 / bonus depreciation and confirm the state conformity.
+Q3 and Q4 shareholder estimated payments were late; remind both shareholders of the 2026 schedule.

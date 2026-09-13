@@ -17,17 +17,22 @@ from . import forecast
 from .providers.base import EmbeddingProvider, LLMProvider, ToolSpec
 from .store import SearchHit, Store
 
-SYSTEM_TEMPLATE = """You are the research assistant for a CPA firm. You answer partners' and staff questions about
-their own clients using ONLY the firm's archived records supplied below and the tools provided.
+SYSTEM_TEMPLATE = """You are the tax research assistant for a CPA firm. You answer preparers' and partners' questions about
+their own clients using ONLY the firm's archived records supplied below and the tools provided. The archive holds
+individual returns (1040 and schedules), partnership returns (1065), S corporation returns (1120-S), C corporation
+returns (1120), K-1s, source documents (W-2, 1099s, 1098s), books, notices and preparer notes.
 
 Ground rules:
 - Every number you state must come from the evidence or from a tool result. Cite the source file (and page) in
-  brackets like [file.pdf p.3]. If the archive does not contain something, say so plainly and suggest which
-  document would answer it.
-- For forecasts call `forecast_financials`; for risk / audit-planning questions call `assess_risk`; to pull a
-  specific figure call `get_client_facts`. Explain the method and the assumptions behind any projection.
-- You are supporting a licensed professional, not replacing their judgement. Flag anything that needs
-  professional review (tax positions, going-concern, materiality) rather than giving a definitive conclusion.
+  brackets like [file.pdf p.3]. If the archive does not contain something, say so plainly and name the document
+  that would answer it.
+- For projections call `forecast_financials`; for planning, "what should we watch", entity-choice, estimated-payment
+  or reasonable-compensation questions call `assess_risk`; to pull a specific figure call `get_client_facts`.
+  Explain the method and the assumptions behind any projection.
+- Refer to forms and lines by name (Form 1040 line 11, Schedule C line 31, Form 1120-S Schedule K line 16d) when the
+  evidence shows them.
+- You support a licensed preparer; you do not replace their judgement. Flag positions that need professional
+  review (elections, basis, reasonable compensation, penalties) rather than concluding on them.
 - Be concise and structured. Tables are welcome for year-over-year comparisons.
 
 Active client: {client_line}
@@ -41,8 +46,8 @@ Firm context: today's date is {today}. Retrieved evidence follows.
 TOOLS = [
     ToolSpec(
         name="get_client_facts",
-        description="Return the structured financial facts (name, value, period, source) extracted from a client's documents. "
-                    "Use for exact figures such as revenue, net income, AGI, total tax.",
+        description="Return the structured tax facts (name, value, period, source line) extracted from a client's documents. "
+                    "Use for exact figures such as wages, AGI, taxable income, total tax, gross receipts, officer compensation, distributions.",
         input_schema={"type": "object", "properties": {
             "client_id": {"type": "string"},
             "names": {"type": "array", "items": {"type": "string"}, "description": "Optional list of fact names to filter, e.g. ['revenue','net_income']"},
@@ -50,8 +55,8 @@ TOOLS = [
     ),
     ToolSpec(
         name="forecast_financials",
-        description="Project each available metric forward using linear trend and CAGR over the client's historical facts. "
-                    "Returns history, year-over-year changes and both projections so you can explain assumptions.",
+        description="Project each available metric (AGI, total tax, Schedule C profit, gross receipts, ordinary business income...) forward "
+                    "using linear trend and CAGR over the years on file. Returns history, year-over-year changes and both projections.",
         input_schema={"type": "object", "properties": {
             "client_id": {"type": "string"},
             "periods_ahead": {"type": "integer", "minimum": 1, "maximum": 5},
@@ -60,8 +65,9 @@ TOOLS = [
     ),
     ToolSpec(
         name="assess_risk",
-        description="Run ratio analysis and analytical-review trend screens over the client's facts. Returns ratios and ranked risk flags "
-                    "suitable for audit planning or tax-season review.",
+        description="Run tax-planning screens over the client's facts: estimated-payment safe harbour, S-corp election candidates, "
+                    "reasonable compensation, distributions vs basis, accumulated earnings, itemize-vs-standard, year-over-year swings. "
+                    "Returns key figures and ranked flags for the latest year on file.",
         input_schema={"type": "object", "properties": {"client_id": {"type": "string"}}, "required": ["client_id"], "additionalProperties": False},
     ),
     ToolSpec(

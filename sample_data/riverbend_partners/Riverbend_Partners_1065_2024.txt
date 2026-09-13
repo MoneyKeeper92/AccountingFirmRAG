@@ -1,0 +1,33 @@
+FORM 1065  U.S. RETURN OF PARTNERSHIP INCOME
+Riverbend Partners LLC   EIN 45-6789012   For calendar year 2024
+Preparer summary (as filed)
+
+INCOME
+1a Gross receipts or sales: 1,240,000
+2 Cost of goods sold: 410,000
+3 Gross profit: 830,000
+8 Total income: 830,000
+
+DEDUCTIONS
+9 Salaries and wages: 285,000
+10 Guaranteed payments to partners: 240,000
+13 Rent expense: 66,000
+15 Interest expense: 12,000
+16a Depreciation: 31,000
+21 Total deductions: 704,000
+22 Ordinary business income: 126,000
+
+SCHEDULE K
+2 Net rental real estate income (Form 8825): 38,000
+19a Distributions: 190,000
+Number of partners: 3
+
+SCHEDULE L (END OF YEAR)
+Cash: 96,000
+Total assets: 1,120,000
+Total liabilities: 640,000
+Partners' capital accounts: 480,000
+
+PREPARER NOTES
+Three partners: 40/40/20. Schedule K-1 (Form 1065) issued to each partner.
+Rental building (Form 8825) placed in service 2021.

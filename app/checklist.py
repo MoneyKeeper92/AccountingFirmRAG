@@ -24,6 +24,11 @@ class Ctx:
     doc_types: set[str]
     risk_flags: list[str]
     notes: list[str] = field(default_factory=list)
+    return_type: str = "1040"           # 1040 | 1065 | 1120-S | 1120
+
+    @property
+    def entity(self) -> bool:
+        return self.return_type in ("1065", "1120-S", "1120")
 
     def has(self, *words: str) -> bool:
         return any(w in self.text for w in words)
@@ -48,56 +53,96 @@ def _fact(name: str) -> Callable[[Ctx], bool]:
 
 
 ALWAYS = lambda c: True  # noqa: E731
+INDIV = lambda c: not c.entity  # noqa: E731
+ENTITY = lambda c: c.entity  # noqa: E731
+
+
+def _and(*conds):
+    return lambda c: all(f(c) for f in conds)
+
 
 RULES: list[Rule] = [
     Rule("engagement_letter", "Admin", "Signed engagement letter for {year}", ALWAYS,
          lambda c: "Required before we start work each year", ["engagement"]),
-    Rule("organizer", "Admin", "Completed tax organizer, or confirm nothing changed: address, dependents, bank account for direct deposit", ALWAYS,
+    Rule("organizer", "Admin", "Completed tax organizer, or confirm nothing changed: address, dependents, bank account for direct deposit", INDIV,
          lambda c: f"Carried forward from the {c.prior_year} return; we need to know what changed", ["organizer", "questionnaire"]),
-    Rule("life_changes", "Admin", "Tell us about anything new in {year}: marriage, move, new job, home sale, new business, inheritance", ALWAYS,
+    Rule("life_changes", "Admin", "Tell us about anything new in {year}: marriage, move, new job, home sale, new business, inheritance", INDIV,
          lambda c: "Each of these changes the return", []),
-    Rule("notices", "Admin", "Any IRS or state letters received during the year", ALWAYS,
+    Rule("notices", "Admin", "Any IRS or state letters received during the year", INDIV,
          lambda c: "Notices often carry deadlines", ["notice", "irs letter", "cp2000"]),
-    Rule("w2", "Income", "W-2 from each employer", _fact("wages"),
+    Rule("w2", "Income", "W-2 from each employer", _and(INDIV, _fact("wages")),
          lambda c: f"Wages of {c.money('wages')} on the {c.prior_year} return", ["w-2", "w2", "wage"]),
-    Rule("1099_int", "Income", "1099-INT from each bank or lender", _fact("interest_income"),
-         lambda c: f"Interest income of {c.money('interest_income')} in {c.prior_year}", ["1099-int", "1099int", "interest"]),
-    Rule("1099_div", "Income", "1099-DIV / consolidated brokerage statement", _fact("dividend_income"),
-         lambda c: f"Dividends of {c.money('dividend_income')} in {c.prior_year}", ["1099-div", "1099div", "dividend"]),
-    Rule("1099_b", "Income", "1099-B and cost-basis detail for any sales of stock, RSUs or crypto", lambda c: c.has("1099-b", "capital gain", "rsu", "stock sale", "brokerage", "crypto"),
+    Rule("1099_int", "Income", "1099-INT from each bank or lender", _and(INDIV, _fact("taxable_interest")),
+         lambda c: f"Taxable interest of {c.money('taxable_interest')} on the {c.prior_year} return", ["1099-int", "1099int", "interest"]),
+    Rule("1099_div", "Income", "1099-DIV / consolidated brokerage statement", _and(INDIV, _fact("ordinary_dividends")),
+         lambda c: f"Dividends of {c.money('ordinary_dividends')} on the {c.prior_year} return", ["1099-div", "1099div", "dividend"]),
+    Rule("1099_b", "Income", "1099-B and cost-basis detail for any sales of stock, RSUs or crypto", _and(INDIV, lambda c: c.has("1099-b", "capital gain", "rsu", "stock sale", "brokerage", "crypto", "form 8949", "schedule d")),
          lambda c: f"Investment sales were reported in {c.prior_year}", ["1099-b", "1099b", "broker", "consolidated", "gain", "rsu"]),
-    Rule("sched_c_income", "Business", "Business income records: 1099-NEC / 1099-K, invoices or sales summary", _fact("schedule_c_net_profit"),
+    Rule("sched_c_income", "Business", "Business income records: 1099-NEC / 1099-K, invoices or sales summary", _and(INDIV, _fact("schedule_c_net_profit")),
          lambda c: f"Schedule C net profit of {c.money('schedule_c_net_profit')} in {c.prior_year}", ["1099-nec", "1099-k", "nec", "invoice", "sales"]),
-    Rule("sched_c_expenses", "Business", "Business expense summary and business bank / credit card statements", _fact("schedule_c_net_profit"),
+    Rule("sched_c_expenses", "Business", "Business expense summary and business bank / credit card statements", _and(INDIV, _fact("schedule_c_net_profit")),
          lambda c: "Needed to support Schedule C deductions", ["expense", "bank statement", "credit card", "p&l", "profit"]),
-    Rule("home_office", "Business", "Home office: square footage, rent or mortgage interest, utilities, insurance for the year", lambda c: c.has("home office"),
+    Rule("home_office", "Business", "Home office: square footage, rent or mortgage interest, utilities, insurance for the year", _and(INDIV, lambda c: c.has("home office")),
          lambda c: f"Home office deduction was claimed in {c.prior_year}", ["home office", "utilities", "square"]),
-    Rule("mileage", "Business", "Vehicle mileage log (business vs total miles)", lambda c: c.has("vehicle", "mileage", "auto expense"),
+    Rule("mileage", "Business", "Vehicle mileage log (business vs total miles)", _and(INDIV, lambda c: c.has("vehicle", "mileage", "auto expense")),
          lambda c: f"Vehicle expenses were deducted in {c.prior_year}", ["mileage", "vehicle"]),
-    Rule("k1", "Income", "Schedule K-1 from each partnership, S corporation or trust", lambda c: c.has("k-1", "schedule k", "partnership", "s corp", "s-corp"),
+    Rule("k1", "Income", "Schedule K-1 from each partnership, S corporation or trust", _and(INDIV, lambda c: c.has("k-1", "schedule k-1", "partnership", "s corp", "s-corp")),
          lambda c: "Pass-through income appeared in prior-year records", ["k-1", "k1", "schedule k"]),
-    Rule("rental", "Income", "Rental property: rent received, expenses by category, 1098 for the rental mortgage", lambda c: c.has("rental", "schedule e"),
+    Rule("rental", "Income", "Rental property: rent received, expenses by category, 1098 for the rental mortgage", _and(INDIV, lambda c: c.has("rental", "schedule e")),
          lambda c: "Rental activity appears in prior-year records", ["rental", "rent roll", "schedule e"]),
-    Rule("1098_mortgage", "Deductions", "1098 mortgage interest statement", lambda c: c.has("mortgage interest", "1098"),
+    Rule("1098_mortgage", "Deductions", "1098 mortgage interest statement", _and(INDIV, lambda c: c.has("mortgage interest", "1098")),
          lambda c: f"Mortgage interest was deducted in {c.prior_year}", ["1098", "mortgage"]),
-    Rule("property_tax", "Deductions", "Property tax bills paid in {year}", lambda c: c.has("property tax", "state and local taxes", "real estate tax"),
+    Rule("property_tax", "Deductions", "Property tax bills paid in {year}", _and(INDIV, lambda c: c.has("property tax", "state and local taxes", "real estate tax", "salt")),
          lambda c: "State and local taxes were itemized", ["property tax", "real estate tax"]),
-    Rule("charitable", "Deductions", "Charitable contribution receipts (letters for gifts of $250 or more)", lambda c: c.has("charitable", "donation", "contribution"),
+    Rule("charitable", "Deductions", "Charitable contribution receipts (letters for gifts of $250 or more)", _and(INDIV, lambda c: c.has("charitable", "donation", "contribution")),
          lambda c: f"Charitable deductions were claimed in {c.prior_year}", ["donation", "charit", "contribution", "receipt"]),
-    Rule("childcare", "Credits", "Child and dependent care provider statement with tax ID and amount paid", lambda c: c.has("dependent", "childcare", "daycare"),
+    Rule("childcare", "Credits", "Child and dependent care provider statement with tax ID and amount paid", _and(INDIV, lambda c: c.has("dependent", "childcare", "daycare")),
          lambda c: "Dependents were claimed", ["childcare", "daycare", "dependent care", "provider"]),
-    Rule("1098_t", "Credits", "1098-T tuition statement and 529 distribution statements (1099-Q)", lambda c: c.has("1098-t", "tuition", "529", "college"),
+    Rule("1098_t", "Credits", "1098-T tuition statement and 529 distribution statements (1099-Q)", _and(INDIV, lambda c: c.has("1098-t", "tuition", "529", "college")),
          lambda c: "Education-related items appear in prior-year records", ["1098-t", "1098t", "tuition", "1099-q", "529"]),
-    Rule("hsa", "Deductions", "HSA forms 1099-SA and 5498-SA", lambda c: c.has("hsa", "health savings"),
+    Rule("hsa", "Deductions", "HSA forms 1099-SA and 5498-SA", _and(INDIV, lambda c: c.has("hsa", "health savings")),
          lambda c: "HSA activity in prior year", ["1099-sa", "5498-sa", "hsa"]),
-    Rule("retirement", "Income", "1099-R for retirement distributions and 5498 for IRA contributions", lambda c: c.has("1099-r", "ira", "401(k)", "pension", "retirement"),
+    Rule("retirement", "Income", "1099-R for retirement distributions and 5498 for IRA contributions", _and(INDIV, lambda c: c.has("1099-r", "ira", "401(k)", "pension", "retirement")),
          lambda c: "Retirement account activity in prior year", ["1099-r", "5498", "ira", "pension"]),
-    Rule("1095_a", "Credits", "Form 1095-A if health insurance was bought through the marketplace", lambda c: c.has("1095", "marketplace"),
+    Rule("1095_a", "Credits", "Form 1095-A if health insurance was bought through the marketplace", _and(INDIV, lambda c: c.has("1095", "marketplace")),
          lambda c: "Marketplace coverage appeared in prior-year records", ["1095"]),
-    Rule("student_loan", "Deductions", "1098-E student loan interest", lambda c: c.has("1098-e", "student loan"),
+    Rule("student_loan", "Deductions", "1098-E student loan interest", _and(INDIV, lambda c: c.has("1098-e", "student loan")),
          lambda c: "Student loan interest deducted in prior year", ["1098-e", "1098e", "student loan"]),
-    Rule("estimated_payments", "Payments", "Dates and amounts of federal and state estimated tax payments made for {year}", _fact("estimated_payments"),
-         lambda c: f"Estimates of {c.money('estimated_payments')} were paid for {c.prior_year}; penalties apply when late", ["estimated", "1040-es", "es payment", "estimate"]),
+    Rule("estimated_payments", "Payments", "Dates and amounts of federal and state estimated tax payments made for {year}",
+         _and(INDIV, lambda c: (c.facts.get("estimated_payments") or 0) != 0 or (c.facts.get("schedule_c_net_profit") or 0) > 0 or c.has("underpayment", "form 2210")),
+         lambda c: f"Estimates of {c.money('estimated_payments')} were paid for {c.prior_year}; penalties apply when late", ["estimated", "1040-es", "1120-w", "es payment", "estimate"]),
+
+    # ------------------------------------------------------------- entity returns (1065 / 1120-S / 1120)
+    Rule("books", "Books", "Year-end financial statements: profit and loss, balance sheet, trial balance and general ledger export for {year}", ENTITY,
+         lambda c: f"Starting point for the {c.return_type} return", ["trial balance", "general ledger", "balance sheet", "profit and loss", "p&l", "income statement", "financials"]),
+    Rule("bank_statements", "Books", "December {year} bank and credit card statements with reconciliations, plus January {year} statements for cut-off", ENTITY,
+         lambda c: "Needed to tie cash and confirm year-end cut-off", ["bank statement", "reconciliation", "credit card"]),
+    Rule("payroll", "Payroll", "Payroll reports for {year}: four quarterly 941s, W-3/W-2s, state unemployment returns", _and(ENTITY, lambda c: (c.facts.get("salaries_and_wages") or 0) > 0 or (c.facts.get("officer_compensation") or 0) > 0),
+         lambda c: f"Wages of {c.money('salaries_and_wages')} and officer compensation of {c.money('officer_compensation')} on the {c.prior_year} return", ["941", "w-3", "w3", "payroll", "unemployment"]),
+    Rule("officer_comp", "Owners", "Officer / owner compensation and distributions by owner for {year}", ENTITY,
+         lambda c: f"Distributions of {c.money('distributions')} in {c.prior_year}; needed for basis and reasonable-compensation support", ["distribution", "officer", "compensation", "owner draw"]),
+    Rule("owner_changes", "Owners", "Any changes in ownership, new owners, buyouts or capital contributions during {year}", ENTITY,
+         lambda c: "Changes ownership percentages and K-1 allocations", ["ownership", "buyout", "capital contribution", "operating agreement"]),
+    Rule("1099s_issued", "Payroll", "1099-NEC / 1099-MISC forms issued to contractors for {year}, or the vendor list with amounts paid", ENTITY,
+         lambda c: "Required filings; the return asks whether they were filed", ["1099-nec", "1099-misc", "contractor", "vendor"]),
+    Rule("fixed_assets", "Books", "Invoices for equipment, vehicles or property bought or sold in {year}, with dates and any financing", _and(ENTITY, lambda c: (c.facts.get("depreciation") or 0) > 0 or c.has("section 179", "bonus depreciation", "equipment", "forklift", "production line", "capital plan")),
+         lambda c: "Needed for the depreciation schedule and Section 179 / bonus elections", ["invoice", "equipment", "asset", "vehicle", "purchase", "financing"]),
+    Rule("loans", "Books", "Year-end loan statements and any new loan agreements, including loans to or from owners", _and(ENTITY, lambda c: (c.facts.get("interest_expense") or 0) > 0 or (c.facts.get("loans_from_shareholders") or 0) > 0 or c.has("loan")),
+         lambda c: "Interest expense and owner loans need documented terms", ["loan", "note", "statement", "line of credit"]),
+    Rule("health_insurance", "Owners", "Health insurance premiums paid for >2% shareholders (should appear on W-2 box 1)", _and(ENTITY, lambda c: c.return_type == "1120-S"),
+         lambda c: f"Shareholder health insurance of {c.money('shareholder_health_insurance')} in {c.prior_year}", ["health insurance", "premium"]),
+    Rule("retirement_plan", "Deductions", "Retirement plan contributions made for {year} (SEP, SIMPLE, 401(k)) and the plan year-end statement", ENTITY,
+         lambda c: "Deductible if funded by the return due date", ["401", "sep", "simple", "retirement", "pension"]),
+    Rule("guaranteed_payments", "Owners", "Guaranteed payments to each partner for {year} and any changes to the partnership agreement", _and(ENTITY, lambda c: c.return_type == "1065"),
+         lambda c: f"Guaranteed payments of {c.money('guaranteed_payments')} in {c.prior_year}", ["guaranteed", "partnership agreement"]),
+    Rule("dividends_paid", "Owners", "Dividends declared or paid to shareholders in {year} and board minutes documenting retained-earnings plans", _and(ENTITY, lambda c: c.return_type == "1120"),
+         lambda c: f"Retained earnings of {c.money('retained_earnings')} at the end of {c.prior_year}", ["dividend", "minutes", "board"]),
+    Rule("state_activity", "Admin", "States where the business had employees, property, or significant sales in {year}", ENTITY,
+         lambda c: "Determines state filing and nexus", ["nexus", "state", "sales by state"]),
+    Rule("entity_notices", "Admin", "Any IRS or state notices received by the business during the year", ENTITY,
+         lambda c: "Notices often carry deadlines", ["notice", "irs letter"]),
+    Rule("entity_estimates", "Payments", "Owner (or corporate) estimated tax payments made for {year}: dates and amounts", ENTITY,
+         lambda c: "Pass-through owners pay tax personally; corporations pay on Form 1120-W instalments", ["estimated", "1040-es", "1120-w", "estimate"]),
 ]
 
 
@@ -193,8 +238,9 @@ def build_for_client(store, llm, client_id: str, tax_year: int | None, firm_name
     notes = [ln.strip().strip('",') for ln in text.splitlines() if ln.strip()]
     risk_flags = [f for r in records for f in (r.get("risk_flags") or [])]
     # JSON exports use snake_case keys ("mortgage_interest"); normalise so the keyword rules read them like prose.
+    return_type = _return_type(client, records)
     ctx = Ctx(client=client, tax_year=tax_year, prior_year=prior_year, facts=facts, text=text.replace("_", " ").lower(),
-              doc_types={r.get("doc_type") for r in records}, risk_flags=risk_flags, notes=notes)
+              doc_types={r.get("doc_type") for r in records}, risk_flags=risk_flags, notes=notes, return_type=return_type)
     items = build_items(ctx)
     subject, body = draft_email(client, tax_year, items, firm_name)
 
@@ -211,4 +257,13 @@ def build_for_client(store, llm, client_id: str, tax_year: int | None, firm_name
             pass
     result = store.create_request_list(client_id, tax_year, subject, body, items)
     result["prior_year"] = prior_year
+    result["return_type"] = return_type
     return result
+
+
+def _return_type(client: dict, records: list[dict]) -> str:
+    by_entity = {"partnership": "1065", "llc": "1065", "s_corp": "1120-S", "c_corp": "1120", "individual": "1040", "trust": "1041"}
+    votes = [r.get("return_type") for r in records if r.get("return_type") and r.get("return_type") != "none"]
+    if votes:
+        return max(set(votes), key=votes.count)
+    return by_entity.get((client.get("entity_type") or "").lower(), "1040")

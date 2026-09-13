@@ -1,0 +1,33 @@
+FORM 1120  U.S. CORPORATION INCOME TAX RETURN
+Northline Distribution Corp.   EIN 78-9012345   For calendar year 2024
+Preparer summary (as filed)
+
+INCOME
+1a Gross receipts or sales: 8,900,000
+2 Cost of goods sold: 6,230,000
+3 Gross profit: 2,670,000
+11 Total income: 2,690,000
+
+DEDUCTIONS
+12 Compensation of officers: 410,000
+13 Salaries and wages: 1,180,000
+16 Rents: 210,000
+18 Interest expense: 96,000
+20 Depreciation: 142,000
+27 Total deductions: 2,372,000
+30 Taxable income: 318,000
+31 Total tax: 66,780
+Estimated tax payments: 60,000
+
+SCHEDULE L (END OF YEAR)
+Cash: 402,000
+Total assets: 4,860,000
+Total liabilities: 2,940,000
+Retained earnings: 1,720,000
+
+SCHEDULE J
+Net operating loss carryforward: 0
+
+PREPARER NOTES
+Retained earnings above 1.7 million with no dividends since 2019; accumulated earnings tax exposure discussed with the CFO.
+Schedule M-3 not required (assets under 10 million).

@@ -1,0 +1,48 @@
+FORM 1120-S  U.S. INCOME TAX RETURN FOR AN S CORPORATION
+ABC Company, Inc.   EIN 12-3456789   For calendar year 2024
+Preparer summary (as filed)
+
+INCOME
+1a Gross receipts or sales: 4,820,000
+1b Returns and allowances: 20,000
+2 Cost of goods sold (Form 1125-A): 3,010,000
+3 Gross profit: 1,790,000
+6 Total income: 1,790,000
+
+DEDUCTIONS
+7 Compensation of officers (Form 1125-E): 120,000
+8 Salaries and wages: 790,000
+11 Rents - related party: 144,000
+13 Interest expense: 41,000
+14 Depreciation (Form 4562): 84,000
+12 Taxes and licenses: 62,000
+19 Other deductions: 134,000
+20 Total deductions: 1,375,000
+21 Ordinary business income: 415,000
+
+SCHEDULE K
+16d Distributions: 210,000
+17 Shareholder health insurance: 18,000
+Number of shareholders: 2
+
+SCHEDULE L (BALANCE SHEET PER BOOKS, END OF YEAR)
+Cash: 312,000
+Trade notes and accounts receivable: 690,000
+Inventories: 545,000
+Buildings and other depreciable assets, net: 1,358,000
+Total assets: 2,905,000
+Loans from shareholders: 0
+Total liabilities: 1,790,000
+Retained earnings: 1,065,000
+
+SCHEDULE M-2
+Accumulated adjustments account: 980,000
+
+STATE
+State income tax: 6,200
+
+PREPARER NOTES
+Two shareholders (60/40). Officer compensation reviewed against industry data in 2022; recommend refreshing the salary study.
+Section 179 deduction taken on forklift purchase: 38,000.
+Related-party warehouse lease with the majority shareholder's LLC; rent is at market per 2023 appraisal.
+Form 2553 accepted effective 2016.

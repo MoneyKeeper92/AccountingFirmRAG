@@ -1,24 +1,33 @@
 {
-  "document": "Form 1040 - U.S. Individual Income Tax Return (preparer summary)",
+  "document": "Form 1040 - U.S. Individual Income Tax Return (preparer summary, as filed)",
   "taxpayer": "John A. Doe",
   "spouse": "Maria L. Doe",
-  "filing_status": "Married filing jointly",
+  "filing_status": "married filing jointly",
   "tax_year": 2024,
-  "dependents": 2,
+  "dependents_count": 2,
+  "forms_present": ["1040", "Schedule 1", "Schedule B", "Schedule C", "Schedule SE", "Form 8995", "Schedule 8812"],
   "income": {
     "wages": 131000,
-    "interest_income": 940,
-    "dividend_income": 3650,
-    "schedule_c_net_profit": 21400
+    "taxable_interest": 940,
+    "ordinary_dividends": 3650,
+    "qualified_dividends": 3100,
+    "schedule_c_net_profit": 21400,
+    "total_income": 156990
   },
-  "adjusted_gross_income": 156990,
-  "taxable_income": 127800,
-  "total_tax": 18960,
+  "adjustments_to_income": 1512,
+  "adjusted_gross_income": 155478,
+  "standard_or_itemized_deduction": 29200,
+  "qbi_deduction": 4280,
+  "taxable_income": 121998,
+  "self_employment_tax": 3024,
+  "child_tax_credit": 4000,
+  "total_tax": 17960,
+  "federal_withholding": 16900,
   "estimated_payments": 4000,
-  "withholding": 16900,
-  "refund": 1940,
+  "refund": 2940,
   "preparer_notes": [
-    "First full year of Schedule C activity; recommended quarterly estimates for 2025.",
-    "Client asked about 529 contributions - provided state deduction limits."
+    "First full year of Schedule C activity (Doe Consulting LLC); recommended quarterly estimates for 2025.",
+    "Client asked about 529 contributions - provided state deduction limits.",
+    "Standard deduction taken; mortgage interest and charitable gifts were below the threshold."
   ]
 }
