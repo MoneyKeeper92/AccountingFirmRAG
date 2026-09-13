@@ -10,6 +10,7 @@ from ..providers.base import EmbeddingProvider, LLMProvider
 from ..store import Store
 from .chunker import chunk_pages
 from .extractor import extract_canonical
+from .mef import is_mef_xml, parse_mef
 from .parsers import parse_file
 
 log = logging.getLogger(__name__)
@@ -47,8 +48,16 @@ class IngestPipeline:
                 (dest / f"{doc_id}__{Path(filename).name}").write_bytes(data)
 
             hints = {"client_id": client_id, "engagement": engagement, "tax_year": tax_year}
-            record = extract_canonical(self.extractor, parsed.text, filename, hints) if parsed.text.strip() else {
-                "doc_type": "other", "tax_year": tax_year, "summary": "Empty or unreadable document", "entities": [], "facts": [], "risk_flags": []}
+            extractor_identity = self.extractor.identity
+            if parsed.kind == "xml" and is_mef_xml(data):
+                # e-file XML saved from the tax software: deterministic, no model call
+                mef = parse_mef(data, filename)
+                record, parsed.pages = mef["record"], mef["pages"]
+                extractor_identity = "mef_xml:deterministic"
+            elif parsed.text.strip():
+                record = extract_canonical(self.extractor, parsed.text, filename, hints)
+            else:
+                record = {"doc_type": "other", "tax_year": tax_year, "summary": "Empty or unreadable document", "entities": [], "facts": [], "risk_flags": []}
             if parsed.needs_ocr:
                 record["risk_flags"].append("Scanned PDF without text layer - run OCR and re-upload")
             record["warnings"] = parsed.warnings
@@ -70,9 +79,9 @@ class IngestPipeline:
             n_facts = self.store.add_facts(client_id, doc_id, record.get("facts", []))
             self.store.finish_document(doc_id, doc_type=record.get("doc_type"), tax_year=record.get("tax_year") or tax_year,
                                        summary=record.get("summary"), page_count=len(parsed.pages),
-                                       extractor_model=self.extractor.identity, canonical=record)
+                                       extractor_model=extractor_identity, canonical=record)
             self.store.log("upload", uploaded_by, client_id, document_id=doc_id, filename=filename, chunks=n_chunks, facts=n_facts,
-                           extractor=self.extractor.identity, embedding=self.embedder.identity)
+                           extractor=extractor_identity, embedding=self.embedder.identity)
             return {"document_id": doc_id, "status": "ready", "doc_type": record.get("doc_type"), "return_type": record.get("return_type"),
                     "forms_present": record.get("forms_present", []), "tax_year": record.get("tax_year") or tax_year,
                     "original_stored": keep_original, "source_uri": source_uri,

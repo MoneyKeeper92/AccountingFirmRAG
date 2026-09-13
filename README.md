@@ -30,7 +30,8 @@ correct every extracted figure before it is used; rejected figures drop out of p
 |---|---|
 | `app/` | FastAPI backend, ingestion pipeline, RAG engine, provider adapters, browser UI |
 | `models.yaml` | The model registry. Swapping LLM / extractor / embedding model is a config edit |
-| `sample_data/` | Synthetic returns: a 1040 client, an 1120-S, a 1065 and an 1120, two years each, for demos and tests |
+| `sample_data/` | Synthetic returns: a 1040 client, an 1120-S, a 1065 and an 1120, two years each, plus MeF e-file XML samples, for demos and tests |
+| `docs/LINE_MAP_1040.md` | Form 1040 line renumbering TY2023–2025 and how extraction handles it |
 | `scripts/seed_demo.py` | Loads the sample clients into a fresh database |
 | `tests/` | Pytest suite that runs fully offline |
 | `docs/ARCHITECTURE.md` | How the pieces fit, the canonical JSON schema, how model hot-swapping works |

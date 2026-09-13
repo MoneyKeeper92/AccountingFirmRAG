@@ -51,7 +51,7 @@ to validate with Prompt 3 in `docs/RESEARCH_BOT_PROMPTS.md` and with each firm's
 | Accounting DMS (CCH Axcess Document, GoFileRoom, FileCabinet CS, Onvio, Doc.It, SuiteFiles, SmartVault) | Firms 10–200 staff on a Wolters Kluwer or Thomson Reuters stack | Vendor API where offered (varies; some need partner-program access), otherwise bulk export tooling | API polling or export schedules | Best metadata: client ID, year, document type, final/draft flag |
 | Practice-management suites with built-in docs (Karbon, Canopy, TaxDome, Financial Cents) | Cloud-first small firms | Vendor API (Karbon and Canopy publish APIs; check the rest) | Webhooks or polling | Client, job/engagement, year |
 | Client portals used as storage (ShareFile, SmartVault, Liscio, SafeSend, TaxCaddy) | Everywhere; often the only place client-provided source docs exist | Portal API or sync client | Portal events | Client, upload date |
-| Tax software binders (UltraTax, Lacerte, ProSeries, Drake, CCH Axcess Tax) | Every tax practice | Batch print/export the filed return to text-layer PDF; export client data reports where available | Add "export as-filed PDF to the client folder" to the filing checklist | Client, year, form set |
+| Tax software binders (UltraTax, Lacerte, ProSeries, Drake, CCH Axcess Tax) | Every tax practice | Batch print/export the filed return to text-layer PDF; export client data reports where available. **UltraTax and Lacerte: also save the e-file XML** (View XML / View E-file) into the client folder; it is read deterministically with no OCR | Add "export as-filed PDF and e-file XML to the client folder" to the filing checklist | Client, year, form set; from XML every line by schema name |
 | Audit engagement binders (CaseWare, ProSystem fx Engagement, AdvanceFlow) | Audit practices | Publish final statements and adjusted trial balance out of the binder (PDF + XLSX) | Same, at sign-off | Client, period, account mapping |
 | Email attachments | Everywhere, and never filed | Microsoft Graph / Gmail API search on client domains; low priority for the pilot | Mailbox rule that files into the client folder | Sender, date |
 | Paper and scan-only PDFs | Legacy years in almost every firm | OCR first (Acrobat, OCRmyPDF, cloud OCR), then treat as PDF | Scan-to-folder with OCR enabled on the scanner | Little; rely on filename and extraction |
@@ -98,6 +98,7 @@ The system accepts PDF, CSV, XLSX, JSON and plain text. What to prefer:
 
 | If you have… | Do this |
 |---|---|
+| UltraTax or Lacerte | After e-file acceptance, save the return's XML (UltraTax: Utilities → Electronic Filing Status → View XML; Lacerte: E-file → E-file Support Tools → View E-file) into the client's year folder next to the PDF. The XML is parsed exactly; the PDF is what a citation opens |
 | Tax software (UltraTax, Lacerte, ProSeries, Drake, CCH Axcess) | Export the filed return as PDF **with text** (not "print to image"). Most also export a client summary or "tax return data" report; export that too, it extracts cleanly |
 | QuickBooks / Xero / Sage | Export Trial Balance, P&L and Balance Sheet by year as **XLSX or CSV**, not PDF |
 | Audit software (CaseWare, Engagement, AdvanceFlow) | Export the final statements PDF and the adjusted trial balance as XLSX |

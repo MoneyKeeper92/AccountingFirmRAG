@@ -18,7 +18,10 @@ things adjacent vendors do well.
 ## Next
 
 - **Connectors** (Prompt 3 order): Graph and folder are built; Dropbox, SmartVault, ShareFile,
-  Karbon next. TaxDome export folder via the folder connector; partner API request on the list.
+  Karbon next. TaxDome has no public bulk API (private beta, sales-gated): export folder via the
+  folder connector, and prioritise Microsoft 365 and SmartVault firms first.
+- **MeF XML ingest is built.** Next: verify element aliases against each tax year's IRS schema
+  package, add K-1 per-owner facts, and a `schedule_1a_deduction` fact for TY2025.
 - **Client-facing organizer page.** Today the preparer records answers. A per-client magic
   link with only the questions and upload slots (no search) is about a day on the existing
   routes and belongs behind the firm's portal identity where one exists.

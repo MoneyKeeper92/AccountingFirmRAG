@@ -37,7 +37,9 @@ def parse_file(filename: str, data: bytes) -> ParsedFile:
         return _parse_json(data)
     if ext in (".txt", ".md", ".qbo", ".iif", ".ofx", ".tsv", ""):
         return ParsedFile(pages=[data.decode("utf-8", errors="replace")], kind="text")
-    raise ValueError(f"Unsupported file type '{ext}'. Supported: pdf, csv, xlsx, json, txt, md")
+    if ext == ".xml":
+        return ParsedFile(pages=[data.decode("utf-8", errors="replace")], kind="xml")
+    raise ValueError(f"Unsupported file type '{ext}'. Supported: pdf, csv, xlsx, json, xml, txt, md")
 
 
 def _parse_pdf(data: bytes) -> ParsedFile:

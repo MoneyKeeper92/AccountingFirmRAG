@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Return xmlns="http://www.irs.gov/efile" returnVersion="2025v1.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <ReturnTs>2026-03-02T10:15:00-05:00</ReturnTs>
+    <TaxYr>2025</TaxYr>
+    <ReturnTypeCd>1040</ReturnTypeCd>
+    <Filer>
+      <PrimarySSN>123456789</PrimarySSN>
+      <SpouseSSN>987654321</SpouseSSN>
+      <NameLine1Txt>JOHN A &amp; MARIA L DOE</NameLine1Txt>
+      <PersonFirstNm>John</PersonFirstNm><PersonLastNm>Doe</PersonLastNm>
+      <SpouseFirstNm>Maria</SpouseFirstNm><SpouseLastNm>Doe</SpouseLastNm>
+    </Filer>
+  </ReturnHeader>
+  <ReturnData documentCnt="6">
+    <IRS1040>
+      <IndividualReturnFilingStatusCd>2</IndividualReturnFilingStatusCd>
+      <WagesSalariesAndTipsAmt>142500</WagesSalariesAndTipsAmt>
+      <TaxableInterestAmt>1860</TaxableInterestAmt>
+      <OrdinaryDividendsAmt>4210</OrdinaryDividendsAmt>
+      <QualifiedDividendsAmt>3600</QualifiedDividendsAmt>
+      <CapitalGainLossAmt>6300</CapitalGainLossAmt>
+      <TotalIncomeAmt>193770</TotalIncomeAmt>
+      <TotalAdjustmentsAmt>2748</TotalAdjustmentsAmt>
+      <AdjustedGrossIncomeAmt>191022</AdjustedGrossIncomeAmt>
+      <TotalItemizedOrStandardDedAmt>31000</TotalItemizedOrStandardDedAmt>
+      <QualifiedBusinessIncomeDedAmt>7780</QualifiedBusinessIncomeDedAmt>
+      <TaxableIncomeAmt>152242</TaxableIncomeAmt>
+      <CTCODCAmt>4000</CTCODCAmt>
+      <TotalTaxAmt>24870</TotalTaxAmt>
+      <WithholdingTaxAmt>18100</WithholdingTaxAmt>
+      <EstimatedTaxPaymentsAmt>4000</EstimatedTaxPaymentsAmt>
+      <OwedAmt>2866</OwedAmt>
+      <EsPenaltyAmt>96</EsPenaltyAmt>
+    </IRS1040>
+    <IRS1040ScheduleA><TotalItemizedDeductionsAmt>31000</TotalItemizedDeductionsAmt><StateAndLocalTaxAmt>10000</StateAndLocalTaxAmt></IRS1040ScheduleA>
+    <IRS1040ScheduleC><GrossReceiptsOrSalesAmt>61200</GrossReceiptsOrSalesAmt><NetProfitOrLossAmt>38900</NetProfitOrLossAmt></IRS1040ScheduleC>
+    <IRS1040ScheduleD><NetLongTermCapitalGainLossAmt>6300</NetLongTermCapitalGainLossAmt></IRS1040ScheduleD>
+    <IRS1040ScheduleSE><SelfEmploymentTaxAmt>5496</SelfEmploymentTaxAmt></IRS1040ScheduleSE>
+    <IRS8949><TotalProceedsAmt>21000</TotalProceedsAmt></IRS8949>
+    <IRS8995><QualifiedBusinessIncomeDedAmt>7780</QualifiedBusinessIncomeDedAmt></IRS8995>
+  </ReturnData>
+</Return>

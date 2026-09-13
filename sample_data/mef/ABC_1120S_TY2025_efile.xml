@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Return xmlns="http://www.irs.gov/efile" returnVersion="2025v2.0">
+  <ReturnHeader>
+    <TaxYr>2025</TaxYr>
+    <ReturnTypeCd>1120S</ReturnTypeCd>
+    <Filer><EIN>123456789</EIN><BusinessName><BusinessNameLine1Txt>ABC COMPANY INC</BusinessNameLine1Txt></BusinessName></Filer>
+  </ReturnHeader>
+  <ReturnData>
+    <IRS1120S>
+      <GrossReceiptsOrSalesAmt>5610000</GrossReceiptsOrSalesAmt>
+      <ReturnsAndAllowancesAmt>28000</ReturnsAndAllowancesAmt>
+      <CostOfGoodsSoldAmt>3640000</CostOfGoodsSoldAmt>
+      <GrossProfitAmt>1942000</GrossProfitAmt>
+      <CompensationOfOfficersAmt>120000</CompensationOfOfficersAmt>
+      <SalariesAndWagesLessCreditsAmt>985000</SalariesAndWagesLessCreditsAmt>
+      <RentsAmt>168000</RentsAmt>
+      <InterestDeductionAmt>58000</InterestDeductionAmt>
+      <DepreciationNotClaimedElswhrAmt>96000</DepreciationNotClaimedElswhrAmt>
+      <TaxesAndLicensesAmt>71000</TaxesAndLicensesAmt>
+      <TotalDeductionsAmt>1674000</TotalDeductionsAmt>
+      <OrdinaryBusinessIncomeLossAmt>268000</OrdinaryBusinessIncomeLossAmt>
+      <NumberOfShareholdersCnt>2</NumberOfShareholdersCnt>
+    </IRS1120S>
+    <IRS1120SScheduleK><TotalPropertyDistributionsAmt>328000</TotalPropertyDistributionsAmt></IRS1120SScheduleK>
+    <IRS1120SScheduleL><CashEOYAmt>148000</CashEOYAmt><TradeNotesAndAcctsRcvblEOYAmt>1180000</TradeNotesAndAcctsRcvblEOYAmt><InventoriesEOYAmt>790000</InventoriesEOYAmt>
+      <TotalAssetsEOYAmt>3590000</TotalAssetsEOYAmt><LoansFromShareholdersEOYAmt>150000</LoansFromShareholdersEOYAmt><TotalLiabilitiesEOYAmt>2535000</TotalLiabilitiesEOYAmt><RetainedEarningsEOYAmt>1005000</RetainedEarningsEOYAmt></IRS1120SScheduleL>
+    <IRS1120SScheduleM2><AAAEndOfYearAmt>920000</AAAEndOfYearAmt></IRS1120SScheduleM2>
+    <IRS1120SScheduleK1><ShareholderPersonNm>Owner One</ShareholderPersonNm><OrdinaryBusinessIncomeLossAmt>160800</OrdinaryBusinessIncomeLossAmt></IRS1120SScheduleK1>
+    <IRS1125E><TotalCompensationOfOfficersAmt>120000</TotalCompensationOfOfficersAmt></IRS1125E>
+    <IRS4562><TotalDepreciationAmt>96000</TotalDepreciationAmt></IRS4562>
+  </ReturnData>
+</Return>

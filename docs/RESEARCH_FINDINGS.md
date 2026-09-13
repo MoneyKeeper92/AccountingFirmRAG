@@ -114,6 +114,36 @@ report: a Verify tab with accept / reject / edit / undo on every extracted figur
 up/down on citations, a per-list reminder schedule and channel with a cron-ready job that stops
 at zero pending, and a per-return-type organizer whose answers add, reopen or retire items.
 
+## 6. Structured returns from the tax software (Prompt 7) and two side briefs
+
+**MeF / e-file XML:** no documented batch MeF XML archive API from UltraTax, Lacerte, Drake or
+CCH Axcess. UltraTax (Utilities → Electronic Filing Status → View XML) and Lacerte (E-file →
+E-file Support Tools → View E-file) let a preparer view and save the XML per return. Drake
+exports CSV/TXT e-file database and transfer packs, not MeF. CCH TaxTransfer / OIK is
+proprietary worksheet XML under licence. ProConnect has admin CSV only. IRS schemas come via
+e-Services SOR (Software Developer role); public XSL stylesheets on IRS.gov.
+
+**Decision (built):** dual ingest. PDF plus OCR stays the default; an `.xml` file that is an MeF
+return is parsed deterministically in `app/ingest/mef.py` (return type, forms present, filing
+status, facts by schema element, SSN masked in the indexed text, unmapped amounts reported).
+No model call, no OCR. Firms on UltraTax or Lacerte can save the XML into the client folder
+and the folder connector picks it up. The element alias table must be re-checked against each
+tax year's schema package.
+
+**TaxDome:** no public REST bulk list/download; Zapier is CRM-only; the spring 2026 API is a
+sales-gated private beta; the "partner program" is referral payouts, not technical access.
+Practical path today: Drive copy or UI zip export into a watched folder.
+**Decision:** target Microsoft 365 / SharePoint and SmartVault firms first; TaxDome shops via
+the export folder until the beta opens.
+
+**Form 1040 line map TY2023–2025:** 2023→2024 stable; TY2025 renumbers capital gain to 7a, AGI
+to 11a/11b, deduction to 12e, QBI to 13a, adds 13b (Schedule 1-A), EIC to 27a, and line 30
+becomes the refundable adoption credit. **Decision:** concept-based fact names unchanged; the
+renumbering is in the extraction instructions and `docs/LINE_MAP_1040.md`.
+
 ## Still open
+
+- IRS transcripts (TDS / wage-and-income seeding) and the OCR bake-off (Azure vs Textract vs vision).
+- Then compliance and insurance, willingness to pay, go-to-market channels.
 
 - Weekly landscape monitor is running (Monday 09:00); it reports only material changes.

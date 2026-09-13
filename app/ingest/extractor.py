@@ -123,6 +123,9 @@ Rules:
 - `unit` is the currency code (usually USD). Counts (dependents, owners) use unit "count".
 - Put the form and line in `source_quote` when visible, e.g. "Form 1040 line 11 Adjusted gross income 190,020".
 - Prefer totals over sub-lines when both exist.
+- Form 1040 line numbers moved for tax year 2025: capital gain 7 -> 7a, adjusted gross income 11 -> 11a/11b,
+  deduction 12 -> 12e, QBI deduction 13 -> 13a, new 13b (Schedule 1-A), EIC 27 -> 27a, line 30 is the refundable
+  adoption credit. Map by the line's label, never by its number, and quote the number you saw.
 - `risk_flags` are short and specific: "Q2 and Q3 estimates paid late; underpayment penalty assessed",
   "No officer compensation despite ordinary income of 268,000", "Distributions exceed AAA balance".
 """

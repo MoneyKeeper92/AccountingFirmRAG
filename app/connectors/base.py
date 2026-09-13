@@ -16,7 +16,7 @@ import abc
 import re
 from dataclasses import dataclass
 
-SUPPORTED_EXT = {".pdf", ".csv", ".xlsx", ".xlsm", ".json", ".txt", ".md"}
+SUPPORTED_EXT = {".pdf", ".csv", ".xlsx", ".xlsm", ".json", ".xml", ".txt", ".md"}
 SKIP_PREFIXES = ("~$", ".~lock", ".DS_Store", "Thumbs.db")
 
 
