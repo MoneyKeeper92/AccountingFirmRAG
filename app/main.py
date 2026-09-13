@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import json
 import logging
 import mimetypes
 from pathlib import Path
@@ -18,7 +19,9 @@ from .notify import build_notifier, reminder_text
 from .config import Settings
 from .ingest import IngestPipeline
 from .providers import build_embedding_provider, build_llm_provider
+from .providers.ocr import build_ocr_provider
 from .providers.registry import known_providers
+from .ingest import transcript as transcript_mod
 from .rag import RagEngine
 from .store import Store
 
@@ -108,7 +111,8 @@ class AppState:
         self.llm = build_llm_provider(settings.llm)
         self.extractor = build_llm_provider(settings.extractor)
         self.embedder = build_embedding_provider(settings.embedding)
-        self.pipeline = IngestPipeline(self.store, self.extractor, self.embedder, settings.uploads_dir, keep_originals=settings.keep_originals)
+        self.ocr = build_ocr_provider(settings.ocr)
+        self.pipeline = IngestPipeline(self.store, self.extractor, self.embedder, settings.uploads_dir, keep_originals=settings.keep_originals, ocr=self.ocr)
         self.rag = RagEngine(self.store, self.llm, self.embedder)
         self.notifier = build_notifier()
 
@@ -120,6 +124,7 @@ class AppState:
             "extractor": self.extractor.identity,
             "embedding": self.embedder.identity,
             "embedding_dimensions": self.embedder.dimensions,
+            "ocr": self.ocr.identity if self.ocr else "none (text layer only)",
             "stale_chunks": self.store.stale_chunk_count(self.embedder.identity),
             "keep_originals": self.settings.keep_originals,
             "known_providers": known_providers(),
@@ -396,6 +401,39 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 effects[k] += e[k]
         st.store.log("organizer_answers", actor, rl["client_id"], list_id=list_id, answers=[(a.get("key"), a.get("answer")) for a in body.answers], **effects)
         return {"effects": effects, "list": st.store.get_request_list(list_id)}
+
+    @app.post("/api/request-lists/{list_id}/reconcile-transcript", dependencies=[Depends(auth)])
+    async def reconcile_transcript(list_id: str, document_id: str | None = Form(None), files: list[UploadFile] | None = File(None),
+                                   actor: str = Depends(auth)):
+        """Use the IRS wage & income transcript to make the request list specific: one item per payer the IRS
+        knows about, generic items retired, already-received documents matched. Upload the transcript here or
+        point at one already in the client's folder."""
+        st = current()
+        rl = st.store.get_request_list(list_id)
+        if not rl:
+            raise HTTPException(404, "request list not found")
+        doc_id = document_id
+        if files:
+            f = files[0]
+            r = st.pipeline.ingest_bytes(client_id=rl["client_id"], filename=f.filename or "transcript.txt", data=await f.read(),
+                                         uploaded_by=actor, engagement="tax", tax_year=rl["tax_year"] - 1 if rl.get("tax_year") else None)
+            if r["status"] not in ("ready", "duplicate"):
+                raise HTTPException(400, f"transcript could not be ingested: {r.get('error')}")
+            doc_id = r["document_id"]
+        if not doc_id:
+            raise HTTPException(400, "provide a transcript file or a document_id")
+        doc = st.store.get_document(doc_id)
+        if not doc or doc["client_id"] != rl["client_id"]:
+            raise HTTPException(404, "transcript document not found for this client")
+        canonical = json.loads(doc.get("canonical_json") or "{}")
+        raw = canonical.get("transcript_entries")
+        if raw is None:
+            raise HTTPException(400, "that document is not an IRS wage & income transcript")
+        entries = [transcript_mod.TranscriptEntry(form=e["form"], payer=e["payer"], amount=e.get("amount"), amount_label=e.get("amount_label")) for e in raw]
+        result = transcript_mod.reconcile(st.store, rl, entries, doc_id, actor)
+        result["transcript_document_id"] = doc_id
+        result["list"] = st.store.get_request_list(list_id)
+        return result
 
     def _ingest_for_list(st: AppState, rl: dict, filename: str, data: bytes, actor: str, source_uri: str | None = None) -> dict:
         return st.pipeline.ingest_bytes(client_id=rl["client_id"], filename=filename, data=data, uploaded_by=actor,

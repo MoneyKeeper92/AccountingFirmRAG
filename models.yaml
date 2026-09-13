@@ -7,9 +7,15 @@
 #   extractor  - the model that turns uploaded files into structured JSON at ingest
 #   embedding  - the model that vectorises chunks for retrieval
 #
+#   ocr        - optional; used only for scanned PDFs with no text layer
+#                (azure_di for W-2 / 1099 / 1040 prebuilts, anthropic_vision for K-1s and messy scans)
+#
 # The embedding slot is versioned: chunks store the embedding model id and
 # dimensions. Changing the embedding model marks the index stale and
 # `POST /admin/reindex` re-embeds everything with the new model.
+#
+# inference_geo: us keeps inference in the United States. Offshore processing of tax return
+# information adds mandatory consent language under IRC 7216; keep this set for US firms.
 # ---------------------------------------------------------------------------
 
 default_profile: offline
@@ -38,17 +44,47 @@ profiles:
       max_tokens: 16000
       effort: high
       thinking: adaptive
+      inference_geo: us
     extractor:
       provider: anthropic
       model: claude-sonnet-5
       max_tokens: 16000
       effort: medium
+      inference_geo: us
     embedding:
       provider: voyage
       model: voyage-3.5
       dimensions: 1024
       input_type_query: query
       input_type_document: document
+    ocr:
+      provider: anthropic_vision
+      model: claude-sonnet-5
+      inference_geo: us
+
+  # Same as above but scanned W-2 / 1099 / 1040 pages go to Azure Document Intelligence
+  # (about $10 per 1,000 pages vs about $30 for vision). Set AZURE_DI_ENDPOINT / AZURE_DI_KEY.
+  anthropic_voyage_azure_ocr:
+    llm:
+      provider: anthropic
+      model: claude-opus-5
+      max_tokens: 16000
+      effort: high
+      thinking: adaptive
+      inference_geo: us
+    extractor:
+      provider: anthropic
+      model: claude-sonnet-5
+      max_tokens: 16000
+      effort: medium
+      inference_geo: us
+    embedding:
+      provider: voyage
+      model: voyage-3.5
+      dimensions: 1024
+    ocr:
+      provider: azure_di
+      model: prebuilt-layout
 
   # Same LLM, but embeddings from an OpenAI-compatible endpoint
   # (works for OpenAI, Azure OpenAI, or a self-hosted server such as

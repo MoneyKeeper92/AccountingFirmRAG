@@ -47,6 +47,7 @@ DOC_TYPES = [
     "payroll_report", "form_941", "depreciation_schedule", "fixed_asset_register",
     # engagement paperwork
     "organizer", "engagement_letter", "irs_notice", "state_notice", "estimated_payment_record", "extension",
+    "irs_transcript_wage_income", "irs_transcript_account", "irs_transcript_return",
     "correspondence", "prior_year_workpaper", "other",
 ]
 

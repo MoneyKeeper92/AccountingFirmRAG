@@ -17,6 +17,27 @@ Price per firm, not per user: the bundled practice-management AI tiers the same 
 see are $59–149 per user per month, and Copilot is $30 per user. A per-firm price positions
 this as an add-on to those tools rather than a replacement (see `docs/RESEARCH_FINDINGS.md`).
 
+## Price ladder and the value model (from Prompt 11)
+
+Value anchors the research found: partner time about $275/hour, associate about $127; document
+chasing costs 1 to 3.5 hours per return. For an 8-person firm filing about 800 returns, a blended
+$125/hour and conservative hours saved put the value on the order of $15k a year, which supports
+a price around one seventh of that. Treat the figure as a model until the pilot measures it.
+
+Adjacent price points the same firms already see: SmartRequestAI $12.50 per return, Canopy
+$74–149 per user plus about $34 per client for tax AI, SafeSend often $13–17 per return.
+
+| Tier | For | Price idea | Includes |
+|---|---|---|---|
+| Archive | Up to 300 clients | $350–500 / month | Archive, search with citations, planning screens, Verify, one connector |
+| Season | Up to 800 clients | $700–1,100 / month | Everything above plus request lists, organizer, reminders, transcript reconciliation, all connectors |
+| Practice | Larger or multi-office | $1,500+ / month, quoted | In-tenant deployment, SSO, SOC 2 evidence pack, priority model upgrades |
+| Onboarding | All tiers | $3–8k one-time | Inventory, bulk load, extraction tuning, security setup |
+| Fractional AI lead | Optional | $1–3k / month | The weekly hour |
+
+Per-firm pricing keeps this an add-on under the per-user practice-management AI tiers. Model and
+OCR cost per firm is roughly $30–80 a month at the margin (see `docs/RESEARCH_FINDINGS.md`).
+
 ## Why a small firm buys this instead of waiting for their DMS vendor
 
 - Their data is spread across a file server, a DMS, tax software, and email. The vendor's AI
@@ -38,10 +59,14 @@ this as an add-on to those tools rather than a replacement (see `docs/RESEARCH_F
 ## Go-to-market
 
 1. Pilot with the family practice; produce a one-page case study with time-saved numbers.
-2. Local CPA society chapters, state society technology committees, peer-review networks.
-   Partners trust other partners.
-3. Referrals from IT MSPs that serve accounting firms; they get asked about AI constantly and
-   have nothing to sell.
+2. State CPA society affinity programmes (example: WICPA, $3k minimum ad spend), technology
+   committees, peer-review networks. Partners trust other partners.
+3. Conferences with the case study in hand: AICPA ENGAGE (June 8–11 2026), Scaling New Heights
+   (June 14–17 2026), Digital CPA (December 6–9 2026).
+4. CPA-focused IT providers (Rightworks, Cetrom, Boomer Consulting network); they get asked about
+   AI constantly and have nothing to sell.
+5. Tax API partner programmes last: Intuit tiers carry fees; Thomson Reuters and CCH are often
+   closed or partner-gated; the Microsoft marketplace takes about 3%.
 4. Later: the same product for law firms (matters instead of clients, pleadings and contracts
    instead of returns), wealth managers, and insurance agencies. The canonical-record idea
    transfers; the fact vocabulary and tools change.

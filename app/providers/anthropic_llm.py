@@ -28,6 +28,7 @@ class AnthropicLLM(LLMProvider):
         self.max_tokens = int(cfg.options.get("max_tokens", 16000))
         self.effort = cfg.options.get("effort", "high")
         self.thinking = cfg.options.get("thinking", "adaptive")
+        self.inference_geo = cfg.options.get("inference_geo")   # "us" keeps inference in the United States
 
     # ------------------------------------------------------------------ chat
     def chat(self, system: str, messages: list[dict[str, Any]], tools: list[ToolSpec] | None = None) -> LLMResponse:
@@ -41,6 +42,8 @@ class AnthropicLLM(LLMProvider):
         )
         if self.thinking == "adaptive":
             kwargs["thinking"] = {"type": "adaptive"}
+        if self.inference_geo:
+            kwargs["inference_geo"] = self.inference_geo
         if tools:
             kwargs["tools"] = [
                 {"name": t.name, "description": t.description, "input_schema": t.input_schema, "strict": True}
@@ -77,13 +80,16 @@ class AnthropicLLM(LLMProvider):
 
     # --------------------------------------------------------------- extract
     def extract_json(self, instructions: str, text: str, schema: dict[str, Any]) -> dict[str, Any]:
-        resp = self.client.messages.create(
+        kwargs: dict[str, Any] = dict(
             model=self.model,
             max_tokens=self.max_tokens,
             system=instructions,
             messages=[{"role": "user", "content": text}],
             output_config={"effort": self.effort, "format": {"type": "json_schema", "schema": schema}},
         )
+        if self.inference_geo:
+            kwargs["inference_geo"] = self.inference_geo
+        resp = self.client.messages.create(**kwargs)
         if resp.stop_reason == "refusal":
             raise RuntimeError("Model refused extraction request")
         payload = next(b.text for b in resp.content if b.type == "text")

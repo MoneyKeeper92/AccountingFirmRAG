@@ -141,9 +141,66 @@ to 11a/11b, deduction to 12e, QBI to 13a, adds 13b (Schedule 1-A), EIC to 27a, a
 becomes the refundable adoption credit. **Decision:** concept-based fact names unchanged; the
 renumbering is in the extraction instructions and `docs/LINE_MAP_1040.md`.
 
+## 7. IRS transcripts (Prompt 8) and the OCR bake-off (Prompt 9)
+
+**Transcripts:** the CPA path is the Transcript Delivery System with Form 2848 / 8821 on file,
+not IVES (that is the lender path at $4 per 4506-C). The wage-and-income transcript can seed
+"ask only for what is missing", with caveats: current-year data is often incomplete until late
+March, identifiers are masked, and there is no state withholding. Canopy auto-pulls transcripts;
+TaxCaddy Smart Links are bank links, not IRS. Product wedge: the IRS W&I transcript as an
+independent check alongside portal uploads.
+**Decision (built):** `app/ingest/transcript.py` parses W&I transcripts deterministically and
+`POST /request-lists/{id}/reconcile-transcript` turns the generic list into one item per payer
+the IRS knows about, retires the generic items, and marks items already satisfied by a received
+document. The transcript is filed under the client but contributes no facts to the return
+series. Caveats are shown in the UI.
+
+**OCR:** structured W-2 / 1099 / 1040 pages → Azure Document Intelligence tax prebuilts (about
+$10 per 1,000 pages); K-1s and messy layouts → frontier-model vision or custom Azure (about $30
+per 1,000 pages); born-digital PDFs → text layer first. Google's legacy 1099 path sunsets
+2026-06-30. Vendor accuracy SLAs are thin; treat third-party benchmarks as directional.
+**Decision (built):** an optional `ocr` slot in `models.yaml` with `azure_di` and
+`anthropic_vision` providers, used only when a PDF has no usable text layer; the Verify tab is
+the accuracy check. Spot-check on the firm's own scans during onboarding.
+
+## 8. Compliance and insurance (Prompt 10)
+
+Generative AI over identifiable tax return information is generally a §7216 disclosure; do not
+lean on the domestic auxiliary-services exception when the model summarises or reasons.
+Conservative path: named-vendor written consent (Rev. Proc. 2013-14 mandatory language for
+1040s) plus a DPA for AICPA ET 1.700.040; prefer US-only inference. Carriers (CAMICO, AICPA MIP,
+CNA) show no public blanket AI exclusion; they expect governance, human review and vendor
+diligence. Cyber questionnaires ask for MFA, encryption, SOC 2 (market expectation), incident
+SLA, Publication 4557 / Safeguards §314.4(f) alignment.
+**Decision (built / written):** `inference_geo: us` pinned in production profiles;
+`docs/COMPLIANCE_KIT.md` with the engagement-letter paragraph, consent approach, sub-processor
+list, data-handling sheet, questionnaire answers and governance statement, all marked as drafts
+for counsel.
+
+## 9. Willingness to pay (Prompt 11) and go-to-market (Prompt 12)
+
+Anchors: partner median about $275/hour, associate about $127; document chasing 1 to 3.5
+hours per return. Adjacent prices: SmartRequestAI $12.50 per return, Canopy $74–149 per user
+plus about $34 per client for tax AI, SafeSend often $13–17 per return. Heuristic pitch figure
+for an 8-person, 800-return firm: on the order of $15k a year of value at about 7x ROI. Treat as
+a model, not survey fact.
+GTM priority for 3–30 staff: state society affinity programmes → Scaling New Heights and
+Digital CPA → CPA-focused MSPs (Rightworks, Cetrom, Boomer) → AICPA ENGAGE → tax API partners.
+Dates: ENGAGE June 8–11 2026; Scaling New Heights June 14–17 2026; Digital CPA December 6–9
+2026. Affinity example: WICPA $3k minimum ad spend. Intuit partner tiers carry fees; Microsoft
+marketplace about 3%; Thomson Reuters and CCH programmes often closed or partner-gated.
+**Decision:** price ladder and value model updated in `docs/BUSINESS_MODEL.md`; the season
+after the pilot targets the June events with the case study in hand.
+
+## 10. Monitoring (Prompt 13)
+
+The Monday 09:00 watch now also catches pricing, zero-retention, model and OCR benchmark
+changes, with a deeper quarterly pass on the first Monday of January, April, July and October.
+
 ## Still open
 
-- IRS transcripts (TDS / wage-and-income seeding) and the OCR bake-off (Azure vs Textract vs vision).
-- Then compliance and insurance, willingness to pay, go-to-market channels.
+- Exact MeF element names per tax year from the IRS schema packages (to replace the alias table).
+- TaxDome private-beta API terms once available.
+- A survey-based check on the willingness-to-pay model before pricing is published.
 
 - Weekly landscape monitor is running (Monday 09:00); it reports only material changes.

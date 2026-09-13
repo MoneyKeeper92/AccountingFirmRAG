@@ -11,15 +11,17 @@ from ..store import Store
 from .chunker import chunk_pages
 from .extractor import extract_canonical
 from .mef import is_mef_xml, parse_mef
+from .transcript import is_wage_income_transcript, parse_wage_income_transcript, tax_period
 from .parsers import parse_file
 
 log = logging.getLogger(__name__)
 
 
 class IngestPipeline:
-    def __init__(self, store: Store, extractor: LLMProvider, embedder: EmbeddingProvider, uploads_dir: Path, keep_originals: bool = True):
+    def __init__(self, store: Store, extractor: LLMProvider, embedder: EmbeddingProvider, uploads_dir: Path, keep_originals: bool = True, ocr=None):
         self.store = store
         self.keep_originals = keep_originals
+        self.ocr = ocr
         self.extractor = extractor
         self.embedder = embedder
         self.uploads_dir = uploads_dir
@@ -47,6 +49,15 @@ class IngestPipeline:
                 dest.mkdir(parents=True, exist_ok=True)
                 (dest / f"{doc_id}__{Path(filename).name}").write_bytes(data)
 
+            if parsed.needs_ocr and self.ocr is not None:
+                try:
+                    pages = self.ocr.extract_pages(data, filename)
+                    if pages and sum(len(pg.strip()) for pg in pages) > 40:
+                        parsed.pages, parsed.needs_ocr = pages, False
+                        parsed.warnings = [w for w in parsed.warnings if "text layer" not in w] + [f"Scanned document transcribed by {self.ocr.identity}; spot-check figures in Verify"]
+                except Exception as e:  # noqa: BLE001
+                    parsed.warnings.append(f"OCR failed ({type(e).__name__}: {e}); text layer only")
+
             hints = {"client_id": client_id, "engagement": engagement, "tax_year": tax_year}
             extractor_identity = self.extractor.identity
             if parsed.kind == "xml" and is_mef_xml(data):
@@ -54,6 +65,16 @@ class IngestPipeline:
                 mef = parse_mef(data, filename)
                 record, parsed.pages = mef["record"], mef["pages"]
                 extractor_identity = "mef_xml:deterministic"
+            elif is_wage_income_transcript(parsed.text):
+                # IRS wage & income transcript: deterministic; entries feed request-list reconciliation, not the facts series
+                entries = parse_wage_income_transcript(parsed.text)
+                period = tax_period(parsed.text) or tax_year
+                record = {"doc_type": "irs_transcript_wage_income", "return_type": "1040", "tax_year": period, "filing_status": None,
+                          "forms_present": sorted({e.form for e in entries}), "entities": [{"name": e.payer, "role": "payer"} for e in entries],
+                          "facts": [], "risk_flags": [],
+                          "summary": f"IRS wage & income transcript for {period}: {len(entries)} information returns ({', '.join(sorted({e.form for e in entries}))}).",
+                          "transcript_entries": [{"form": e.form, "payer": e.payer, "amount": e.amount, "amount_label": e.amount_label} for e in entries]}
+                extractor_identity = "irs_transcript:deterministic"
             elif parsed.text.strip():
                 record = extract_canonical(self.extractor, parsed.text, filename, hints)
             else:

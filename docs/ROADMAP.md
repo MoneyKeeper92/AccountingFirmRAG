@@ -22,6 +22,10 @@ things adjacent vendors do well.
   folder connector, and prioritise Microsoft 365 and SmartVault firms first.
 - **MeF XML ingest is built.** Next: verify element aliases against each tax year's IRS schema
   package, add K-1 per-owner facts, and a `schedule_1a_deduction` fact for TY2025.
+- **IRS transcript reconciliation is built** (Prompt 8 wedge). Next: bulk pull via a TDS
+  helper or Canopy export, and account transcripts for notices and balances.
+- **OCR slot is built** (Azure DI and Claude vision). Next: route by page type (Azure tax
+  prebuilts for W-2 / 1099 pages, vision for K-1s) inside one document.
 - **Client-facing organizer page.** Today the preparer records answers. A per-client magic
   link with only the questions and upload slots (no search) is about a day on the existing
   routes and belongs behind the firm's portal identity where one exists.

@@ -1,0 +1,95 @@
+Internal Revenue Service
+United States Department of the Treasury
+
+Wage and Income Transcript
+
+Request Date: 03-28-2026
+Response Date: 03-28-2026
+Tracking Number: 100000000001
+SSN Provided: XXX-XX-6789
+Tax Period Requested: December, 2025
+
+Form W-2 Wage and Tax Statement
+Employer:
+ Employer Identification Number (EIN):XX-XXX1234
+ ACME CORPORATION
+ 100 MAIN ST
+ SPRINGFIELD, IL 62701
+Employee:
+ Employee's Social Security Number:XXX-XX-6789
+ JOHN A DOE
+ 12 OAK LANE
+ SPRINGFIELD, IL 62704
+Submission Type: Original document
+Wages, Tips and Other Compensation:$142,500.00
+Federal Income Tax Withheld:$18,100.00
+Social Security Wages:$142,500.00
+Medicare Wages and Tips:$142,500.00
+Retirement Plan Indicator: Yes
+
+Form 1099-INT
+Payer:
+ Payer's Federal Identification Number (FIN):XX-XXX5678
+ FIRST BANK OF SPRINGFIELD
+ 1 BANK PLAZA
+ SPRINGFIELD, IL 62701
+Recipient:
+ Recipient's Identification Number:XXX-XX-6789
+ JOHN A DOE
+Submission Type: Original document
+Interest:$1,860.00
+Tax Withheld:$0.00
+
+Form 1099-DIV
+Payer:
+ Payer's Federal Identification Number (FIN):XX-XXX9012
+ VANGUARD BROKERAGE SERVICES
+Recipient:
+ Recipient's Identification Number:XXX-XX-6789
+ JOHN A DOE
+Submission Type: Original document
+Ordinary Dividend:$4,210.00
+Qualified Dividends:$3,600.00
+Capital Gain Distributions:$0.00
+
+Form 1099-B
+Payer:
+ Payer's Federal Identification Number (FIN):XX-XXX9012
+ VANGUARD BROKERAGE SERVICES
+Recipient:
+ Recipient's Identification Number:XXX-XX-6789
+ JOHN A DOE
+Submission Type: Original document
+Proceeds:$21,000.00
+Cost or Basis:$14,700.00
+
+Form 1099-NEC
+Payer:
+ Payer's Federal Identification Number (FIN):XX-XXX3456
+ NORTHLINE DISTRIBUTION CORP
+Recipient:
+ Recipient's Identification Number:XXX-XX-6789
+ JOHN A DOE
+Submission Type: Original document
+Non-Employee Compensation:$36,000.00
+
+Form 1098
+Lender:
+ Lender's Federal Identification Number (FIN):XX-XXX7890
+ HOMETOWN MORTGAGE LLC
+Borrower:
+ Borrower's Identification Number:XXX-XX-6789
+ JOHN A DOE
+Submission Type: Original document
+Mortgage Interest Received from Payer(s)/Borrower(s):$14,200.00
+Outstanding Mortgage Principal:$312,000.00
+
+Form 1099-G
+Payer:
+ Payer's Federal Identification Number (FIN):XX-XXX2222
+ ILLINOIS DEPARTMENT OF REVENUE
+Recipient:
+ Recipient's Identification Number:XXX-XX-6789
+ JOHN A DOE
+Submission Type: Original document
+State or Local Income Tax Refunds, Credits or Offsets:$640.00

@@ -58,6 +58,7 @@ class Settings:
     llm: SlotConfig
     extractor: SlotConfig
     embedding: SlotConfig
+    ocr: SlotConfig | None
     available_profiles: list[str]
 
     @classmethod
@@ -83,5 +84,6 @@ class Settings:
             llm=SlotConfig.from_dict(p["llm"]),
             extractor=SlotConfig.from_dict(p.get("extractor", p["llm"])),
             embedding=SlotConfig.from_dict(p["embedding"]),
+            ocr=SlotConfig.from_dict(p["ocr"]) if p.get("ocr") else None,
             available_profiles=sorted(profiles),
         )

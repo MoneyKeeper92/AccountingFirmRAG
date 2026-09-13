@@ -85,8 +85,16 @@ Scanned PDFs are the biggest practical problem in a legacy archive.
 | AWS Textract | Similar; natural on Bedrock deployments |
 | Tesseract / OCRmyPDF | Free, on-prem, mediocre on forms |
 
-Recommendation: text layer first, Claude vision as the fallback for the extractor slot, and a
-prebuilt tax-form OCR service only if the pilot shows a large volume of scanned forms.
+Research result (Prompt 9, Sept 2026): structured W-2 / 1099 / 1040 pages → Azure Document
+Intelligence tax prebuilts at about $10 per 1,000 pages; K-1s and messy layouts → frontier-model
+vision or a custom Azure model at about $30 per 1,000 pages; born-digital PDFs → text layer,
+never OCR. Google's legacy 1099 path sunsets 2026-06-30. Vendor accuracy SLAs are thin; treat
+benchmarks as directional and spot-check on the firm's own scans.
+
+In this repo the `ocr` slot in `models.yaml` is optional and only runs on PDFs without a text
+layer: `anthropic_vision` (same credentials and retention terms as the LLM slot) or `azure_di`
+(`prebuilt-layout` by default; switch to `prebuilt-tax.us.w2` / `.1099` / `.1040` for form
+batches). Verify-before-use is the accuracy control either way.
 
 ## Vector / document store
 
