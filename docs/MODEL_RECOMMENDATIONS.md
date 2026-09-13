@@ -33,6 +33,27 @@ Where to buy the same models with different data terms:
 Note on top-tier models: Anthropic's highest tier requires 30-day retention and is not offered
 under ZDR, so it is excluded here. Opus 5 is the ceiling for a ZDR deployment today.
 
+## Account structure: one account for all firms, or one per firm?
+
+Working hypotheses to verify with Prompt 5 in `docs/RESEARCH_BOT_PROMPTS.md`:
+
+| Structure | How it works | Likely fit |
+|---|---|---|
+| **A. One account, ours** | You are the customer of the model vendor and the data processor for every firm. Each firm signs a DPA with you. Inside the account, one workspace or project and one API key per firm gives separate spend limits, rate limits and logs. ZDR is normally granted at the organisation level, so one grant should cover every workspace; confirm and get it in writing so you can show firms an attestation | Right starting point for 3–30 staff firms: one contract to negotiate, no per-firm minimums, fastest onboarding |
+| **B. One account per firm, in the firm's name** | The firm is the vendor's customer; you hold delegated admin. Each firm would need its own ZDR request and DPA | Only when a firm's counsel insists; slow, and small firms will not want another vendor relationship |
+| **C. In the firm's own cloud tenant** | Bedrock / Vertex / Foundry in the firm's AWS, Google or Microsoft account. Those routes do not retain prompts by default, so no separate ZDR request; the firm's existing cloud agreement and controls apply | What larger firms and any firm with an active IT provider will ask for; also your cleanest privacy story |
+
+Expected cost picture (verify): ZDR itself is usually not a per-token surcharge on the Claude
+API; it is a configuration granted on request, sometimes tied to an enterprise conversation.
+Cloud routes charge the same per-token list prices as the platform, with no retention to opt
+out of. The real costs of structure A are the DPA work and the attestation firms will ask for;
+the real cost of structure C is deployment effort per firm.
+
+Whatever the structure, IRC §7216 sits on the *firm*: they are the preparer disclosing return
+information to a contractor. Your job is to make their compliance easy: a one-page description
+of the processing, the sub-processor list (model vendor, embedding vendor, OCR vendor, cloud
+host), the retention statement, and the paragraph for their engagement letter.
+
 ## Embedding models
 
 | Option | Dimensions | Why | ZDR |

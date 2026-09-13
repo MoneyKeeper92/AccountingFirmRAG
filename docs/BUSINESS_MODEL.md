@@ -54,6 +54,26 @@ Model API costs are passed through or bundled; they are small (see `docs/MODEL_R
    which have not sent documents yet.
 6. Multi-firm hosting with per-tenant isolation, once three or more firms are live.
 
+## SOC 2: when, not whether
+
+Working hypothesis to verify with Prompt 6 in `docs/RESEARCH_BOT_PROMPTS.md`:
+
+- Firms of 3–30 staff rarely ask for a SOC 2 report. They ask "where is our data, who can see
+  it, and can my IT person look at it?" A completed security questionnaire, a third-party
+  penetration test letter, cyber insurance, and in-tenant deployment usually answer that.
+- Firms above roughly 30–50 staff, firms with an outsourced IT provider that runs vendor
+  reviews, and firms with peer-review or PCAOB exposure will ask, and a Type II is the
+  expected answer.
+- Ballpark cost for a company this size: a compliance-automation platform at roughly $8–20k a
+  year plus an auditor at roughly $8–20k for a Type I and $15–40k for a Type II, plus a
+  penetration test at $5–15k and real founder hours. Type I is reachable in two to three months;
+  Type II needs a three- to twelve-month observation window on top.
+- Suggested path: run the controls from day one (SSO, MDM, logging, policies, vendor list) so a
+  later audit is cheap; start Type I when the first prospect over 30 staff or the first formal
+  procurement questionnaire appears; move to Type II once three or more firms are paying. A
+  single mid-size firm at typical pricing covers the annual cost, which is why it is a timing
+  question rather than a yes/no question.
+
 ## What could kill it
 
 - A vendor incident (any AI vendor, not necessarily yours) that makes firms freeze AI adoption.

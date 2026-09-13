@@ -276,7 +276,148 @@ OUTPUT
 4. Source list with URLs and access dates; mark anything unverified.
 ```
 
-## Prompt 5: Short weekly monitoring prompt
+## Prompt 5: Zero-retention model costs, and one account vs. one per client firm
+
+```
+You are researching AI vendor terms and pricing for a company that will run a private
+document-assistant service for many small accounting firms. Client tax data will pass through
+large-language-model and embedding APIs. Answer two questions with sources and dates.
+
+QUESTION 1 - WHAT DOES ZERO DATA RETENTION (ZDR) ACTUALLY COST, PER VENDOR AND ROUTE?
+For each of: Anthropic Claude API (direct), Anthropic models on Amazon Bedrock, Google Vertex AI
+and Microsoft Foundry; OpenAI API (direct) and Azure OpenAI; Google Gemini API and Vertex;
+Voyage AI, Cohere and OpenAI embeddings; and the main OCR services (Azure Document
+Intelligence, AWS Textract, Google Document AI), record:
+- The default retention period for API inputs and outputs, and whether data is used for
+  training by default.
+- How ZDR (or "no retention", "no logging", "abuse-monitoring opt-out") is obtained: self-serve
+  setting, request form, sales conversation, enterprise agreement, minimum spend or commitment.
+- Any price difference for ZDR: per-token uplift, platform fee, committed-use requirement,
+  minimum annual contract. If the answer is "no extra charge", cite where the vendor says so.
+- Which models are excluded from ZDR (some top-tier models require retention), and which
+  features stop working under ZDR (prompt caching, batch, fine-tuning, sticky fallbacks,
+  abuse monitoring exemptions).
+- Where ZDR is granted: organisation level, workspace/project level, or per API key.
+- Data residency options and whether they cost extra.
+- The exact contractual documents: DPA, BAA, commercial terms, and whether a small company can
+  sign them online.
+Then build a cost model for our workload: per firm, about 300 clients x 8 years x 6 documents
+x 8k tokens for one-time ingestion, plus 1,000 questions a month at ~15k input / 1.5k output
+tokens each, plus embeddings. Show monthly cost per firm at list prices for the two or three
+most realistic ZDR-capable configurations, and the fixed costs (minimums, platform fees) that
+would be shared across firms.
+
+QUESTION 2 - CAN WE HOLD ONE VENDOR ACCOUNT AND SERVE ALL CLIENT FIRMS, OR DOES EACH FIRM
+NEED ITS OWN ZERO-RETENTION ARRANGEMENT?
+Consider three structures and, for each, report what the vendor terms allow, what the
+accounting-profession rules require, and what firms actually accept:
+  A. One account in our name; all firms' traffic flows through it; we are the data processor
+     and each firm signs a DPA with us; per-firm isolation via separate workspaces / projects /
+     API keys / spend limits inside our account.
+  B. One account per firm, in the firm's name, that we administer (firm is the customer of the
+     model vendor; we hold delegated admin).
+  C. In-tenant deployment: the firm's own Bedrock / Vertex / Foundry / Azure OpenAI in their
+     cloud account; we deploy software into it.
+For each structure answer:
+- Do the vendor's terms permit reselling or acting as an intermediary for third-party data
+  (check "customer", "end user", "reseller" and "service provider" language)? Is a partner or
+  reseller programme required?
+- Does ZDR granted to our organisation automatically cover all workspaces and keys, or must it
+  be requested per workspace? Can a firm verify ZDR independently (attestation letter, console
+  setting they can see)?
+- Under IRC section 7216 and the related regulations (Treas. Reg. 301.7216-2 and -3), when a
+  tax return preparer uses a third-party contractor for processing, what disclosures or
+  consents are required, and does having a further sub-processor (the model vendor) change
+  anything? Cite the regulation text and any IRS guidance or Revenue Procedure on contractors
+  and "auxiliary services".
+- Under the FTC Safeguards Rule (16 CFR Part 314) and typical CPA-firm written information
+  security plans, what must the firm document about us and about our sub-processors?
+- What do state boards of accountancy and the AICPA Code (ET section 1.700.040, use of third-
+  party service providers) say about client consent and confidentiality when a service provider
+  is used?
+- Liability and insurance: which structure puts the model-vendor relationship (and breach
+  liability) on us versus the firm, and what cyber / E&O cover do comparable vendors carry?
+- What do firms and their IT providers say they prefer in practice? Look for procurement
+  questionnaires, MSP blog posts, and forum threads (r/taxpros, r/Accounting, TaxProTalk,
+  Spiceworks) on AI vendor due diligence.
+Conclude with a recommendation: the structure to start with for firms of 3-30 staff, the
+structure larger firms will insist on, the minimum paperwork per firm under each, and the
+break-even firm count at which per-firm minimums or platform fees stop mattering.
+
+METHOD AND OUTPUT
+Primary sources first: vendor trust centres, pricing pages, terms of service, DPAs, the
+Federal Register and eCFR for regulations, IRS.gov for guidance. Provide a URL and access date
+for every claim; mark anything unverified or inferred. Output: (1) a vendor x route table of
+retention defaults, how ZDR is obtained, cost, exclusions; (2) the per-firm cost model;
+(3) a structure comparison table (A/B/C x legal, vendor terms, firm acceptance, our liability,
+paperwork per firm); (4) the recommendation; (5) the 25 most useful URLs.
+```
+
+## Prompt 6: Is a SOC 2 report necessary to win accounting-firm clients, and is it worth it?
+
+```
+You are advising a two-person software and services company that will host client tax and
+audit documents for small accounting firms (3-30 staff at first, then larger). Determine
+whether, when and at what cost the company should obtain a SOC 2 report, and what to do in
+the meantime.
+
+PART A - DO BUYERS ACTUALLY REQUIRE IT?
+- Survey what accounting firms ask vendors for during due diligence, by firm size: security
+  questionnaire, SOC 2 Type I or Type II, ISO 27001, penetration test report, cyber insurance
+  certificate, WISP alignment letter, references. Sources: AICPA PCPS vendor-management
+  resources, state CPA society guidance, IT providers (MSPs) that serve CPA firms and publish
+  vendor checklists, procurement questionnaires posted publicly, forum threads from
+  practitioners and from vendors selling into this market (r/taxpros, r/Accounting, r/msp,
+  TaxProTalk, LinkedIn, vendor community forums).
+- Find what comparable vendors show on their trust pages and at what stage they obtained SOC 2:
+  TaxDome, Canopy, Karbon, Liscio, SafeSend, TaxCaddy, SmartVault, Financial Cents, Keeper,
+  Truewind, and any small AI-for-accountants startup with public history. Note whether they
+  started with Type I, how long after founding, and whether they also hold ISO 27001.
+- Look for evidence (case studies, founder interviews, sales-engineering write-ups) of deals
+  won or lost on the presence or absence of a SOC 2 report in this segment.
+- Identify what the FTC Safeguards Rule requires a CPA firm to obtain from a service provider
+  in practice: does a SOC 2 satisfy the "assess service providers" requirement, and what do
+  firms use when a vendor has none?
+- For the larger-firm segment (75+ staff) and for firms with peer review or PCAOB exposure,
+  determine whether SOC 2 Type II is effectively mandatory.
+
+PART B - WHAT DOES IT COST AND HOW LONG DOES IT TAKE?
+For a small company on a cloud platform (AWS / Azure / GCP) with a handful of systems:
+- Auditor fees for SOC 2 Type I and Type II, from at least five audit firms that publish or
+  quote small-company pricing (include the audit-firm networks that partner with compliance
+  platforms). Distinguish first-year from renewal.
+- Compliance-automation platforms (Vanta, Drata, Secureframe, Thoropass, Sprinto, Scrut,
+  Oneleet, Delve and similar): annual price for a company of 2-10 people, what is included,
+  whether a bundled auditor is offered and at what price.
+- Typical timeline: readiness to Type I, observation window to Type II (3, 6 or 12 months),
+  total calendar time from start to a shareable report.
+- Hidden costs: penetration test, background checks, MDM and endpoint tooling, policy work,
+  founder time in hours.
+- Cheaper interim signals and their cost: a completed CAIQ or SIG Lite questionnaire, a
+  third-party penetration test with letter of attestation, cyber insurance, a vendor security
+  whitepaper, using the cloud provider's own SOC reports, running inside the firm's tenant so
+  the firm's existing controls apply.
+
+PART C - COST-BENEFIT
+Using Part A and B, model three paths for the first 24 months: (1) no SOC 2, questionnaire
+plus pen test plus in-tenant deployment; (2) Type I at month 6, Type II at month 18;
+(3) Type II as early as possible. For each: total cost, founder hours, which segments become
+sellable and when, expected effect on sales cycle length and price. State the assumptions
+and the firm count or annual revenue at which SOC 2 pays for itself. Give a recommendation
+with the trigger conditions that should move the company from one path to the next (e.g.
+first prospect over 30 staff, first procurement questionnaire that asks, first request from
+a firm's IT provider).
+
+METHOD AND OUTPUT
+Primary sources first (AICPA SOC 2 guidance, auditor and platform pricing pages, the
+Safeguards Rule text at 16 CFR 314), then practitioner and vendor evidence. URL and access
+date for every claim; mark anything unverified. Output: (1) a buyer-requirements table by
+firm size with evidence; (2) a cost table (auditor, platform, hidden costs, timeline) with
+quotes and dates; (3) the three-path model; (4) the recommendation and triggers; (5) the 20
+most useful URLs.
+```
+
+## Prompt 7: Short weekly monitoring prompt
 
 Run this every Monday to stay current:
 
