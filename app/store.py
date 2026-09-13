@@ -211,7 +211,10 @@ class Store:
         out = []
         for r in rows:
             d = dict(r)
-            d.pop("canonical_json", None)
+            canonical = json.loads(d.pop("canonical_json", None) or "{}")
+            d["return_type"] = canonical.get("return_type")
+            d["forms_present"] = canonical.get("forms_present", [])
+            d["filing_status"] = canonical.get("filing_status")
             out.append(d)
         return out
 
