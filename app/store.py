@@ -62,11 +62,16 @@ CREATE TABLE IF NOT EXISTS facts (
   id TEXT PRIMARY KEY,
   client_id TEXT NOT NULL,
   document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,          -- revenue, net_income, total_assets ...
+  name TEXT NOT NULL,          -- wages, adjusted_gross_income, gross_receipts ...
   value REAL NOT NULL,
   unit TEXT,
-  period INTEGER,              -- fiscal/tax year
-  source_quote TEXT
+  period INTEGER,              -- tax year
+  source_quote TEXT,
+  status TEXT NOT NULL DEFAULT 'extracted',   -- extracted | accepted | rejected | edited  (verify-before-use)
+  original_value REAL,
+  verified_by TEXT,
+  verified_at REAL,
+  note TEXT
 );
 CREATE INDEX IF NOT EXISTS facts_client ON facts(client_id, name, period);
 CREATE TABLE IF NOT EXISTS request_lists (
@@ -76,8 +81,23 @@ CREATE TABLE IF NOT EXISTS request_lists (
   status TEXT NOT NULL,        -- draft | sent | complete
   email_subject TEXT,
   email_body TEXT,
+  client_email TEXT,
+  client_phone TEXT,
+  reminder_days TEXT NOT NULL DEFAULT '7,14,21',   -- days after send / last reminder; stops when nothing is pending
+  reminder_channel TEXT NOT NULL DEFAULT 'email',  -- email | email+sms | off
+  sent_at REAL,
+  last_reminder_at REAL,
+  reminders_sent INTEGER NOT NULL DEFAULT 0,
   created_at REAL NOT NULL,
   updated_at REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS organizer_answers (
+  list_id TEXT NOT NULL REFERENCES request_lists(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,
+  answer TEXT,                 -- yes | no | null
+  note TEXT,
+  updated_at REAL NOT NULL,
+  PRIMARY KEY (list_id, key)
 );
 CREATE TABLE IF NOT EXISTS request_items (
   id TEXT PRIMARY KEY,
@@ -131,10 +151,20 @@ class Store:
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.execute("PRAGMA journal_mode = WAL")
         self.conn.executescript(SCHEMA)
-        # lightweight migration for databases created before source_uri existed
-        cols = {r["name"] for r in self.conn.execute("PRAGMA table_info(documents)")}
-        if "source_uri" not in cols:
-            self.conn.execute("ALTER TABLE documents ADD COLUMN source_uri TEXT")
+        # lightweight migrations for databases created before these columns existed
+        self._ensure_columns("documents", {"source_uri": "TEXT"})
+        self._ensure_columns("facts", {"status": "TEXT NOT NULL DEFAULT 'extracted'", "original_value": "REAL", "verified_by": "TEXT",
+                                       "verified_at": "REAL", "note": "TEXT"})
+        self._ensure_columns("request_lists", {"client_email": "TEXT", "client_phone": "TEXT", "reminder_days": "TEXT NOT NULL DEFAULT '7,14,21'",
+                                               "reminder_channel": "TEXT NOT NULL DEFAULT 'email'", "sent_at": "REAL", "last_reminder_at": "REAL",
+                                               "reminders_sent": "INTEGER NOT NULL DEFAULT 0"})
+
+    def _ensure_columns(self, table: str, columns: dict[str, str]) -> None:
+        existing = {r["name"] for r in self.conn.execute(f"PRAGMA table_info({table})")}
+        for name, ddl in columns.items():
+            if name not in existing:
+                self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}")
+        self.conn.commit()
 
     # ------------------------------------------------------------- clients
     def upsert_client(self, name: str, entity_type: str | None = None, industry: str | None = None,
@@ -297,10 +327,13 @@ class Store:
         self.conn.commit()
         return n
 
-    def facts_for_client(self, client_id: str, names: list[str] | None = None) -> list[dict]:
+    def facts_for_client(self, client_id: str, names: list[str] | None = None, include_rejected: bool = False) -> list[dict]:
+        """Facts used by planning, forecasting and the model. Rejected facts are excluded; edited values win."""
         sql = """SELECT f.*, d.filename FROM facts f JOIN documents d ON d.id=f.document_id
                  WHERE f.client_id=? AND d.status='ready'"""
         args: list[Any] = [client_id]
+        if not include_rejected:
+            sql += " AND f.status != 'rejected'"
         if names:
             sql += f" AND f.name IN ({','.join('?' * len(names))})"; args.extend(names)
         sql += " ORDER BY f.name, f.period"
@@ -359,13 +392,57 @@ class Store:
                WHERE rl.client_id=? GROUP BY rl.id ORDER BY rl.tax_year DESC, rl.created_at DESC""", (client_id,)).fetchall()
         return [dict(r) for r in rows]
 
+    UPDATABLE_LIST_FIELDS = ("email_subject", "email_body", "status", "client_email", "client_phone", "reminder_days", "reminder_channel")
+
     def update_request_list(self, list_id: str, **fields) -> None:
-        allowed = {k: v for k, v in fields.items() if k in ("email_subject", "email_body", "status") and v is not None}
+        allowed = {k: v for k, v in fields.items() if k in self.UPDATABLE_LIST_FIELDS and v is not None}
         if not allowed:
             return
         sets = ", ".join(f"{k}=?" for k in allowed) + ", updated_at=?"
         self.conn.execute(f"UPDATE request_lists SET {sets} WHERE id=?", (*allowed.values(), time.time(), list_id))
+        if allowed.get("status") == "sent":
+            self.conn.execute("UPDATE request_lists SET sent_at=COALESCE(sent_at, ?) WHERE id=?", (time.time(), list_id))
         self.conn.commit()
+
+    def due_reminders(self, now: float | None = None) -> list[dict]:
+        """Lists that were sent, still have pending items, and whose next reminder interval has elapsed.
+        A list with nothing pending is complete and never reminded again."""
+        now = now or time.time()
+        rows = self.conn.execute("""SELECT rl.*, c.name AS client_name, SUM(ri.status='pending') AS pending
+                                    FROM request_lists rl JOIN clients c ON c.id=rl.client_id
+                                    LEFT JOIN request_items ri ON ri.list_id=rl.id
+                                    WHERE rl.status='sent' AND rl.reminder_channel != 'off'
+                                    GROUP BY rl.id HAVING pending > 0""").fetchall()
+        due = []
+        for r in rows:
+            d = dict(r)
+            intervals = [int(x) for x in str(d.get("reminder_days") or "").split(",") if x.strip().isdigit()]
+            n = int(d.get("reminders_sent") or 0)
+            if n >= len(intervals):
+                continue                                  # schedule exhausted; a person follows up
+            anchor = d.get("last_reminder_at") or d.get("sent_at") or d["updated_at"]
+            if now - anchor >= intervals[n] * 86400:
+                d["days_since_last_touch"] = round((now - anchor) / 86400, 1)
+                d["reminder_number"] = n + 1
+                due.append(d)
+        return due
+
+    def record_reminder(self, list_id: str, now: float | None = None) -> None:
+        self.conn.execute("UPDATE request_lists SET reminders_sent=reminders_sent+1, last_reminder_at=?, updated_at=? WHERE id=?",
+                          (now or time.time(), time.time(), list_id))
+        self.conn.commit()
+
+    def organizer_answers(self, list_id: str) -> dict[str, dict]:
+        return {r["key"]: dict(r) for r in self.conn.execute("SELECT * FROM organizer_answers WHERE list_id=?", (list_id,)).fetchall()}
+
+    def set_organizer_answer(self, list_id: str, key: str, answer: str | None, note: str | None = None) -> None:
+        self.conn.execute("""INSERT INTO organizer_answers(list_id,key,answer,note,updated_at) VALUES(?,?,?,?,?)
+                             ON CONFLICT(list_id,key) DO UPDATE SET answer=excluded.answer, note=COALESCE(excluded.note, organizer_answers.note), updated_at=excluded.updated_at""",
+                          (list_id, key, answer, note, time.time()))
+        self.conn.commit()
+
+    def items_by_key(self, list_id: str) -> dict[str, dict]:
+        return {r["key"]: dict(r) for r in self.conn.execute("SELECT * FROM request_items WHERE list_id=?", (list_id,)).fetchall() if r["key"]}
 
     def add_request_item(self, list_id: str, item: str, why: str | None, category: str | None, key: str | None = None) -> dict:
         n = self.conn.execute("SELECT COALESCE(MAX(ordinal),-1)+1 FROM request_items WHERE list_id=?", (list_id,)).fetchone()[0]
@@ -389,6 +466,42 @@ class Store:
         self.conn.execute("UPDATE request_lists SET updated_at=?, status=CASE WHEN ?=0 THEN 'complete' WHEN status='complete' THEN 'sent' ELSE status END WHERE id=?",
                           (time.time(), pending, lid))
         self.conn.commit()
+
+    def facts_for_review(self, client_id: str) -> list[dict]:
+        sql = """SELECT f.*, d.filename, d.doc_type FROM facts f JOIN documents d ON d.id=f.document_id
+                 WHERE f.client_id=? AND d.status='ready' ORDER BY f.period DESC, d.filename, f.name"""
+        return [dict(r) for r in self.conn.execute(sql, (client_id,)).fetchall()]
+
+    def get_fact(self, fact_id: str) -> dict | None:
+        row = self.conn.execute("SELECT * FROM facts WHERE id=?", (fact_id,)).fetchone()
+        return dict(row) if row else None
+
+    def verify_fact(self, fact_id: str, status: str, actor: str, value: float | None = None, note: str | None = None) -> dict:
+        f = self.get_fact(fact_id)
+        if not f:
+            raise KeyError(fact_id)
+        if status == "edited" and value is not None:
+            original = f["original_value"] if f["original_value"] is not None else f["value"]
+            self.conn.execute("UPDATE facts SET status='edited', value=?, original_value=?, verified_by=?, verified_at=?, note=COALESCE(?, note) WHERE id=?",
+                              (float(value), original, actor, time.time(), note, fact_id))
+        elif status == "extracted":   # undo: back to the extracted value
+            restored = f["original_value"] if f["original_value"] is not None else f["value"]
+            self.conn.execute("UPDATE facts SET status='extracted', value=?, original_value=NULL, verified_by=NULL, verified_at=NULL, note=? WHERE id=?",
+                              (restored, note, fact_id))
+        else:
+            self.conn.execute("UPDATE facts SET status=?, verified_by=?, verified_at=?, note=COALESCE(?, note) WHERE id=?",
+                              (status, actor, time.time(), note, fact_id))
+        self.conn.commit()
+        return self.get_fact(fact_id)
+
+    def verification_summary(self, client_id: str) -> dict:
+        rows = self.conn.execute("""SELECT f.status, COUNT(*) AS n FROM facts f JOIN documents d ON d.id=f.document_id
+                                    WHERE f.client_id=? AND d.status='ready' GROUP BY f.status""", (client_id,)).fetchall()
+        out = {"extracted": 0, "accepted": 0, "rejected": 0, "edited": 0}
+        for r in rows:
+            out[r["status"]] = r["n"]
+        out["total"] = sum(out.values())
+        return out
 
     # ------------------------------------------------------------ connectors
     def get_sync_cursor(self, connector: str) -> str | None:

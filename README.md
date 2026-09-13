@@ -20,7 +20,9 @@ per client (estimated-payment safe harbour, S-corp election candidates, reasonab
 distributions versus basis, accumulated earnings, itemize-versus-standard, year-over-year swings), and
 **tax-season request lists** that read last year's return, draft the document request email, file the
 client's replies into their folder, and keep an "items pending" list. Request lists know the difference
-between a 1040 client and a 1065 / 1120-S / 1120 client.
+between a 1040 client and a 1065 / 1120-S / 1120 client, carry a conditional organizer whose yes/no answers open or
+retire items, and send scheduled reminders until nothing is pending. A **Verify** tab lets staff accept, reject or
+correct every extracted figure before it is used; rejected figures drop out of planning and answers.
 
 ## What is in this repository
 
@@ -37,6 +39,9 @@ between a 1040 client and a 1065 / 1120-S / 1120 client.
 | `docs/ONBOARDING_PLAYBOOK.md` | How to onboard a firm and get files into the right format, including client self-upload |
 | `docs/PILOT_PLAN.md` | A busy-season pilot plan for a small tax/audit practice, with a weekly one-hour cadence |
 | `docs/BUSINESS_MODEL.md` | Pricing, positioning and the "remote fractional AI lead" service model |
+| `docs/ROADMAP.md` | Feature status against the research backlog, next steps, do-not-build list |
+| `docs/PRD.md` | One-page prototype PRD |
+| `docs/RESEARCH_FINDINGS.md` | What the research agent found and the decisions taken |
 | `docs/RESEARCH_BOT_PROMPTS.md` | Copy-paste instructions for an AI research agent to map competing products (accounting first, then law and other professions) |
 
 ## Quick start (no API keys needed)

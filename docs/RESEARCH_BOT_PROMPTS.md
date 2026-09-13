@@ -417,7 +417,99 @@ quotes and dates; (3) the three-path model; (4) the recommendation and triggers;
 most useful URLs.
 ```
 
-## Prompt 7: Short weekly monitoring prompt
+## Prompts 7–13: the next research pack
+
+Shorter briefs. Each follows the same method rules as Prompt 1 (primary sources first, URL and
+access date on every claim, mark unverified items).
+
+### Prompt 7: Structured data straight from the tax software (the best source of facts)
+
+```
+For each of UltraTax CS, Lacerte, ProSeries, ProConnect, Drake, CCH Axcess Tax, CCH ProSystem fx
+Tax, ATX and TaxAct Professional: (a) how to batch-export as-filed returns as text-layer PDF for
+many clients at once; (b) every structured export that exists - client data reports, proforma /
+organizer exports, K-1 export, "tax return data" CSV or XML, and above all whether the e-file
+(MeF) XML for a filed return can be exported or retrieved, since it is a complete machine-readable
+copy of the return; (c) any API, SDK or partner programme, with cost and eligibility; (d) where
+the software stores files on disk (folder layout, naming) for a watched-folder approach.
+Then: document the IRS MeF schemas for 1040, 1065, 1120-S and 1120 (where to download the
+current schema packages, how line items are named, how they change year to year) and produce a
+line-name map for the last three tax years for the key lines we extract. Output: a table per
+package, and a recommendation of the cheapest reliable path to structured prior-year data.
+```
+
+### Prompt 8: IRS transcripts and third-party data as a second source
+
+```
+Research how a firm can pull IRS data for a client into a system like ours: Transcript Delivery
+System via e-Services (Form 8821 / 2848 requirements, what transcript types exist - wage and
+income, account, return), the IRS Income Verification Express Service, and third-party
+transcript tools (Canopy Transcripts, Tax Help Software, THS, IRS Solutions, Pitbulltax). For
+each: access requirements, cost, format (PDF vs structured), rate limits, automation options,
+and terms on storing the data. Also cover Intuit Link / broker aggregators for 1099 data and
+QuickBooks / Xero APIs for books. Recommend which sources are worth wiring in and in what order.
+```
+
+### Prompt 9: OCR and extraction accuracy on scanned tax forms
+
+```
+Compare Azure Document Intelligence prebuilt tax models (W-2, 1099 family, 1040, 1098), AWS
+Textract, Google Document AI, and frontier-model vision (Claude, GPT) on scanned tax documents:
+published accuracy, handling of handwriting and stamps, multi-page returns, cost per page, data
+retention terms, and any independent benchmarks or practitioner reports. Include studies on LLM
+extraction accuracy for tax and financial documents (field-level numbers, not just anecdotes).
+Recommend a default path and a fallback, with expected accuracy and cost per 1,000 pages.
+```
+
+### Prompt 10: Compliance language and insurance
+
+```
+Collect: sample IRC 7216 consent and disclosure language for use of third-party contractors and
+cloud/AI services (AICPA, state societies, insurers, law-firm client alerts); engagement-letter
+clauses covering AI-assisted services; state board of accountancy positions on AI and outsourcing
+(all 50 states, flag the strict ones); Circular 230 and IRS guidance touching AI use by preparers;
+state AI laws affecting professional services (e.g. Colorado); what professional-liability (E&O)
+carriers for CPA firms say about AI tools; and what cyber-insurance carriers require from a
+vendor holding client tax data (controls, limits, typical premium for a company our size).
+Output: a clause library with sources, a state risk table, and an insurance checklist.
+```
+
+### Prompt 11: Willingness to pay and the value of time saved
+
+```
+Find data to price the product and quantify the pitch: average revenue per tax client and per
+1040 / 1065 / 1120-S return for firms of 3-30 staff (Rosenberg Survey, AICPA MAP, NSA fee
+studies, state society surveys); partner and senior billing rates and realisation; time spent
+per return on gathering documents and reviewing prior year; client document turnaround times and
+response rates by channel (email vs SMS vs portal) from TaxDome, Liscio, SafeSend, Karbon
+reports; small-firm SaaS spend per staff member and per-firm price points that sold well.
+Output: a value-of-time model per firm size and a recommended price ladder with the evidence.
+```
+
+### Prompt 12: Go-to-market channels for small CPA firms
+
+```
+Map the channels that reach 3-30 staff US tax firms: state CPA society vendor programmes
+(cost, reach, timing), conferences (AICPA Engage, Scaling New Heights, Drake and Intuit user
+events, NATP, NAEA), IT providers that specialise in CPA firms (names, size, partner terms),
+peer networks and mastermind groups, podcasts and newsletters practitioners actually read, and
+the buying calendar (when firms evaluate tools). For each: cost to participate, evidence of
+vendor results, and the first three we should try. Also list the partner programmes that gate
+API access (Wolters Kluwer, Thomson Reuters, Intuit, TaxDome) with requirements and fees.
+```
+
+### Prompt 13: Model and vendor watch
+
+```
+Quarterly: list model releases from Anthropic, OpenAI and Google since the last run with
+pricing, context window, structured-output and tool-use support, and retention terms; any
+benchmark on tax or financial document tasks; embedding and reranker releases; changes to
+Bedrock / Vertex / Foundry availability and residency; and any security incident or terms change
+at a vendor we use. Output: a diff against the previous quarter and a recommendation on whether
+to trial a new model profile.
+```
+
+## Prompt 14: Short weekly monitoring prompt
 
 Run this every Monday to stay current:
 

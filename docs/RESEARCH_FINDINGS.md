@@ -92,8 +92,28 @@ engagement binders.
   cheap later; do not buy the audit before the trigger. Interim evidence for small firms: the
   data-handling sheet, a penetration-test letter, cyber insurance, in-tenant deployment option.
 
+## 5. Feature backlog (Prompt 4)
+
+**Build next, top five:** (1) prior-year → editable request list with a human gate before send;
+(2) auto-classify uploads and match to pending items (Liscio Speed Match pattern); (3) citation
+and figure Accept / Reject / Edit with audit trail (DocuMine-style trust); (4) configurable
+reminders, email plus optional SMS, stopping on completion; (5) conditional organizer, yes/no
+answers opening upload slots.
+
+**Do not build:** full practice-management suite, e-sign and payments, bank smart links,
+tax-prep autopilot, public-law research, Excel snipper, ambient meeting AI, DMS replacement,
+training on client data.
+
+**Sequencing for 3–30 staff:** harden the request-list loop and verify-before-use first; partner
+for tax-software proforma lists and planning decks (Holistiplan, TaxPlanIQ); Graph and NAS
+connectors feed the archive.
+
+**Decisions (built):** all five are in the prototype; see `docs/ROADMAP.md` for status and
+what follows. Items 1 and 2 already existed; 3, 4 and 5 were added on the strength of this
+report: a Verify tab with accept / reject / edit / undo on every extracted figure and thumbs
+up/down on citations, a per-list reminder schedule and channel with a cron-ready job that stops
+at zero pending, and a per-return-type organizer whose answers add, reopen or retire items.
+
 ## Still open
 
-- Prompt 4 feature backlog (client-request tools, review flows for extracted figures, reminder
-  cadences).
 - Weekly landscape monitor is running (Monday 09:00); it reports only material changes.

@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from . import checklist, forecast
 from .connectors import FolderConnector, run_sync
+from .notify import build_notifier, reminder_text
 from .config import Settings
 from .ingest import IngestPipeline
 from .providers import build_embedding_provider, build_llm_provider
@@ -61,6 +62,29 @@ class RequestEmailIn(BaseModel):
     email_subject: str | None = None
     email_body: str | None = None
     status: str | None = None          # draft | sent | complete
+    client_email: str | None = None
+    client_phone: str | None = None
+    reminder_days: str | None = Field(default=None, pattern=r"^\d+(,\d+)*$")
+    reminder_channel: str | None = Field(default=None, pattern="^(email|email\+sms|off)$")
+
+
+class FactVerifyIn(BaseModel):
+    status: str = Field(pattern="^(accepted|rejected|edited|extracted)$")
+    value: float | None = None
+    note: str | None = None
+
+
+class FeedbackIn(BaseModel):
+    verdict: str = Field(pattern="^(accept|reject)$")
+    question: str | None = None
+    document_id: str | None = None
+    client_id: str | None = None
+    excerpt: str | None = None
+    note: str | None = None
+
+
+class OrganizerAnswersIn(BaseModel):
+    answers: list[dict[str, Any]]      # [{key, answer: yes|no|null, note?}]
 
 
 class RequestItemIn(BaseModel):
@@ -86,6 +110,7 @@ class AppState:
         self.embedder = build_embedding_provider(settings.embedding)
         self.pipeline = IngestPipeline(self.store, self.extractor, self.embedder, settings.uploads_dir, keep_originals=settings.keep_originals)
         self.rag = RagEngine(self.store, self.llm, self.embedder)
+        self.notifier = build_notifier()
 
     def describe(self) -> dict[str, Any]:
         return {
@@ -100,6 +125,30 @@ class AppState:
             "known_providers": known_providers(),
             "stats": self.store.stats(),
         }
+
+
+def dispatch_reminder(state: "AppState", list_id: str, actor: str, firm_name: str = "our office") -> dict[str, Any]:
+    """Draft and send (or log) the next reminder for a request list; stops automatically once nothing is pending."""
+    rl = state.store.get_request_list(list_id)
+    if not rl:
+        raise KeyError(list_id)
+    pending = [i for i in rl["items"] if i["status"] == "pending"]
+    if not pending:
+        return {"list_id": list_id, "sent": False, "reason": "nothing pending; list is complete"}
+    if rl.get("reminder_channel") == "off":
+        return {"list_id": list_id, "sent": False, "reason": "reminders are off for this list"}
+    client = state.store.get_client(rl["client_id"]) or {}
+    rl["client_name"] = client.get("name")
+    rl["reminder_number"] = int(rl.get("reminders_sent") or 0) + 1
+    subject, body, sms = reminder_text(rl, pending, firm_name)
+    deliveries = [state.notifier.send_email(rl.get("client_email"), subject, body).__dict__]
+    if rl.get("reminder_channel") == "email+sms":
+        deliveries.append(state.notifier.send_sms(rl.get("client_phone"), sms).__dict__)
+    state.store.record_reminder(list_id)
+    state.store.log("reminder_sent", actor, rl["client_id"], list_id=list_id, reminder_number=rl["reminder_number"], pending=len(pending),
+                    deliveries=deliveries, subject=subject, body=body)
+    return {"list_id": list_id, "sent": True, "reminder_number": rl["reminder_number"], "pending": len(pending), "deliveries": deliveries,
+            "subject": subject, "body": body}
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -162,6 +211,32 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/clients/{client_id}/risk", dependencies=[Depends(auth)])
     def client_risk(client_id: str):
         return forecast.assess_risk(current().store.facts_for_client(client_id))
+
+    # -------------------------------------------------- verify before use
+    @app.get("/api/clients/{client_id}/facts/review", dependencies=[Depends(auth)])
+    def facts_review(client_id: str):
+        st = current()
+        return {"facts": st.store.facts_for_review(client_id), "summary": st.store.verification_summary(client_id)}
+
+    @app.patch("/api/facts/{fact_id}", dependencies=[Depends(auth)])
+    def verify_fact(fact_id: str, body: FactVerifyIn, actor: str = Depends(auth)):
+        st = current()
+        before = st.store.get_fact(fact_id)
+        if not before:
+            raise HTTPException(404, "fact not found")
+        if body.status == "edited" and body.value is None:
+            raise HTTPException(400, "an edited fact needs a value")
+        after = st.store.verify_fact(fact_id, body.status, actor, body.value, body.note)
+        st.store.log("fact_verify", actor, after["client_id"], fact_id=fact_id, name=after["name"], period=after["period"],
+                     status=body.status, value_before=before["value"], value_after=after["value"], note=body.note)
+        return after
+
+    @app.post("/api/feedback", dependencies=[Depends(auth)])
+    def feedback(body: FeedbackIn, actor: str = Depends(auth)):
+        """Accept / reject a citation or an answer. Goes to the audit log; the weekly review reads it."""
+        current().store.log("citation_feedback", actor, body.client_id, verdict=body.verdict, question=body.question,
+                            document_id=body.document_id, excerpt=(body.excerpt or "")[:300], note=body.note)
+        return {"recorded": True}
 
     # --------------------------------------------------------- documents
     @app.post("/api/documents", dependencies=[Depends(auth)])
@@ -274,6 +349,53 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(404, "item not found")
         st.store.set_request_item(item_id, body.status, note=body.note)
         return st.store.get_request_list(list_id)
+
+    @app.get("/api/reminders/due", dependencies=[Depends(auth)])
+    def reminders_due():
+        return current().store.due_reminders()
+
+    @app.post("/api/reminders/{list_id}/send", dependencies=[Depends(auth)])
+    def send_reminder(list_id: str, firm_name: str = "our office", actor: str = Depends(auth)):
+        try:
+            return dispatch_reminder(current(), list_id, actor, firm_name)
+        except KeyError:
+            raise HTTPException(404, "request list not found")
+
+    @app.get("/api/request-lists/{list_id}/organizer", dependencies=[Depends(auth)])
+    def get_organizer(list_id: str):
+        st = current()
+        rl = st.store.get_request_list(list_id)
+        if not rl:
+            raise HTTPException(404, "request list not found")
+        answers = st.store.organizer_answers(list_id)
+        rt = checklist._return_type(st.store.get_client(rl["client_id"]) or {}, st.store.canonical_records(rl["client_id"]))
+        qs = checklist.organizer_for(rt, rl["tax_year"])
+        for q in qs:
+            a = answers.get(q["key"], {})
+            q["answer"], q["note"] = a.get("answer"), a.get("note")
+        return {"return_type": rt, "questions": qs}
+
+    @app.post("/api/request-lists/{list_id}/organizer", dependencies=[Depends(auth)])
+    def answer_organizer(list_id: str, body: OrganizerAnswersIn, actor: str = Depends(auth)):
+        st = current()
+        rl = st.store.get_request_list(list_id)
+        if not rl:
+            raise HTTPException(404, "request list not found")
+        qmap = {q["key"]: q for q in checklist.ORGANIZER_QUESTIONS}
+        effects = {"added": 0, "reopened": 0, "retired": 0}
+        for a in body.answers:
+            q = qmap.get(a.get("key"))
+            if not q:
+                continue
+            ans = a.get("answer")
+            if ans not in ("yes", "no", None):
+                raise HTTPException(400, f"answer for {a.get('key')} must be yes, no or null")
+            st.store.set_organizer_answer(list_id, q["key"], ans, a.get("note"))
+            e = checklist.apply_organizer_answer(st.store, rl, q, ans)
+            for k in effects:
+                effects[k] += e[k]
+        st.store.log("organizer_answers", actor, rl["client_id"], list_id=list_id, answers=[(a.get("key"), a.get("answer")) for a in body.answers], **effects)
+        return {"effects": effects, "list": st.store.get_request_list(list_id)}
 
     def _ingest_for_list(st: AppState, rl: dict, filename: str, data: bytes, actor: str, source_uri: str | None = None) -> dict:
         return st.pipeline.ingest_bytes(client_id=rl["client_id"], filename=filename, data=data, uploaded_by=actor,

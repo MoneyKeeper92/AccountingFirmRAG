@@ -55,6 +55,18 @@
   .ck .acts { display:flex; gap:6px; margin-top:4px; }
   .ck .acts label, .ck .acts button { font-size:11px; padding:2px 7px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; color:var(--accent); }
   .ckhead { display:flex; gap:8px; align-items:center; padding:8px 10px; flex-wrap:wrap; }
+  .vf { display:grid; grid-template-columns:1fr auto; gap:6px; padding:6px 10px; border-bottom:1px solid var(--line); font-size:12px; align-items:center; }
+  .vf .name { font-family:ui-monospace,monospace; }
+  .vf .val { font-variant-numeric:tabular-nums; font-weight:600; }
+  .vf small { color:var(--muted); display:block; }
+  .vf .acts button { font-size:11px; padding:2px 6px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; color:var(--accent); margin-left:2px; }
+  .vf.accepted { background:#f3faf5; } .vf.rejected { background:#fbf1f1; opacity:.7; } .vf.edited { background:#fff8ea; }
+  .fb { font-size:11px; margin-left:6px; } .fb button { border:none; background:none; cursor:pointer; font-size:13px; padding:0 2px; }
+  .orgq { display:grid; grid-template-columns:1fr auto; gap:8px; padding:6px 10px; border-bottom:1px solid var(--line); font-size:12.5px; align-items:center; }
+  .orgq .yn button { font-size:11px; padding:2px 8px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; }
+  .orgq .yn button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .rem { display:grid; grid-template-columns:1fr 1fr auto auto; gap:6px; padding:6px 10px; align-items:center; }
+  .rem input, .rem select { font-size:12px; padding:4px 6px; }
   .cat { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:8px 10px 2px; }
   textarea.email { width:calc(100% - 20px); margin:0 10px; min-height:180px; font-size:12px; font-family:inherit; }
   .cite .ex { color:var(--muted); display:block; margin-top:3px; max-height:60px; overflow:hidden; }
@@ -123,6 +135,7 @@
       <button onclick="tab('cites',this)">Citations</button>
       <button onclick="tab('risk',this)">Planning</button>
       <button onclick="tab('check',this)">Checklist</button>
+      <button onclick="tab('verify',this)">Verify <span id="verifyBadge" class="tag" style="display:none"></span></button>
     </div>
     <div id="tab-docs" class="scroll">
       <div class="drop" id="drop">Drop files here or click to upload<br><small>PDF · CSV · XLSX · JSON · TXT</small>
@@ -137,6 +150,7 @@
     </div>
     <div id="tab-cites" class="scroll" hidden><div class="cite" style="color:var(--muted)">Citations for the latest answer appear here.</div></div>
     <div id="tab-check" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to draft a document request list from last year's return.</div></div>
+    <div id="tab-verify" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to review the figures the extractor pulled from each document.</div></div>
     <div id="tab-risk" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to see tax-planning screens and projections computed from the extracted return data.</div></div>
   </section>
 </main>
@@ -201,7 +215,7 @@ async function selectClient(id){
   const chips = c ? ['Summarise last year\'s return and the forms it included','What should we watch when planning this year\'s return?','What changed between the last two returns?','Forecast next year\'s income and total tax','Did they underpay estimates last year?']
                   : ['Which clients paid an underpayment penalty last year?','Which Schedule C clients are S-corp election candidates?','Which S corporations had distributions above officer compensation?'];
   $('#chips').innerHTML = chips.map(t=>`<span class="chip" onclick="$('#q').value=this.textContent;ask()">${esc(t)}</span>`).join('');
-  await loadClients(); await loadDocs(); await loadRisk(); await loadChecklists();
+  await loadClients(); await loadDocs(); await loadRisk(); await loadChecklists(); await loadVerify();
 }
 
 // ------------------------------------------------------------ documents
@@ -246,14 +260,14 @@ async function uploadFiles(files){
 function addMsg(role, html, meta){ const m=document.createElement('div'); m.className='msg '+role; m.innerHTML = html + (meta?`<div class="meta">${meta}</div>`:''); $('#messages').appendChild(m); $('#messages').scrollTop=1e9; return m; }
 async function ask(){
   const q = $('#q').value.trim(); if(!q) return;
-  $('#q').value=''; addMsg('user', esc(q)); history.push({role:'user',content:q});
+  $('#q').value=''; lastQuestion = q; addMsg('user', esc(q)); history.push({role:'user',content:q});
   const pending = addMsg('bot','Searching the archive…'); $('#askBtn').disabled=true;
   try {
     const r = await api('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, client_id:activeClient, history:history.slice(0,-1)})});
     const tools = r.tool_trace.map(t=>t.tool).join(', ');
     pending.innerHTML = linkCites(md(r.answer), r.citations) + `<div class="meta">${esc(r.model)}${tools?' · tools: '+esc(tools):''}${r.usage.input_tokens?` · ${r.usage.input_tokens} in / ${r.usage.output_tokens} out tokens`:''} · ${r.citations.length} sources</div>`;
     history.push({role:'assistant',content:r.answer});
-    $('#tab-cites').innerHTML = r.citations.length ? r.citations.map(c=>`<div class="cite"><a href="${fileUrl(c.document_id, c.page)}" target="_blank" rel="noopener"><b>[${c.n}] ${esc(c.filename)}</b>${c.page?' p.'+c.page:''}</a> · ${esc(c.doc_type||'')} ${c.tax_year||''} · score ${c.score}<span class="ex">${esc(c.excerpt)}</span></div>`).join('') : '<div class="cite">No passages retrieved.</div>';
+    $('#tab-cites').innerHTML = r.citations.length ? r.citations.map(c=>`<div class="cite"><a href="${fileUrl(c.document_id, c.page)}" target="_blank" rel="noopener"><b>[${c.n}] ${esc(c.filename)}</b>${c.page?' p.'+c.page:''}</a> · ${esc(c.doc_type||'')} ${c.tax_year||''} · score ${c.score}<span class="fb"><button title="Useful, correct source" onclick="citeFeedback('${c.document_id}','accept',this.closest('.cite').querySelector('.ex').textContent,this)">👍</button><button title="Wrong or irrelevant" onclick="citeFeedback('${c.document_id}','reject',this.closest('.cite').querySelector('.ex').textContent,this)">👎</button></span><span class="ex">${esc(c.excerpt)}</span></div>`).join('') : '<div class="cite">No passages retrieved.</div>';
   } catch(err){ pending.innerHTML = `<span style="color:var(--bad)">${esc(err.message)}</span>`; }
   $('#askBtn').disabled=false;
 }
@@ -272,6 +286,29 @@ function linkCites(html, cites){
   });
   return html;
 }
+// ------------------------------------------------------------ verify before use
+async function loadVerify(){
+  const el = $('#tab-verify'), badge = $('#verifyBadge');
+  if (!activeClient) { el.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:13px">Select a client.</div>'; badge.style.display='none'; return; }
+  const r = await api(`/api/clients/${activeClient}/facts/review`);
+  const s = r.summary; badge.textContent = s.extracted; badge.style.display = s.extracted ? '' : 'none';
+  let html = `<div class="ckhead"><b>${s.extracted} to review</b><span class="tag ready">${s.accepted} accepted</span><span class="tag">${s.edited} edited</span><span class="tag failed">${s.rejected} rejected</span>
+    <button class="btn" onclick="acceptAllExtracted()">Accept all unreviewed</button></div>
+    <div style="padding:0 10px 6px;font-size:12px;color:var(--muted)">Every figure the extractor pulled, with the line it came from. Rejected figures drop out of planning, forecasts and answers; edited values replace them. Every decision is logged.</div>`;
+  let lastDoc = null;
+  for (const f of r.facts) {
+    if (f.filename !== lastDoc) { html += `<div class="cat">${esc(f.filename)} · ${f.period||''}</div>`; lastDoc = f.filename; }
+    html += `<div class="vf ${f.status}"><div><span class="name">${esc(f.name)}</span> <span class="val">${fmt(f.value)}</span>${f.original_value!=null&&f.status==='edited'?` <small>was ${fmt(f.original_value)}</small>`:''}<small>${esc(f.source_quote||'')}${f.verified_by?` · ${f.status} by ${esc(f.verified_by)}`:''}</small></div>
+      <div class="acts">${f.status!=='accepted'?`<button onclick="verifyFact('${f.id}','accepted')">Accept</button>`:''}${f.status!=='rejected'?`<button onclick="verifyFact('${f.id}','rejected')">Reject</button>`:''}<button onclick="editFact('${f.id}',${f.value})">Edit</button>${f.status!=='extracted'?`<button onclick="verifyFact('${f.id}','extracted')">Undo</button>`:''}</div></div>`;
+  }
+  el.innerHTML = html;
+}
+async function verifyFact(id, status, value){ await api(`/api/facts/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status, value})}); loadVerify(); loadRisk(); }
+function editFact(id, current){ const v = prompt('Corrected value (as shown on the return):', current); if (v===null||v==='') return; const n = Number(String(v).replace(/[,$\s]/g,'')); if (isNaN(n)) { alert('Not a number'); return; } verifyFact(id,'edited',n); }
+async function acceptAllExtracted(){ const r = await api(`/api/clients/${activeClient}/facts/review`); for (const f of r.facts) if (f.status==='extracted') await api(`/api/facts/${f.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'accepted'})}); loadVerify(); }
+let lastQuestion = '';
+async function citeFeedback(docId, verdict, excerpt, btn){ await api('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({verdict, document_id:docId, client_id:activeClient, question:lastQuestion, excerpt})}); btn.parentElement.innerHTML = `<span style="color:var(--muted)">${verdict==='accept'?'✓ marked useful':'✗ marked wrong'}</span>`; }
+
 // ------------------------------------------------------------ tax checklist
 let currentList = null;
 async function loadChecklists(){
@@ -290,7 +327,8 @@ async function draftChecklist(){
   try { const r = await api(`/api/clients/${activeClient}/request-lists`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tax_year:Number($('#ckYear').value)||null})}); await loadChecklists(); openChecklist(r.id); }
   catch(e){ alert(e.message); }
 }
-async function openChecklist(id){ currentList = await api(`/api/request-lists/${id}`); renderChecklist(); }
+let currentOrganizer = null;
+async function openChecklist(id){ currentList = await api(`/api/request-lists/${id}`); currentOrganizer = await api(`/api/request-lists/${id}/organizer`); renderChecklist(); }
 function renderChecklist(){
   const l = currentList; if (!l) return;
   const el = $('#ckDetail'); const byCat = {};
@@ -301,6 +339,13 @@ function renderChecklist(){
       <a class="btn" href="${mailto}">Open in email app</a>
       <button class="btn" onclick="markSent()">Mark sent</button></div>
     <textarea id="ckEmail" class="email" onchange="saveEmail()">${esc(l.email_body||'')}</textarea>
+    <div class="cat">Reminders${l.reminders_sent?` · ${l.reminders_sent} sent`:''}${l.last_reminder_at?` · last ${new Date(l.last_reminder_at*1000).toLocaleDateString()}`:''}</div>
+    <div class="rem"><input id="remEmail" placeholder="client email" value="${esc(l.client_email||'')}"><input id="remPhone" placeholder="client mobile (for SMS)" value="${esc(l.client_phone||'')}">
+      <input id="remDays" title="days after send / last reminder" value="${esc(l.reminder_days||'7,14,21')}" style="max-width:80px">
+      <select id="remChan"><option ${l.reminder_channel==='email'?'selected':''} value="email">email</option><option ${l.reminder_channel==='email+sms'?'selected':''} value="email+sms">email+sms</option><option ${l.reminder_channel==='off'?'selected':''} value="off">off</option></select></div>
+    <div class="ckhead"><button class="btn" onclick="saveReminders()">Save reminder settings</button><button class="btn" onclick="sendReminderNow()" ${l.status!=='sent'||!l.counts.pending?'disabled title="mark the list sent first"':''}>Send reminder now</button><span style="font-size:11px;color:var(--muted)">Stops automatically when nothing is pending.</span></div>
+    <div class="cat">Organizer · ${(currentOrganizer?.questions||[]).filter(q=>q.answer).length}/${(currentOrganizer?.questions||[]).length} answered</div>
+    ${(currentOrganizer?.questions||[]).map(q=>`<div class="orgq"><span>${esc(q.text)}</span><span class="yn"><button class="${q.answer==='yes'?'on':''}" onclick="answerOrganizer('${q.key}','yes')">Yes</button><button class="${q.answer==='no'?'on':''}" onclick="answerOrganizer('${q.key}','no')">No</button>${q.answer?`<button onclick="answerOrganizer('${q.key}',null)">clear</button>`:''}</span></div>`).join('')}
     <div class="ckhead" style="justify-content:space-between"><b style="font-size:12px">Client reply came in?</b>
       <label class="btn" style="font-size:12px">Drop attachments <input type="file" multiple hidden onchange="inbound(this.files)"></label></div>
     ${Object.entries(byCat).map(([cat, items])=>`<div class="cat">${esc(cat)}</div>`+items.map(it=>`
@@ -316,6 +361,9 @@ async function itemStatus(id, status){ currentList = await api(`/api/request-lis
 async function itemUpload(id, files){ const fd = new FormData(); for (const f of files) fd.append('files', f); const r = await api(`/api/request-lists/${currentList.id}/items/${id}/upload`,{method:'POST',body:fd}); currentList = r.list; renderChecklist(); loadDocs(); loadClients(); }
 async function inbound(files){ const fd = new FormData(); for (const f of files) fd.append('files', f); const r = await api(`/api/request-lists/${currentList.id}/inbound`,{method:'POST',body:fd}); currentList = r.list; renderChecklist(); loadDocs(); loadClients();
   alert(r.results.map(x=>`${x.filename}: ${x.matched_item?'matched → '+x.matched_item:'filed, no matching item (assign manually)'}`).join('\n')); }
+async function saveReminders(){ currentList = await api(`/api/request-lists/${currentList.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_email:$('#remEmail').value||null, client_phone:$('#remPhone').value||null, reminder_days:$('#remDays').value||null, reminder_channel:$('#remChan').value})}); renderChecklist(); }
+async function sendReminderNow(){ const r = await api(`/api/reminders/${currentList.id}/send`,{method:'POST'}); alert(r.sent ? `Reminder ${r.reminder_number} ${r.deliveries.map(d=>d.channel+(d.ok?' ok':' failed')+(d.detail?' ('+d.detail+')':'')).join(', ')}` : r.reason); openChecklist(currentList.id); }
+async function answerOrganizer(key, answer){ const r = await api(`/api/request-lists/${currentList.id}/organizer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers:[{key, answer}]})}); await openChecklist(currentList.id); loadClients(); }
 async function addItem(){ const v = $('#ckNewItem').value.trim(); if(!v) return; await api(`/api/request-lists/${currentList.id}/items`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item:v, category:'Other'})}); openChecklist(currentList.id); }
 
 // ------------------------------------------------------------ risk & forecast
@@ -343,7 +391,7 @@ async function openSettings(){ $('#token').value = TOKEN; await refreshModels();
 async function switchProfile(){ try { await api('/api/admin/models/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:$('#profileSelect').value})}); await refreshModels(); } catch(e){ alert(e.message); } }
 async function reindex(){ try { const r = await api('/api/admin/reindex',{method:'POST'}); alert(`Re-embedded ${r.reembedded} chunks with ${r.embedding_model}`); await refreshModels(); } catch(e){ alert(e.message); } }
 function saveToken(){ TOKEN = $('#token').value.trim(); localStorage.setItem('firm_rag_token', TOKEN); refreshModels(); loadClients(); }
-function tab(name, btn){ for (const b of document.querySelectorAll('.tabs button')) b.classList.toggle('on', b===btn); for (const t of ['docs','cites','risk','check']) $('#tab-'+t).hidden = t!==name; }
+function tab(name, btn){ for (const b of document.querySelectorAll('.tabs button')) b.classList.toggle('on', b===btn); for (const t of ['docs','cites','risk','check','verify']) $('#tab-'+t).hidden = t!==name; }
 
 refreshModels(); loadClients().then(()=>selectClient(null));
 </script>

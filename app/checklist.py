@@ -267,3 +267,68 @@ def _return_type(client: dict, records: list[dict]) -> str:
     if votes:
         return max(set(votes), key=votes.count)
     return by_entity.get((client.get("entity_type") or "").lower(), "1040")
+
+
+# --------------------------------------------------------------------- conditional organizer
+# Yes/no questions the preparer asks (or the client answers in the portal). "yes" opens upload
+# slots; "no" retires the matching items so the pending count reflects reality.
+
+ORGANIZER_QUESTIONS: list[dict[str, Any]] = [
+    {"key": "q_life_changes", "for": "1040", "text": "Any big changes in {year}: marriage, divorce, new child, move to another state?",
+     "yes_items": [{"key": "life_change_docs", "category": "Admin", "item": "Details of the life change (dates, new address, dependent SSNs)", "why": "Answered yes on the organizer"}], "no_marks": []},
+    {"key": "q_home", "for": "1040", "text": "Did you buy, sell or refinance a home in {year}?",
+     "yes_items": [{"key": "closing_statement", "category": "Deductions", "item": "Closing statement (and 1099-S if you sold)", "why": "Home purchase / sale / refinance in the year"}], "no_marks": []},
+    {"key": "q_childcare", "for": "1040", "text": "Did you pay for childcare or dependent care in {year}?", "yes_items": ["childcare"], "no_marks": ["childcare"]},
+    {"key": "q_education", "for": "1040", "text": "Did anyone in the household pay tuition or take 529 withdrawals?", "yes_items": ["1098_t"], "no_marks": ["1098_t"]},
+    {"key": "q_investments", "for": "1040", "text": "Did you sell any stock, RSUs, crypto or other investments?", "yes_items": ["1099_b"], "no_marks": ["1099_b"]},
+    {"key": "q_side_income", "for": "1040", "text": "Any self-employment, gig or 1099-NEC income?", "yes_items": ["sched_c_income", "sched_c_expenses", "estimated_payments"], "no_marks": ["sched_c_income", "sched_c_expenses", "home_office", "mileage"]},
+    {"key": "q_rental", "for": "1040", "text": "Did you own rental property in {year}?", "yes_items": ["rental"], "no_marks": ["rental"]},
+    {"key": "q_retirement", "for": "1040", "text": "Did you contribute to or withdraw from an IRA, 401(k) or HSA?", "yes_items": ["retirement", "hsa"], "no_marks": ["retirement", "hsa"]},
+    {"key": "q_marketplace", "for": "1040", "text": "Was anyone covered by health insurance from the marketplace (Form 1095-A)?", "yes_items": ["1095_a"], "no_marks": ["1095_a"]},
+    {"key": "q_estimates", "for": "1040", "text": "Did you make any estimated tax payments for {year}?", "yes_items": ["estimated_payments"], "no_marks": ["estimated_payments"]},
+    {"key": "q_charity", "for": "1040", "text": "Did you give more than $250 to any single charity?", "yes_items": ["charitable"], "no_marks": []},
+    {"key": "q_notices", "for": "both", "text": "Did you receive any letters from the IRS or a state?", "yes_items": ["notices", "entity_notices"], "no_marks": ["notices", "entity_notices"]},
+    {"key": "q_assets", "for": "entity", "text": "Did the business buy or sell equipment, vehicles or property in {year}?", "yes_items": ["fixed_assets"], "no_marks": ["fixed_assets"]},
+    {"key": "q_owners", "for": "entity", "text": "Any change in owners, ownership percentages or capital contributions?", "yes_items": ["owner_changes"], "no_marks": ["owner_changes"]},
+    {"key": "q_contractors", "for": "entity", "text": "Did the business pay any contractor more than $600?", "yes_items": ["1099s_issued"], "no_marks": ["1099s_issued"]},
+    {"key": "q_loans", "for": "entity", "text": "Any new loans, lines of credit, or loans to/from owners?", "yes_items": ["loans"], "no_marks": []},
+    {"key": "q_states", "for": "entity", "text": "Did the business have employees, property or significant sales in a new state?", "yes_items": ["state_activity"], "no_marks": ["state_activity"]},
+    {"key": "q_retirement_plan", "for": "entity", "text": "Did the business fund a retirement plan for {year}?", "yes_items": ["retirement_plan"], "no_marks": ["retirement_plan"]},
+]
+
+
+def organizer_for(return_type: str, tax_year: int) -> list[dict[str, Any]]:
+    kind = "entity" if return_type in ("1065", "1120-S", "1120") else "1040"
+    return [{**q, "text": q["text"].format(year=tax_year)} for q in ORGANIZER_QUESTIONS if q["for"] in (kind, "both")]
+
+
+def apply_organizer_answer(store, rl: dict, question: dict[str, Any], answer: str | None) -> dict[str, int]:
+    """yes -> make sure the linked items exist and are pending; no -> retire linked rule items."""
+    rules = {r.key: r for r in RULES}
+    by_key = store.items_by_key(rl["id"])
+    added = reopened = retired = 0
+    if answer == "yes":
+        for spec in question["yes_items"]:
+            if isinstance(spec, str):
+                r = rules.get(spec)
+                if not r:
+                    continue
+                existing = by_key.get(spec)
+                if existing:
+                    if existing["status"] == "not_applicable":
+                        store.set_request_item(existing["id"], "pending"); reopened += 1
+                else:
+                    store.add_request_item(rl["id"], r.item.format(year=rl["tax_year"]), "Answered yes on the organizer", r.category, key=spec); added += 1
+            else:
+                existing = by_key.get(spec["key"])
+                if existing:
+                    if existing["status"] == "not_applicable":
+                        store.set_request_item(existing["id"], "pending"); reopened += 1
+                else:
+                    store.add_request_item(rl["id"], spec["item"].format(year=rl["tax_year"]), spec["why"], spec["category"], key=spec["key"]); added += 1
+    elif answer == "no":
+        for key in question["no_marks"]:
+            existing = by_key.get(key)
+            if existing and existing["status"] == "pending":
+                store.set_request_item(existing["id"], "not_applicable", note="Answered no on the organizer"); retired += 1
+    return {"added": added, "reopened": reopened, "retired": retired}
