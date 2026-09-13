@@ -63,3 +63,18 @@ def test_profile_switch_reports_stale_chunks(client):
     assert client.get("/api/admin/models").json()["profile"] == "offline"
     r = client.post("/api/admin/reindex").json()
     assert r["reembedded"] == 0
+
+
+def test_open_original_file_from_citation(client):
+    c, _ = _seed(client)
+    r = client.post("/api/chat", json={"question": "line of credit covenant", "client_id": c["id"]}).json()
+    cite = r["citations"][0]
+    # header auth works
+    f = client.get(f"/api/documents/{cite['document_id']}/file")
+    assert f.status_code == 200 and b"LINE OF CREDIT" in f.content
+    assert f.headers["content-type"].startswith("text/plain")
+    # query-token auth works (what a browser link uses), wrong token does not
+    assert client.get(f"/api/documents/{cite['document_id']}/file?token=test-token", headers={"X-API-Token": ""}).status_code == 200
+    assert client.get(f"/api/documents/{cite['document_id']}/file?token=nope", headers={"X-API-Token": ""}).status_code == 401
+    assert client.get("/api/documents/doesnotexist/file").status_code == 404
+    assert client.get("/api/admin/audit").json()[0]["action"] == "file_open"

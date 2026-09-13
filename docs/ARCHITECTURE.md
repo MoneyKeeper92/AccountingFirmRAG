@@ -118,6 +118,11 @@ model versions on the same questions later (see the evaluation section below).
 - Brute-force cosine over float32 vectors in numpy. At 1,500 chars per chunk a small practice with
   500 clients × 10 years × 5 documents ≈ 250k chunks, which still searches in well under a second.
   Past that, move to pgvector (see below).
+- Every citation carries `document_id` and `page`. The UI turns `[3]` and `[file.pdf p.3]`
+  references in an answer, and each entry in the Citations panel, into a link that opens the
+  stored original (`/api/documents/{id}/file`, PDFs open at the cited page via `#page=N`).
+  For firms with a document management system, store the DMS deep link on the document record
+  and point the citation there instead of at the stored copy.
 - The LLM has a `search_documents` tool, so it can run a follow-up query (e.g. for a note
   disclosure) when the first retrieval did not contain what it needs.
 

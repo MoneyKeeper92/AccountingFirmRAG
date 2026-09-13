@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
+import mimetypes
 from pathlib import Path
 from typing import Any
 
@@ -156,6 +157,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not d:
             raise HTTPException(404, "document not found")
         return d
+
+    @app.get("/api/documents/{doc_id}/file")
+    def open_document_file(doc_id: str, token: str | None = None, x_api_token: str | None = Header(default=None)):
+        """Serve the stored original so a citation can be opened in a new tab.
+
+        Browsers cannot send custom headers on a plain link, so this one route also accepts
+        the token as a query parameter. In production replace this with short-lived signed
+        URLs issued per click (see docs/RISKS.md)."""
+        st = current()
+        expected = st.settings.api_token
+        if expected and token != expected and x_api_token != expected:
+            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        d = st.store.get_document(doc_id)
+        if not d:
+            raise HTTPException(404, "document not found")
+        matches = sorted((st.settings.uploads_dir / d["client_id"]).glob(f"{doc_id}__*"))
+        if not matches:
+            raise HTTPException(404, "original file is not stored for this document")
+        path = matches[0]
+        media_type = mimetypes.guess_type(d["filename"])[0] or "application/octet-stream"
+        st.store.log("file_open", "staff", d["client_id"], document_id=doc_id, filename=d["filename"])
+        # inline so PDFs open in the browser tab (and honour #page=N); other types download.
+        disposition = "inline" if media_type in ("application/pdf", "text/plain", "application/json", "text/csv") else "attachment"
+        return FileResponse(path, media_type=media_type, filename=d["filename"], content_disposition_type=disposition)
 
     @app.delete("/api/documents/{doc_id}", dependencies=[Depends(auth)])
     def delete_document(doc_id: str, actor: str = Depends(auth)):

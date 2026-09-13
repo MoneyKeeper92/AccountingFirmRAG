@@ -35,6 +35,9 @@ Ordered roughly by how badly they could hurt the business.
   documents are placed inside `<evidence>` tags and the system prompt names them as data; keep
   tool set read-only (no tool can send email, modify records or browse the web).
 - SQLite is single-writer → fine for one office; move to Postgres for concurrency.
+- Citation links open the original via `GET /api/documents/{id}/file?token=…` so a browser tab can
+  fetch it. A long-lived token in a URL ends up in browser history and proxy logs → replace with
+  short-lived signed URLs minted per click (or serve through the SSO session cookie).
 
 ## 4. Operational
 

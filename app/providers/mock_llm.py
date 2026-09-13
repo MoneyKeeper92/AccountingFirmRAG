@@ -28,8 +28,10 @@ class MockLLM(LLMProvider):
         if isinstance(last.get("content"), list) and last["content"] and last["content"][0].get("type") == "tool_result":
             parts = [_render_tool_result(r.get("tool_use_id", ""), r.get("content", "")) for r in last["content"]]
             question = _first_user_text(messages)
+            evidence = _find(r"<evidence>(.*?)</evidence>", system, flags=re.S) or ""
             return LLMResponse(
                 text=f"Offline answer to: _{question}_\n\n" + "\n\n".join(parts)
+                + "\n\n" + _sources_line(evidence)
                 + "\n\n_(offline mock model: numbers above come straight from the deterministic tools; "
                 "switch FIRM_RAG_PROFILE to a real profile for narrative analysis and citations)_",
                 model=self.identity,
@@ -51,7 +53,8 @@ class MockLLM(LLMProvider):
         excerpt = evidence.strip()[:2500]
         return LLMResponse(
             text=f"Offline answer to: _{question}_\n\nMost relevant retrieved passages:\n\n{excerpt}\n\n"
-            "_(offline mock model: this shows what the real model would be given as evidence)_",
+            + _sources_line(evidence)
+            + "\n\n_(offline mock model: this shows what the real model would be given as evidence)_",
             model=self.identity,
         )
 
@@ -73,6 +76,19 @@ class MockLLM(LLMProvider):
         if "risk_flags" in props:
             out["risk_flags"] = []
         return out
+
+
+def _sources_line(evidence: str) -> str:
+    """Cite the retrieved evidence blocks the way the real model is instructed to: [n]."""
+    refs = re.findall(r"^\[(\d+)\] source: ([^|]+?)\s*\|", evidence, flags=re.M)
+    if not refs:
+        return ""
+    seen, items = set(), []
+    for n, loc in refs:
+        if loc not in seen:
+            seen.add(loc)
+            items.append(f"[{n}] {loc.strip()}")
+    return "Sources: " + "; ".join(items[:6])
 
 
 def _render_tool_result(tool_id: str, payload: str) -> str:

@@ -45,6 +45,9 @@
   .tag.ready { background:#e7f5ec; color:var(--ok); } .tag.failed { background:#fde8e8; color:var(--bad); } .tag.processing,.tag.duplicate { background:#fdf3e2; color:var(--warn); }
   .cite { font-size:12px; padding:8px 10px; border-bottom:1px solid var(--line); }
   .cite b { color:var(--accent); }
+  .cite a, .msg.bot a { color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent); }
+  .cite a:hover, .msg.bot a:hover { border-bottom-style:solid; }
+  .doc a.open { font-size:12px; color:var(--accent); }
   .cite .ex { color:var(--muted); display:block; margin-top:3px; max-height:60px; overflow:hidden; }
   .drop { margin:8px 10px; padding:14px; border:2px dashed #cfd8e3; border-radius:10px; text-align:center; color:var(--muted); font-size:13px; }
   .drop.over { background:var(--accent-2); border-color:var(--accent); }
@@ -154,6 +157,7 @@ async function api(path, opts={}) {
   if (!r.ok) { let d; try { d = (await r.json()).detail; } catch { d = r.statusText; } throw new Error(typeof d==='string'?d:JSON.stringify(d)); }
   return r.json();
 }
+const fileUrl = (docId, page) => `/api/documents/${docId}/file?token=${encodeURIComponent(TOKEN)}${page?'#page='+page:''}`;
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function md(s){ // minimal markdown: bold, italics, code, tables, bullets
   s = esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])_([^_\n]+?)_(?=[\s).,:;!?]|$)/g,'$1<i>$2</i>').replace(/`(.+?)`/g,'<code>$1</code>');
@@ -198,7 +202,7 @@ async function loadDocs(){
     const div = document.createElement('div'); div.className='doc';
     div.innerHTML = `<b>${esc(d.filename)}</b><span class="tag ${d.status}">${d.status}</span><span class="tag">${esc(d.doc_type||'?')}</span>${d.tax_year?`<span class="tag">${d.tax_year}</span>`:''}${d.engagement?`<span class="tag">${esc(d.engagement)}</span>`:''}
       <small>${esc(d.summary||d.error||'')}</small>
-      <div class="row" style="margin-top:4px"><button class="btn" onclick="viewDoc('${d.id}')">JSON</button><button class="btn danger" onclick="delDoc('${d.id}')">Delete</button></div>`;
+      <div class="row" style="margin-top:4px;align-items:center"><a class="btn open" href="${fileUrl(d.id)}" target="_blank" rel="noopener">Open file</a><button class="btn" onclick="viewDoc('${d.id}')">JSON</button><button class="btn danger" onclick="delDoc('${d.id}')">Delete</button></div>`;
     el.appendChild(div);
   }
 }
@@ -234,13 +238,27 @@ async function ask(){
   try {
     const r = await api('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, client_id:activeClient, history:history.slice(0,-1)})});
     const tools = r.tool_trace.map(t=>t.tool).join(', ');
-    pending.innerHTML = md(r.answer) + `<div class="meta">${esc(r.model)}${tools?' · tools: '+esc(tools):''}${r.usage.input_tokens?` · ${r.usage.input_tokens} in / ${r.usage.output_tokens} out tokens`:''} · ${r.citations.length} sources</div>`;
+    pending.innerHTML = linkCites(md(r.answer), r.citations) + `<div class="meta">${esc(r.model)}${tools?' · tools: '+esc(tools):''}${r.usage.input_tokens?` · ${r.usage.input_tokens} in / ${r.usage.output_tokens} out tokens`:''} · ${r.citations.length} sources</div>`;
     history.push({role:'assistant',content:r.answer});
-    $('#tab-cites').innerHTML = r.citations.length ? r.citations.map(c=>`<div class="cite"><b>[${c.n}] ${esc(c.filename)}</b>${c.page?' p.'+c.page:''} · ${esc(c.doc_type||'')} ${c.tax_year||''} · score ${c.score}<span class="ex">${esc(c.excerpt)}</span></div>`).join('') : '<div class="cite">No passages retrieved.</div>';
+    $('#tab-cites').innerHTML = r.citations.length ? r.citations.map(c=>`<div class="cite"><a href="${fileUrl(c.document_id, c.page)}" target="_blank" rel="noopener"><b>[${c.n}] ${esc(c.filename)}</b>${c.page?' p.'+c.page:''}</a> · ${esc(c.doc_type||'')} ${c.tax_year||''} · score ${c.score}<span class="ex">${esc(c.excerpt)}</span></div>`).join('') : '<div class="cite">No passages retrieved.</div>';
   } catch(err){ pending.innerHTML = `<span style="color:var(--bad)">${esc(err.message)}</span>`; }
   $('#askBtn').disabled=false;
 }
 
+function linkCites(html, cites){
+  if (!cites || !cites.length) return html;
+  const byFile = {}; for (const c of cites) if (!byFile[c.filename]) byFile[c.filename] = c;
+  // [3] or [3, 4]  -> numbered evidence blocks
+  html = html.replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (m, nums) => '[' + nums.split(/\s*,\s*/).map(n => { const c = cites[Number(n)-1]; return c ? `<a href="${fileUrl(c.document_id, c.page)}" target="_blank" rel="noopener" title="${esc(c.filename)}">${n}</a>` : n; }).join(', ') + ']');
+  // [Some_File.pdf p.3] or [Some_File.pdf] -> filename mentions
+  html = html.replace(/\[([^\]\n]{3,120}?)(?:,?\s*(?:p\.|page)\s*(\d+))?\]/g, (m, name, page) => {
+    const key = Object.keys(byFile).find(f => name.trim() === f || name.trim().startsWith(f));
+    if (!key) return m;
+    const c = byFile[key];
+    return `<a href="${fileUrl(c.document_id, page || c.page)}" target="_blank" rel="noopener">[${esc(name.trim())}${page?' p.'+page:''}]</a>`;
+  });
+  return html;
+}
 // ------------------------------------------------------------ risk & forecast
 async function loadRisk(){
   const el = $('#tab-risk');
