@@ -1,0 +1,40 @@
+ABC COMPANY, INC.
+AUDITED FINANCIAL STATEMENTS
+For the year ended December 31, 2025
+(All figures in US dollars)
+
+INDEPENDENT AUDITOR'S REPORT
+In our opinion, the financial statements present fairly, in all material respects, the financial position of ABC Company, Inc. as of December 31, 2025. Emphasis of matter: as discussed in Note 8, the Company was not in compliance with the current ratio covenant at year end and obtained a waiver from the lender subsequent to year end.
+
+INCOME STATEMENT
+Revenue: 5,610,000
+Cost of goods sold: 3,640,000
+Gross profit: 1,970,000
+Operating expenses: 1,702,000
+Wages: 1,105,000
+Depreciation: 96,000
+Net income: 268,000
+
+BALANCE SHEET
+Cash: 148,000
+Accounts receivable, net: 1,180,000
+Inventory: 790,000
+Current assets: 2,118,000
+Total assets: 3,590,000
+Current liabilities: 1,845,000
+Long-term debt: 690,000
+Total liabilities: 2,535,000
+Total equity: 1,055,000
+Distributions: 328,000
+
+NOTE 4 - RELATED PARTY TRANSACTIONS
+Rent paid to the shareholder-controlled entity increased to 168,000 in 2025 following a lease amendment executed in March 2025.
+
+NOTE 6 - CONCENTRATIONS
+One customer, Northline Distribution LLC, accounted for 31% of revenue and 52% of accounts receivable at year end. 340,000 of the Northline balance was more than 90 days past due at December 31, 2025.
+
+NOTE 8 - LINE OF CREDIT
+The current ratio at December 31, 2025 was 1.15, below the 1.25 covenant minimum. The lender granted a waiver on February 9, 2026. 690,000 was outstanding on the line at year end.
+
+NOTE 9 - SUBSEQUENT EVENTS
+In January 2026 the Company entered into a 450,000 equipment financing agreement for a new production line.

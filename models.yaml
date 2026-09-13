@@ -1,0 +1,94 @@
+# ---------------------------------------------------------------------------
+# Model registry. Swapping a model = editing this file (or setting FIRM_RAG_PROFILE).
+# Nothing in the application code names a model. See docs/ARCHITECTURE.md.
+#
+# Each profile has three "slots":
+#   llm        - the model that talks to the accountant (chat, forecasting narrative)
+#   extractor  - the model that turns uploaded files into structured JSON at ingest
+#   embedding  - the model that vectorises chunks for retrieval
+#
+# The embedding slot is versioned: chunks store the embedding model id and
+# dimensions. Changing the embedding model marks the index stale and
+# `POST /admin/reindex` re-embeds everything with the new model.
+# ---------------------------------------------------------------------------
+
+default_profile: offline
+
+profiles:
+
+  # Runs with zero API keys. Deterministic. Use for demos, tests, and for
+  # walking a firm through the UI before any client data leaves the building.
+  offline:
+    llm:
+      provider: mock
+    extractor:
+      provider: mock
+    embedding:
+      provider: hash
+      dimensions: 384
+
+  # Recommended production starting point (Sept 2026).
+  # Claude Opus 5 is available under Anthropic's zero-data-retention terms;
+  # Voyage embeddings are Anthropic's recommended embedding partner and also
+  # offer ZDR on request. See docs/MODEL_RECOMMENDATIONS.md.
+  anthropic_voyage:
+    llm:
+      provider: anthropic
+      model: claude-opus-5
+      max_tokens: 16000
+      effort: high
+      thinking: adaptive
+    extractor:
+      provider: anthropic
+      model: claude-sonnet-5
+      max_tokens: 16000
+      effort: medium
+    embedding:
+      provider: voyage
+      model: voyage-3.5
+      dimensions: 1024
+      input_type_query: query
+      input_type_document: document
+
+  # Same LLM, but embeddings from an OpenAI-compatible endpoint
+  # (works for OpenAI, Azure OpenAI, or a self-hosted server such as
+  # text-embeddings-inference / Ollama that speaks the same API).
+  anthropic_openai_embed:
+    llm:
+      provider: anthropic
+      model: claude-opus-5
+      max_tokens: 16000
+      effort: high
+      thinking: adaptive
+    extractor:
+      provider: anthropic
+      model: claude-sonnet-5
+      max_tokens: 16000
+      effort: medium
+    embedding:
+      provider: openai_compatible
+      model: text-embedding-3-large
+      dimensions: 1024
+      base_url: https://api.openai.com/v1
+      api_key_env: OPENAI_API_KEY
+
+  # Fully on-premises retrieval: LLM via Claude, embeddings from a local server.
+  # Point base_url at a machine inside the firm's network.
+  anthropic_local_embed:
+    llm:
+      provider: anthropic
+      model: claude-opus-5
+      max_tokens: 16000
+      effort: high
+      thinking: adaptive
+    extractor:
+      provider: anthropic
+      model: claude-sonnet-5
+      max_tokens: 16000
+      effort: medium
+    embedding:
+      provider: openai_compatible
+      model: nomic-embed-text
+      dimensions: 768
+      base_url: http://localhost:11434/v1
+      api_key_env: LOCAL_EMBED_KEY

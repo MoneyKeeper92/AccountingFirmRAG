@@ -1,0 +1,24 @@
+{
+  "document": "Form 1040 - U.S. Individual Income Tax Return (preparer summary)",
+  "taxpayer": "John A. Doe",
+  "spouse": "Maria L. Doe",
+  "filing_status": "Married filing jointly",
+  "tax_year": 2024,
+  "dependents": 2,
+  "income": {
+    "wages": 131000,
+    "interest_income": 940,
+    "dividend_income": 3650,
+    "schedule_c_net_profit": 21400
+  },
+  "adjusted_gross_income": 156990,
+  "taxable_income": 127800,
+  "total_tax": 18960,
+  "estimated_payments": 4000,
+  "withholding": 16900,
+  "refund": 1940,
+  "preparer_notes": [
+    "First full year of Schedule C activity; recommended quarterly estimates for 2025.",
+    "Client asked about 529 contributions - provided state deduction limits."
+  ]
+}

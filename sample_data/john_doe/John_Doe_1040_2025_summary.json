@@ -1,0 +1,32 @@
+{
+  "document": "Form 1040 - U.S. Individual Income Tax Return (preparer summary)",
+  "taxpayer": "John A. Doe",
+  "spouse": "Maria L. Doe",
+  "filing_status": "Married filing jointly",
+  "tax_year": 2025,
+  "dependents": 2,
+  "income": {
+    "wages": 142500,
+    "interest_income": 1860,
+    "dividend_income": 4210,
+    "schedule_c_net_profit": 38900,
+    "capital_gain": 6300
+  },
+  "adjusted_gross_income": 190020,
+  "itemized_deductions": {
+    "state_and_local_taxes": 10000,
+    "mortgage_interest": 14200,
+    "charitable": 6800
+  },
+  "taxable_income": 156420,
+  "total_tax": 24870,
+  "estimated_payments": 9000,
+  "withholding": 18100,
+  "refund": 2230,
+  "preparer_notes": [
+    "Schedule C business (Doe Consulting LLC) started 2023; home office deduction claimed for 14% of home.",
+    "Client sold RSUs in March 2025 - basis confirmed against broker 1099-B.",
+    "Estimated payments were late for Q2 and Q3; small underpayment penalty assessed.",
+    "Ask about 2026: client mentioned possible rental property purchase and S-corp election for the consulting LLC."
+  ]
+}
