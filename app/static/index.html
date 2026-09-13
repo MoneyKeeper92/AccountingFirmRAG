@@ -121,6 +121,7 @@ or “What should we expect 2026 revenue and net income to look like?”</div>
         <select id="engagement"><option value="">engagement…</option><option>tax</option><option>audit</option><option>review</option><option>bookkeeping</option><option>advisory</option></select>
         <input id="taxYear" type="number" placeholder="tax year" style="max-width:110px">
       </div>
+      <div class="row" style="padding:0 10px 6px"><input id="sourceUri" placeholder="source link (optional): \\\\server\\Clients\\… or SharePoint/DMS URL"></div>
       <div id="uploadStatus"></div>
       <div id="docList"></div>
     </div>
@@ -201,7 +202,7 @@ async function loadDocs(){
   for (const d of docs) {
     const div = document.createElement('div'); div.className='doc';
     div.innerHTML = `<b>${esc(d.filename)}</b><span class="tag ${d.status}">${d.status}</span><span class="tag">${esc(d.doc_type||'?')}</span>${d.tax_year?`<span class="tag">${d.tax_year}</span>`:''}${d.engagement?`<span class="tag">${esc(d.engagement)}</span>`:''}
-      <small>${esc(d.summary||d.error||'')}</small>
+      <small>${esc(d.summary||d.error||'')}</small>${d.source_uri?`<br><small>↗ ${esc(d.source_uri)}</small>`:''}
       <div class="row" style="margin-top:4px;align-items:center"><a class="btn open" href="${fileUrl(d.id)}" target="_blank" rel="noopener">Open file</a><button class="btn" onclick="viewDoc('${d.id}')">JSON</button><button class="btn danger" onclick="delDoc('${d.id}')">Delete</button></div>`;
     el.appendChild(div);
   }
@@ -220,6 +221,7 @@ async function uploadFiles(files){
   const fd = new FormData(); fd.append('client_id', activeClient);
   if ($('#engagement').value) fd.append('engagement', $('#engagement').value);
   if ($('#taxYear').value) fd.append('tax_year', $('#taxYear').value);
+  if ($('#sourceUri').value.trim()) fd.append('source_uri', $('#sourceUri').value.trim());
   for (const f of files) fd.append('files', f);
   $('#uploadStatus').innerHTML = `<div class="notice">Processing ${files.length} file(s): parsing → extracting facts → embedding…</div>`;
   try {

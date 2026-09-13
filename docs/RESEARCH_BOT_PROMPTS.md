@@ -117,7 +117,88 @@ DMS/practice-management vendors, name the forums where practitioners complain.
 
 ---
 
-## Prompt 3: Short weekly monitoring prompt
+## Prompt 3: Where accounting firms keep their documents, and how to get them out
+
+Run this before designing connectors. It answers two questions: what storage systems firms
+actually use (by firm size), and for each one, the practical ways to extract documents in bulk
+and keep new documents flowing.
+
+```
+You are a solutions engineer researching document storage in accounting, tax and audit firms so
+that an integration team can plan how to extract documents in bulk and keep new documents
+synchronised. Cover the United States first, then Canada, the UK and Australia.
+
+PART A - WHERE DOCUMENTS LIVE
+For each of these firm segments - solo/1-3 staff, 4-15 staff, 16-75 staff, 75+ staff - identify
+the most common storage systems and, where any survey or vendor data exists, the approximate
+share of firms using each. Categories to cover:
+1. Plain file shares: Windows file server / NAS with a folder-per-client convention; what the
+   typical folder structure looks like (client / year / engagement type).
+2. General cloud drives: SharePoint / OneDrive, Google Drive, Dropbox, Box, Egnyte.
+3. Accounting-specific document management systems: CCH Axcess Document, CCH ProSystem fx
+   Document, Thomson Reuters GoFileRoom, FileCabinet CS, Onvio Documents, Doc.It, SmartVault,
+   SuiteFiles, Virtual Cabinet, iChannel, IRIS, Karbon, Canopy, TaxDome, Financial Cents,
+   Jetpack Workflow, Client Hub, Mango.
+4. Client portals and secure file exchange used as de facto storage: ShareFile, SmartVault,
+   SafeSend, Liscio, TaxCaddy, Suralink, Intuit Link.
+5. Documents locked inside application binders: tax software (UltraTax, Lacerte, ProSeries,
+   Drake, CCH Axcess Tax, ProConnect, TaxAct Pro, ATX), audit engagement software (CaseWare
+   Working Papers and Cloud, CCH ProSystem fx Engagement, AdvanceFlow, Thomson Reuters
+   Engagement Manager, Inflo, Suralink), bookkeeping platforms (QuickBooks Desktop/Online, Xero,
+   Sage) with attached documents.
+6. Email: attachments never filed anywhere else (Outlook/Exchange, Gmail).
+7. Paper and scanned images: how common scan-only archives still are, typical scanners and
+   OCR habits (Fujitsu ScanSnap, Adobe Acrobat OCR).
+Sources: AICPA PCPS / CPA.com technology surveys, Accounting Today "Year Ahead" and top-firms
+technology surveys, CPA Practice Advisor product reviews and reader surveys, Journal of
+Accountancy technology roundups, Wolters Kluwer and Thomson Reuters customer counts, Reddit
+r/Accounting and r/taxpros threads about file organisation, TaxProTalk, vendor case studies,
+IT-provider (MSP) blogs that specialise in CPA firms, Karbon/Canopy/TaxDome practice reports.
+For every figure give the source, its date, and the sample it came from.
+
+PART B - HOW TO EXTRACT FROM EACH
+For every storage system in Part A, document the realistic extraction paths, in this order of
+preference: (1) supported API or SDK, (2) supported bulk export or sync client, (3) admin-side
+migration tooling or vendor-assisted export, (4) filesystem or database-level access,
+(5) manual print-to-PDF or download. For each path record:
+- Authentication model (OAuth app registration, API key, service account, on-prem agent).
+- Whether metadata comes with the file: client identifier, tax year, document type, engagement,
+  version/final flag, last-modified, who filed it.
+- Whether the API supports change notifications / webhooks / delta queries so new documents can
+  be picked up automatically, and the polling alternative if not.
+- Rate limits, file-size limits, and any licensing or partner-program requirement to get API
+  access (name the program and its cost if known).
+- Known pain points reported by integrators or users.
+- For application binders (tax and audit software): how to batch-export the filed return or
+  final statements as text-layer PDF, and whether a structured data export exists (e.g. tax
+  return data reports, trial balance exports, CaseWare export formats).
+- For email: the practical route (Microsoft Graph / Gmail API, mailbox rules, journaling) and
+  the privacy considerations.
+- For scans: which OCR options integrators actually use on tax forms and financial statements,
+  and reported accuracy.
+Specifically confirm for each of Microsoft Graph (SharePoint/OneDrive), Google Drive API, Box,
+Dropbox, Egnyte, ShareFile, SmartVault, GoFileRoom, CCH Axcess (Document and Tax), Onvio,
+Karbon, Canopy, TaxDome, CaseWare Cloud, QuickBooks Online and Xero: does a documented API for
+listing and downloading documents exist today, and where is the documentation?
+
+PART C - RECOMMENDATIONS
+1. Rank the storage systems by (frequency among 3-30 staff firms) x (ease of extraction).
+2. For the top five, sketch a connector: bulk backfill approach, incremental sync approach,
+   how client and year would be inferred, and expected effort in engineer-days.
+3. Identify the systems where the only realistic route is a watched folder or manual export,
+   and say how firms using them typically cope.
+4. Flag any legal or contractual constraint on extracting documents from a vendor system
+   (terms of service that forbid bulk export, data egress fees, partner agreements).
+
+METHOD AND OUTPUT
+- Primary sources (vendor API docs, developer portals, help centres) before forum evidence.
+- Provide a URL and access date for every claim; mark unverified items.
+- Output: (1) a table of storage systems x firm size x adoption evidence; (2) a table of
+  extraction paths per system with the fields above; (3) the ranked recommendations; (4) the
+  30 most useful URLs.
+```
+
+## Prompt 4: Short weekly monitoring prompt
 
 Run this every Monday to stay current:
 

@@ -78,3 +78,26 @@ def test_open_original_file_from_citation(client):
     assert client.get(f"/api/documents/{cite['document_id']}/file?token=nope", headers={"X-API-Token": ""}).status_code == 401
     assert client.get("/api/documents/doesnotexist/file").status_code == 404
     assert client.get("/api/admin/audit").json()[0]["action"] == "file_open"
+
+
+def test_pointer_mode_redirects_to_source(client, monkeypatch):
+    """With FIRM_RAG_KEEP_ORIGINALS=false nothing is copied; the file route sends the browser to the source link."""
+    from app.config import Settings
+    from app.main import create_app
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setenv("FIRM_RAG_KEEP_ORIGINALS", "false")
+    app = create_app(Settings.load())
+    with TestClient(app) as c2:
+        c2.headers.update({"X-API-Token": "test-token"})
+        cl = c2.post("/api/clients", json={"name": "Pointer Co"}).json()
+        f = next((SAMPLE / "abc_company").glob("*2025.txt"))
+        r = c2.post("/api/documents", data={"client_id": cl["id"], "source_uri": "https://firm.sharepoint.com/sites/clients/ABC/2025/FS.pdf"},
+                    files=[("files", (f.name, f.read_bytes(), "text/plain"))]).json()["results"][0]
+        assert r["status"] == "ready" and r["original_stored"] is False
+        assert not list((Settings.load().uploads_dir).glob(f"**/{r['document_id']}__*"))
+        resp = c2.get(f"/api/documents/{r['document_id']}/file", follow_redirects=False)
+        assert resp.status_code == 307 and resp.headers["location"].startswith("https://firm.sharepoint.com/")
+        # no copy and no link -> clear error
+        r2 = c2.post("/api/documents", data={"client_id": cl["id"]}, files=[("files", ("other.txt", b"Revenue: 1", "text/plain"))]).json()["results"][0]
+        assert c2.get(f"/api/documents/{r2['document_id']}/file").status_code == 404

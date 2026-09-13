@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS documents (
   extractor_model TEXT,
   canonical_json TEXT,         -- the normalised record produced at ingest
   uploaded_by TEXT,
+  source_uri TEXT,             -- where the file lives (file share, DMS, SharePoint...) when we keep a pointer, not a copy
   created_at REAL NOT NULL
 );
 CREATE TABLE IF NOT EXISTS chunks (
@@ -101,6 +102,10 @@ class Store:
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.execute("PRAGMA journal_mode = WAL")
         self.conn.executescript(SCHEMA)
+        # lightweight migration for databases created before source_uri existed
+        cols = {r["name"] for r in self.conn.execute("PRAGMA table_info(documents)")}
+        if "source_uri" not in cols:
+            self.conn.execute("ALTER TABLE documents ADD COLUMN source_uri TEXT")
 
     # ------------------------------------------------------------- clients
     def upsert_client(self, name: str, entity_type: str | None = None, industry: str | None = None,
@@ -140,12 +145,13 @@ class Store:
 
     # ----------------------------------------------------------- documents
     def create_document(self, client_id: str, filename: str, sha256: str, size_bytes: int,
-                        uploaded_by: str | None, engagement: str | None = None, tax_year: int | None = None) -> str:
+                        uploaded_by: str | None, engagement: str | None = None, tax_year: int | None = None,
+                        source_uri: str | None = None) -> str:
         doc_id = uuid.uuid4().hex[:12]
         self.conn.execute(
-            """INSERT INTO documents(id,client_id,filename,sha256,size_bytes,status,uploaded_by,engagement,tax_year,created_at)
-               VALUES(?,?,?,?,?,'processing',?,?,?,?)""",
-            (doc_id, client_id, filename, sha256, size_bytes, uploaded_by, engagement, tax_year, time.time()),
+            """INSERT INTO documents(id,client_id,filename,sha256,size_bytes,status,uploaded_by,engagement,tax_year,source_uri,created_at)
+               VALUES(?,?,?,?,?,'processing',?,?,?,?,?)""",
+            (doc_id, client_id, filename, sha256, size_bytes, uploaded_by, engagement, tax_year, source_uri, time.time()),
         )
         self.conn.commit()
         return doc_id

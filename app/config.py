@@ -54,6 +54,7 @@ class Settings:
     models_path: Path
     profile_name: str
     api_token: str
+    keep_originals: bool
     llm: SlotConfig
     extractor: SlotConfig
     embedding: SlotConfig
@@ -78,6 +79,7 @@ class Settings:
             models_path=models_path,
             profile_name=profile_name,
             api_token=os.environ.get("FIRM_RAG_API_TOKEN", "change-me"),
+            keep_originals=os.environ.get("FIRM_RAG_KEEP_ORIGINALS", "true").lower() in ("1", "true", "yes"),
             llm=SlotConfig.from_dict(p["llm"]),
             extractor=SlotConfig.from_dict(p.get("extractor", p["llm"])),
             embedding=SlotConfig.from_dict(p["embedding"]),

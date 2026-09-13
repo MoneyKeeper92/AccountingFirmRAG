@@ -52,6 +52,10 @@ demo the whole workflow to a firm before a single client document leaves their n
 
 Adding a newer model later is one edit to `models.yaml`. See `docs/ARCHITECTURE.md`.
 
+By default a copy of each uploaded original is kept so citations can open it. Set
+`FIRM_RAG_KEEP_ORIGINALS=false` and pass a source link on upload to store only the index and
+point citations at the firm's own file share or document management system.
+
 ## Running the tests
 
 ```bash

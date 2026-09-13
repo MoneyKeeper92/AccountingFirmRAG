@@ -138,7 +138,9 @@ generic starting points; tune them per industry with the engagement partner.
 
 - Single shared `X-API-Token`. Fine for a one-office pilot on a private network; replace with
   SSO (Microsoft Entra / Google Workspace) and per-user roles before anything else.
-- Originals are stored on disk under `data/uploads/<client_id>/`. Encrypt the volume at rest.
+- Originals are stored on disk under `data/uploads/<client_id>/` in copy mode. In pointer mode
+  (`FIRM_RAG_KEEP_ORIGINALS=false`) nothing is copied and the document record holds a `source_uri`;
+  the file route redirects there. Encrypt the volume at rest either way.
 - All model calls go out over HTTPS to the configured vendor; nothing else leaves the box.
 - Audit log is append-only from the application's point of view.
 

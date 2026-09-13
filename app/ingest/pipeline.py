@@ -16,20 +16,27 @@ log = logging.getLogger(__name__)
 
 
 class IngestPipeline:
-    def __init__(self, store: Store, extractor: LLMProvider, embedder: EmbeddingProvider, uploads_dir: Path):
+    def __init__(self, store: Store, extractor: LLMProvider, embedder: EmbeddingProvider, uploads_dir: Path, keep_originals: bool = True):
         self.store = store
+        self.keep_originals = keep_originals
         self.extractor = extractor
         self.embedder = embedder
         self.uploads_dir = uploads_dir
 
     def ingest_bytes(self, *, client_id: str, filename: str, data: bytes, uploaded_by: str | None,
-                     engagement: str | None = None, tax_year: int | None = None, keep_original: bool = True) -> dict[str, Any]:
+                     engagement: str | None = None, tax_year: int | None = None, keep_original: bool | None = None,
+                     source_uri: str | None = None) -> dict[str, Any]:
+        """`source_uri` is where the file already lives (UNC path, SharePoint/DMS link). When the
+        deployment runs in pointer mode (keep_originals=False) nothing is copied: the index and the
+        extracted facts are stored, and citations open the file at its source."""
+        if keep_original is None:
+            keep_original = self.keep_originals
         sha = hashlib.sha256(data).hexdigest()
         dup = self.store.find_duplicate(client_id, sha)
         if dup:
             return {"document_id": dup["id"], "status": "duplicate", "message": f"Identical file already ingested as {dup['filename']}"}
 
-        doc_id = self.store.create_document(client_id, filename, sha, len(data), uploaded_by, engagement, tax_year)
+        doc_id = self.store.create_document(client_id, filename, sha, len(data), uploaded_by, engagement, tax_year, source_uri)
         try:
             parsed = parse_file(filename, data)
             if keep_original:
@@ -64,6 +71,7 @@ class IngestPipeline:
             self.store.log("upload", uploaded_by, client_id, document_id=doc_id, filename=filename, chunks=n_chunks, facts=n_facts,
                            extractor=self.extractor.identity, embedding=self.embedder.identity)
             return {"document_id": doc_id, "status": "ready", "doc_type": record.get("doc_type"), "tax_year": record.get("tax_year") or tax_year,
+                    "original_stored": keep_original, "source_uri": source_uri,
                     "summary": record.get("summary"), "chunks": n_chunks, "facts": n_facts, "risk_flags": record.get("risk_flags", []),
                     "warnings": parsed.warnings}
         except Exception as e:  # noqa: BLE001

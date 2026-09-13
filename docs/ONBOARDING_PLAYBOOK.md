@@ -38,6 +38,45 @@ Rules of thumb for what to ingest first, in order of value per hour:
 
 Skip entirely: drafts superseded by finals, duplicate copies, email dumps.
 
+## Where firms keep documents, and how we get them out
+
+A starting map based on what small and mid-size practices typically run. Treat it as a hypothesis
+to validate with Prompt 3 in `docs/RESEARCH_BOT_PROMPTS.md` and with each firm's own inventory.
+
+| Where the documents live | Typical in | Bulk backfill | Keeping it current | Metadata you get for free |
+|---|---|---|---|---|
+| Windows file server / NAS, folder per client per year | Most firms under ~30 staff, often alongside everything below | Walk the share with a small on-prem agent; infer client and year from the path | Watched-folder agent posts new finals to the API | Path (client, year, engagement), modified date |
+| SharePoint / OneDrive (Microsoft 365) | Firms that moved the file server to the cloud; growing fast | Microsoft Graph API: list drive items, download | Graph delta queries or change notifications | Path, author, modified, custom columns if the firm uses them |
+| Google Drive / Dropbox / Box / Egnyte | Smaller and newer firms | Vendor API | Change events / webhooks | Path, owner, modified |
+| Accounting DMS (CCH Axcess Document, GoFileRoom, FileCabinet CS, Onvio, Doc.It, SuiteFiles, SmartVault) | Firms 10–200 staff on a Wolters Kluwer or Thomson Reuters stack | Vendor API where offered (varies; some need partner-program access), otherwise bulk export tooling | API polling or export schedules | Best metadata: client ID, year, document type, final/draft flag |
+| Practice-management suites with built-in docs (Karbon, Canopy, TaxDome, Financial Cents) | Cloud-first small firms | Vendor API (Karbon and Canopy publish APIs; check the rest) | Webhooks or polling | Client, job/engagement, year |
+| Client portals used as storage (ShareFile, SmartVault, Liscio, SafeSend, TaxCaddy) | Everywhere; often the only place client-provided source docs exist | Portal API or sync client | Portal events | Client, upload date |
+| Tax software binders (UltraTax, Lacerte, ProSeries, Drake, CCH Axcess Tax) | Every tax practice | Batch print/export the filed return to text-layer PDF; export client data reports where available | Add "export as-filed PDF to the client folder" to the filing checklist | Client, year, form set |
+| Audit engagement binders (CaseWare, ProSystem fx Engagement, AdvanceFlow) | Audit practices | Publish final statements and adjusted trial balance out of the binder (PDF + XLSX) | Same, at sign-off | Client, period, account mapping |
+| Email attachments | Everywhere, and never filed | Microsoft Graph / Gmail API search on client domains; low priority for the pilot | Mailbox rule that files into the client folder | Sender, date |
+| Paper and scan-only PDFs | Legacy years in almost every firm | OCR first (Acrobat, OCRmyPDF, cloud OCR), then treat as PDF | Scan-to-folder with OCR enabled on the scanner | Little; rely on filename and extraction |
+
+Practical order for a pilot: file share or SharePoint first (covers most of the archive with one
+connector), tax and audit software exports second (the highest-value finals), DMS/portal APIs when
+a firm is paying, email last.
+
+### Copies or pointers?
+
+The system does not need to duplicate the archive. Two modes, set per deployment:
+
+- **Copy mode** (`FIRM_RAG_KEEP_ORIGINALS=true`, default): the original is stored next to the
+  index. Simplest, and needed when the app cannot reach the source (files emailed in, client
+  uploads, one-off drops).
+- **Pointer mode** (`FIRM_RAG_KEEP_ORIGINALS=false`): only the index, the extracted facts and a
+  `source_uri` (UNC path, SharePoint or DMS link) are stored. Citations open the file where it
+  already lives. No second copy to secure, back up or delete. This is the right default for a
+  firm with a file share or DMS, and it is what a connector should use.
+
+Storage is small either way. Tax returns and statements are mostly 0.5–3 MB of PDF; a 300-client
+practice with eight years and six documents per client-year is roughly 20–25 GB of originals and
+about 1 GB of index and vectors. On any cloud object store that is a few dollars a month. The cost
+that matters is governance, not gigabytes, which is the argument for pointer mode.
+
 ## Phase 2 – Format guidance ("best format")
 
 The system accepts PDF, CSV, XLSX, JSON and plain text. What to prefer:

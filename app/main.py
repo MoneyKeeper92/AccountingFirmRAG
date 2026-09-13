@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -54,7 +54,7 @@ class AppState:
         self.llm = build_llm_provider(settings.llm)
         self.extractor = build_llm_provider(settings.extractor)
         self.embedder = build_embedding_provider(settings.embedding)
-        self.pipeline = IngestPipeline(self.store, self.extractor, self.embedder, settings.uploads_dir)
+        self.pipeline = IngestPipeline(self.store, self.extractor, self.embedder, settings.uploads_dir, keep_originals=settings.keep_originals)
         self.rag = RagEngine(self.store, self.llm, self.embedder)
 
     def describe(self) -> dict[str, Any]:
@@ -66,6 +66,7 @@ class AppState:
             "embedding": self.embedder.identity,
             "embedding_dimensions": self.embedder.dimensions,
             "stale_chunks": self.store.stale_chunk_count(self.embedder.identity),
+            "keep_originals": self.settings.keep_originals,
             "known_providers": known_providers(),
             "stats": self.store.stats(),
         }
@@ -135,7 +136,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # --------------------------------------------------------- documents
     @app.post("/api/documents", dependencies=[Depends(auth)])
     async def upload(client_id: str = Form(...), engagement: str | None = Form(None), tax_year: int | None = Form(None),
-                     files: list[UploadFile] = File(...), actor: str = Depends(auth)):
+                     source_uri: str | None = Form(None), files: list[UploadFile] = File(...), actor: str = Depends(auth)):
         st = current()
         if not st.store.get_client(client_id):
             raise HTTPException(404, f"client '{client_id}' not found - create the client first")
@@ -146,7 +147,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 results.append({"filename": f.filename, "status": "failed", "error": "file larger than 50 MB"})
                 continue
             r = st.pipeline.ingest_bytes(client_id=client_id, filename=f.filename or "upload", data=data, uploaded_by=actor,
-                                         engagement=engagement, tax_year=tax_year)
+                                         engagement=engagement, tax_year=tax_year, source_uri=(source_uri or None))
             r["filename"] = f.filename
             results.append(r)
         return {"results": results}
@@ -174,7 +175,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(404, "document not found")
         matches = sorted((st.settings.uploads_dir / d["client_id"]).glob(f"{doc_id}__*"))
         if not matches:
-            raise HTTPException(404, "original file is not stored for this document")
+            if d.get("source_uri"):
+                # pointer mode: the file lives on the firm's share / DMS; send the browser there
+                st.store.log("file_open", "staff", d["client_id"], document_id=doc_id, filename=d["filename"], redirected_to=d["source_uri"])
+                return RedirectResponse(d["source_uri"], status_code=307)
+            raise HTTPException(404, "No stored copy and no source link for this document. Re-upload with a source link or enable FIRM_RAG_KEEP_ORIGINALS.")
         path = matches[0]
         media_type = mimetypes.guess_type(d["filename"])[0] or "application/octet-stream"
         st.store.log("file_open", "staff", d["client_id"], document_id=doc_id, filename=d["filename"])
