@@ -198,7 +198,85 @@ METHOD AND OUTPUT
   30 most useful URLs.
 ```
 
-## Prompt 4: Short weekly monitoring prompt
+## Prompt 4: Features worth borrowing from existing systems
+
+Run this with the current feature list of this software so the agent can score gaps. Update the
+"WHAT WE HAVE" block each quarter.
+
+```
+You are a product manager doing feature discovery for a private AI assistant that lets a small
+accounting / tax / audit firm search and analyse its own client archive. Your job is to find
+features in existing products - direct competitors and adjacent tools - that our users would
+value and that we should consider integrating or building, and to say how each one works in
+enough detail that an engineer could scope it.
+
+WHAT WE HAVE TODAY
+- Upload or connect a firm's client files (PDF, Excel, CSV, JSON, text); each becomes a
+  standard record with document type, tax year, summary, key figures with source lines, and
+  risk flags.
+- Plain-English questions scoped to one client, answered with citations that open the source
+  file at the cited page.
+- Deterministic forecasting (trend, CAGR), ratio analysis and analytical-review flags exposed
+  as tools the model must use for numbers.
+- Tax-season request lists: read last year's return and the folder, draft the document request
+  email, match returned attachments to items, keep an "items pending" list per client.
+- Copy or pointer storage of originals; swappable models by configuration; audit log.
+
+WHERE TO LOOK (verify, then expand)
+Client document collection and organizers: TaxCaddy, SafeSend (Suite, Returns, Gather),
+Liscio, Suralink, Canopy client requests, TaxDome organizers and pipelines, Karbon client
+tasks and automatic reminders, SmartVault request lists, Intuit Link, Content Snare, Financial
+Cents client tasks, Keeper client portal, Ignition.
+Firm-archive AI and search: CCH Axcess with AI, Thomson Reuters CoCounsel / GoFileRoom,
+Karbon AI, Canopy AI, iManage Ask, NetDocuments ndMAX (legal, but the pattern transfers).
+Tax and audit analytics: MindBridge, DataSnipper, Fieldguide, Inflo, Caseware AiDA, Blue J,
+Black Ore, TaxPlanIQ, Corvee, Holistiplan (financial planning from a 1040).
+Adjacent professions with mature equivalents: legal (Harvey, Clio Duo, Spellbook), wealth
+management (Holistiplan, FP Alpha, Jump), medical (Abridge, Nuance DAX) for document intake and
+summarisation patterns.
+
+FOR EACH FEATURE YOU FIND, RECORD
+1. Product, feature name, link to documentation or demo video, date.
+2. What the user does and what they get - walk through it step by step from the screenshots or
+   video, including edge cases the vendor handles (client sends the wrong document, item no
+   longer applies, multiple people at the client, reminders and escalation cadence).
+3. The mechanism, as far as it is public: does it use OCR / classification to recognise a
+   document type on arrival, does it pre-fill from last year, does it read tax software data,
+   does it integrate with email, SMS, e-signature, payment collection.
+4. Evidence users like it or complain about it: quotes with source and date from G2, Capterra,
+   r/taxpros, r/Accounting, TaxProTalk, vendor community forums, YouTube comments, LinkedIn.
+5. Whether it is available via API or webhook so we could integrate rather than rebuild, and
+   the vendor's partner terms if known.
+6. Effort to build an equivalent inside our system: small (days), medium (weeks), large
+   (months), with the reasoning.
+7. Fit score 1-5 for a 3-30 staff firm, with one sentence of justification.
+
+SPECIFIC QUESTIONS
+- How do the best client-request tools decide what to ask for? Do any of them derive the list
+  from the prior-year return automatically, and how accurate do users say that is?
+- How do they recognise an incoming document and match it to the request (file name, OCR,
+  form-type classifier, client tagging)? What happens to unmatched uploads?
+- What reminder cadences and channels (email, SMS, portal push) do they use, and what do
+  practitioners say actually gets clients to respond?
+- Which products let the client answer questions inline (organizer-style yes/no) instead of
+  only uploading files, and do firms find that useful or ignored?
+- What review and sign-off flows exist for AI-extracted figures ("verify before use" screens,
+  tick marks, confidence indicators, side-by-side source view)?
+- Which planning or forecasting outputs (tax projections, entity-choice comparisons, ratio
+  dashboards, industry benchmarks) do firms report using in client meetings?
+- What do firms say they wish these tools did, that none of them do?
+
+OUTPUT
+1. A ranked backlog of 15-25 features: name, source product(s), fit score, build-vs-integrate
+   recommendation, effort, one-paragraph rationale with evidence links.
+2. A short "do not build" list: features competitors ship that users do not value, with the
+   evidence.
+3. For the top five, a one-page mini-spec: user story, screens, data needed, integration points
+   with our existing pieces (request lists, archive, citations, audit log).
+4. Source list with URLs and access dates; mark anything unverified.
+```
+
+## Prompt 5: Short weekly monitoring prompt
 
 Run this every Monday to stay current:
 

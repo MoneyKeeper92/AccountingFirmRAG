@@ -69,6 +69,30 @@ CREATE TABLE IF NOT EXISTS facts (
   source_quote TEXT
 );
 CREATE INDEX IF NOT EXISTS facts_client ON facts(client_id, name, period);
+CREATE TABLE IF NOT EXISTS request_lists (
+  id TEXT PRIMARY KEY,
+  client_id TEXT NOT NULL REFERENCES clients(id),
+  tax_year INTEGER NOT NULL,
+  status TEXT NOT NULL,        -- draft | sent | complete
+  email_subject TEXT,
+  email_body TEXT,
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS request_items (
+  id TEXT PRIMARY KEY,
+  list_id TEXT NOT NULL REFERENCES request_lists(id) ON DELETE CASCADE,
+  ordinal INTEGER NOT NULL,
+  key TEXT,
+  category TEXT,
+  item TEXT NOT NULL,
+  why TEXT,
+  status TEXT NOT NULL,        -- pending | received | not_applicable
+  document_id TEXT,
+  received_at REAL,
+  note TEXT
+);
+CREATE INDEX IF NOT EXISTS request_items_list ON request_items(list_id);
 CREATE TABLE IF NOT EXISTS audit_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ts REAL NOT NULL,
@@ -137,6 +161,8 @@ class Store:
         return [dict(r) for r in rows]
 
     def delete_client(self, client_id: str) -> None:
+        self.conn.execute("DELETE FROM request_items WHERE list_id IN (SELECT id FROM request_lists WHERE client_id=?)", (client_id,))
+        self.conn.execute("DELETE FROM request_lists WHERE client_id=?", (client_id,))
         self.conn.execute("DELETE FROM facts WHERE client_id=?", (client_id,))
         self.conn.execute("DELETE FROM chunks WHERE client_id=?", (client_id,))
         self.conn.execute("DELETE FROM documents WHERE client_id=?", (client_id,))
@@ -271,6 +297,90 @@ class Store:
             sql += f" AND f.name IN ({','.join('?' * len(names))})"; args.extend(names)
         sql += " ORDER BY f.name, f.period"
         return [dict(r) for r in self.conn.execute(sql, args).fetchall()]
+
+    # ------------------------------------------------------- client context
+    def client_text(self, client_id: str, max_chars: int = 200_000) -> str:
+        rows = self.conn.execute(
+            """SELECT ch.text FROM chunks ch JOIN documents d ON d.id=ch.document_id
+               WHERE ch.client_id=? AND d.status='ready' ORDER BY d.tax_year DESC, ch.ordinal""", (client_id,)).fetchall()
+        out, n = [], 0
+        for r in rows:
+            out.append(r["text"]); n += len(r["text"])
+            if n > max_chars:
+                break
+        return "\n".join(out)
+
+    def canonical_records(self, client_id: str) -> list[dict]:
+        rows = self.conn.execute("SELECT id, filename, doc_type, tax_year, canonical_json FROM documents WHERE client_id=? AND status='ready'", (client_id,)).fetchall()
+        out = []
+        for r in rows:
+            rec = json.loads(r["canonical_json"]) if r["canonical_json"] else {}
+            rec.update({"document_id": r["id"], "filename": r["filename"], "doc_type": r["doc_type"], "tax_year": r["tax_year"]})
+            out.append(rec)
+        return out
+
+    # -------------------------------------------------------- request lists
+    def create_request_list(self, client_id: str, tax_year: int, subject: str, body: str, items: list[dict]) -> dict:
+        lid = uuid.uuid4().hex[:12]
+        now = time.time()
+        self.conn.execute("INSERT INTO request_lists(id,client_id,tax_year,status,email_subject,email_body,created_at,updated_at) VALUES(?,?,?,'draft',?,?,?,?)",
+                          (lid, client_id, tax_year, subject, body, now, now))
+        for i, it in enumerate(items):
+            self.conn.execute("INSERT INTO request_items(id,list_id,ordinal,key,category,item,why,status) VALUES(?,?,?,?,?,?,?,'pending')",
+                              (uuid.uuid4().hex[:12], lid, i, it.get("key"), it.get("category"), it["item"], it.get("why")))
+        self.conn.commit()
+        return self.get_request_list(lid)
+
+    def get_request_list(self, list_id: str) -> dict | None:
+        row = self.conn.execute("SELECT * FROM request_lists WHERE id=?", (list_id,)).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        items = self.conn.execute(
+            """SELECT ri.*, doc.filename AS received_filename FROM request_items ri
+               LEFT JOIN documents doc ON doc.id=ri.document_id WHERE ri.list_id=? ORDER BY ri.ordinal""", (list_id,)).fetchall()
+        d["items"] = [dict(i) for i in items]
+        d["counts"] = {st: sum(1 for i in d["items"] if i["status"] == st) for st in ("pending", "received", "not_applicable")}
+        return d
+
+    def list_request_lists(self, client_id: str) -> list[dict]:
+        rows = self.conn.execute(
+            """SELECT rl.id, rl.tax_year, rl.status, rl.created_at, rl.updated_at,
+                      SUM(ri.status='pending') AS pending, SUM(ri.status='received') AS received, COUNT(ri.id) AS total
+               FROM request_lists rl LEFT JOIN request_items ri ON ri.list_id=rl.id
+               WHERE rl.client_id=? GROUP BY rl.id ORDER BY rl.tax_year DESC, rl.created_at DESC""", (client_id,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def update_request_list(self, list_id: str, **fields) -> None:
+        allowed = {k: v for k, v in fields.items() if k in ("email_subject", "email_body", "status") and v is not None}
+        if not allowed:
+            return
+        sets = ", ".join(f"{k}=?" for k in allowed) + ", updated_at=?"
+        self.conn.execute(f"UPDATE request_lists SET {sets} WHERE id=?", (*allowed.values(), time.time(), list_id))
+        self.conn.commit()
+
+    def add_request_item(self, list_id: str, item: str, why: str | None, category: str | None, key: str | None = None) -> dict:
+        n = self.conn.execute("SELECT COALESCE(MAX(ordinal),-1)+1 FROM request_items WHERE list_id=?", (list_id,)).fetchone()[0]
+        iid = uuid.uuid4().hex[:12]
+        self.conn.execute("INSERT INTO request_items(id,list_id,ordinal,key,category,item,why,status) VALUES(?,?,?,?,?,?,?,'pending')",
+                          (iid, list_id, n, key or "custom", category or "Other", item, why))
+        self.conn.execute("UPDATE request_lists SET updated_at=? WHERE id=?", (time.time(), list_id))
+        self.conn.commit()
+        return dict(self.conn.execute("SELECT * FROM request_items WHERE id=?", (iid,)).fetchone())
+
+    def get_request_item(self, item_id: str) -> dict | None:
+        row = self.conn.execute("SELECT * FROM request_items WHERE id=?", (item_id,)).fetchone()
+        return dict(row) if row else None
+
+    def set_request_item(self, item_id: str, status: str, document_id: str | None = None, note: str | None = None) -> None:
+        received_at = time.time() if status == "received" else None
+        self.conn.execute("UPDATE request_items SET status=?, document_id=COALESCE(?, document_id), received_at=?, note=COALESCE(?, note) WHERE id=?",
+                          (status, document_id, received_at, note, item_id))
+        lid = self.conn.execute("SELECT list_id FROM request_items WHERE id=?", (item_id,)).fetchone()[0]
+        pending = self.conn.execute("SELECT COUNT(*) FROM request_items WHERE list_id=? AND status='pending'", (lid,)).fetchone()[0]
+        self.conn.execute("UPDATE request_lists SET updated_at=?, status=CASE WHEN ?=0 THEN 'complete' WHEN status='complete' THEN 'sent' ELSE status END WHERE id=?",
+                          (time.time(), pending, lid))
+        self.conn.commit()
 
     # ----------------------------------------------------------------- audit
     def log(self, action: str, actor: str | None, client_id: str | None = None, **detail: Any) -> None:

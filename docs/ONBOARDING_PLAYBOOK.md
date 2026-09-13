@@ -133,6 +133,19 @@ Three ways to make that happen, in increasing order of automation:
    Document, or ShareFile via their APIs when a document is marked "final". Do this once a firm
    is paying.
 
+### The request list: turning last year's return into this year's to-do list
+
+Once last year's return is in the folder, the **Checklist** tab drafts the document request in
+one click: every item says why it is being asked for, grouped income / business / deductions /
+credits / payments / follow-ups / admin. The preparer edits the email, sends it from their own
+mailbox (copy, or "open in email app"), and marks the list sent. As documents arrive, staff drop
+the whole reply on the list: attachments are filed into the client's folder, matched to items,
+and the "items pending" count updates. Anything unrecognised is filed and flagged for a person
+to assign. Reopen, add or mark items not applicable at any time.
+
+Firms using a portal keep using it: point the portal's upload webhook at the inbound route and
+the matching happens without anyone touching the files.
+
 ### Client self-upload
 
 For clients uploading their own documents (organizers, bank statements, 1099s), do **not** give

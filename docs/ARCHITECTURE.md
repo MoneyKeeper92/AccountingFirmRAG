@@ -134,6 +134,33 @@ set of analytical-review flags (receivables growing faster than revenue, large s
 model must call these tools and is told to explain method and assumptions. Thresholds are
 generic starting points; tune them per industry with the engagement partner.
 
+## Tax-season request lists
+
+`app/checklist.py` turns the archive into a client to-do list at the start of an engagement.
+
+1. **Context.** For the client, take the most recent year on file as the prior year, pull its
+   extracted facts (wages, interest, dividends, Schedule C profit, estimated payments...), the
+   lower-cased text of the folder, the extractor's risk flags, and any preparer notes.
+2. **Rules.** Each rule is (condition, item, why, match words). Wages on the return produce
+   "W-2 from each employer (wages of $142,500 on the 2025 return)"; the word "home office" in
+   the folder produces the home-office item; a note containing "ask about" becomes a Follow-up
+   item. Rules are plain Python and are meant to be edited with the firm; see `RULES`.
+3. **Email.** A grouped, checkbox-style draft. With a real model profile the wording is
+   polished by the LLM; it may not add or drop items.
+4. **Tracking.** `request_lists` / `request_items` tables. Items are pending, received or not
+   applicable; the list flips to complete when nothing is pending.
+5. **Receiving.** Two routes file the client's documents into their folder through the normal
+   ingestion pipeline (so they are indexed and searchable immediately) and tick the item:
+   `POST /request-lists/{id}/items/{item}/upload` for a specific item, and
+   `POST /request-lists/{id}/inbound` for a whole reply, where each attachment is matched to a
+   pending item by filename and extracted text (specific tokens such as `1099-int` beat generic
+   ones). Unmatched attachments are still filed and listed for staff to assign.
+
+Wiring a mailbox: a Microsoft Graph or Gmail webhook (or the firm's portal) posts the
+attachments to the inbound route with the sender address; map sender to client on the way in.
+Reminder cadences (nudge after 7 and 14 days for pending items) are a small scheduled job on
+top of `list_request_lists`.
+
 ## Security model of the prototype
 
 - Single shared `X-API-Token`. Fine for a one-office pilot on a private network; replace with

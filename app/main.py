@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import forecast
+from . import checklist, forecast
 from .config import Settings
 from .ingest import IngestPipeline
 from .providers import build_embedding_provider, build_llm_provider
@@ -42,6 +42,28 @@ class ChatIn(BaseModel):
 
 class ProfileIn(BaseModel):
     profile: str
+
+
+class RequestListIn(BaseModel):
+    tax_year: int | None = None
+    firm_name: str = "our office"
+
+
+class RequestEmailIn(BaseModel):
+    email_subject: str | None = None
+    email_body: str | None = None
+    status: str | None = None          # draft | sent | complete
+
+
+class RequestItemIn(BaseModel):
+    item: str = Field(min_length=2)
+    why: str | None = None
+    category: str | None = None
+
+
+class RequestItemStatusIn(BaseModel):
+    status: str = Field(pattern="^(pending|received|not_applicable)$")
+    note: str | None = None
 
 
 
@@ -196,6 +218,100 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         s.delete_document(doc_id)
         s.log("document_delete", actor, d["client_id"], document_id=doc_id, filename=d["filename"])
         return {"deleted": doc_id}
+
+    # -------------------------------------------------- tax request lists
+    @app.post("/api/clients/{client_id}/request-lists", dependencies=[Depends(auth)])
+    def create_request_list(client_id: str, body: RequestListIn, actor: str = Depends(auth)):
+        st = current()
+        try:
+            r = checklist.build_for_client(st.store, st.llm, client_id, body.tax_year, body.firm_name)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        st.store.log("request_list_create", actor, client_id, list_id=r["id"], tax_year=r["tax_year"], items=len(r["items"]))
+        return r
+
+    @app.get("/api/clients/{client_id}/request-lists", dependencies=[Depends(auth)])
+    def list_request_lists(client_id: str):
+        return current().store.list_request_lists(client_id)
+
+    @app.get("/api/request-lists/{list_id}", dependencies=[Depends(auth)])
+    def get_request_list(list_id: str):
+        r = current().store.get_request_list(list_id)
+        if not r:
+            raise HTTPException(404, "request list not found")
+        return r
+
+    @app.patch("/api/request-lists/{list_id}", dependencies=[Depends(auth)])
+    def update_request_list(list_id: str, body: RequestEmailIn, actor: str = Depends(auth)):
+        st = current()
+        if not st.store.get_request_list(list_id):
+            raise HTTPException(404, "request list not found")
+        st.store.update_request_list(list_id, **body.model_dump())
+        if body.status == "sent":
+            st.store.log("request_list_sent", actor, st.store.get_request_list(list_id)["client_id"], list_id=list_id)
+        return st.store.get_request_list(list_id)
+
+    @app.post("/api/request-lists/{list_id}/items", dependencies=[Depends(auth)])
+    def add_request_item(list_id: str, body: RequestItemIn):
+        st = current()
+        if not st.store.get_request_list(list_id):
+            raise HTTPException(404, "request list not found")
+        return st.store.add_request_item(list_id, body.item, body.why, body.category)
+
+    @app.patch("/api/request-lists/{list_id}/items/{item_id}", dependencies=[Depends(auth)])
+    def set_request_item(list_id: str, item_id: str, body: RequestItemStatusIn):
+        st = current()
+        it = st.store.get_request_item(item_id)
+        if not it or it["list_id"] != list_id:
+            raise HTTPException(404, "item not found")
+        st.store.set_request_item(item_id, body.status, note=body.note)
+        return st.store.get_request_list(list_id)
+
+    def _ingest_for_list(st: AppState, rl: dict, filename: str, data: bytes, actor: str, source_uri: str | None = None) -> dict:
+        return st.pipeline.ingest_bytes(client_id=rl["client_id"], filename=filename, data=data, uploaded_by=actor,
+                                        engagement="tax", tax_year=rl["tax_year"], source_uri=source_uri)
+
+    @app.post("/api/request-lists/{list_id}/items/{item_id}/upload", dependencies=[Depends(auth)])
+    async def upload_for_item(list_id: str, item_id: str, files: list[UploadFile] = File(...), actor: str = Depends(auth)):
+        """Staff received a document for a specific checklist item: file it in the client folder and tick the item."""
+        st = current()
+        rl = st.store.get_request_list(list_id)
+        it = st.store.get_request_item(item_id)
+        if not rl or not it or it["list_id"] != list_id:
+            raise HTTPException(404, "item not found")
+        results = []
+        for f in files:
+            r = _ingest_for_list(st, rl, f.filename or "upload", await f.read(), actor)
+            if r["status"] in ("ready", "duplicate"):
+                st.store.set_request_item(item_id, "received", document_id=r["document_id"])
+            results.append({"filename": f.filename, **r})
+        return {"results": results, "list": st.store.get_request_list(list_id)}
+
+    @app.post("/api/request-lists/{list_id}/inbound", dependencies=[Depends(auth)])
+    async def inbound(list_id: str, files: list[UploadFile] = File(...), sender: str | None = Form(None), subject: str | None = Form(None),
+                      actor: str = Depends(auth)):
+        """A client reply arrived (from a mailbox connector or a portal webhook): file every attachment into the client's
+        folder, match each one to a pending item, and leave anything unrecognised for staff to assign."""
+        st = current()
+        rl = st.store.get_request_list(list_id)
+        if not rl:
+            raise HTTPException(404, "request list not found")
+        results = []
+        for f in files:
+            data = await f.read()
+            r = _ingest_for_list(st, rl, f.filename or "attachment", data, actor or sender)
+            pending = [i for i in st.store.get_request_list(list_id)["items"] if i["status"] == "pending"]
+            head = ""
+            if r["status"] == "ready":
+                head = (r.get("summary") or "")
+            match = checklist.match_inbound(f.filename or "", head, pending)
+            if match and r["status"] in ("ready", "duplicate"):
+                st.store.set_request_item(match["id"], "received", document_id=r["document_id"])
+            results.append({"filename": f.filename, "document_id": r.get("document_id"), "ingest_status": r["status"],
+                            "matched_item": match["item"] if match else None, "matched_item_id": match["id"] if match else None})
+        st.store.log("request_list_inbound", actor, rl["client_id"], list_id=list_id, sender=sender, subject=subject,
+                     files=[x["filename"] for x in results], matched=sum(1 for x in results if x["matched_item"]))
+        return {"results": results, "list": st.store.get_request_list(list_id)}
 
     # ---------------------------------------------------------------- chat
     @app.post("/api/chat", dependencies=[Depends(auth)])

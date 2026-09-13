@@ -48,6 +48,15 @@
   .cite a, .msg.bot a { color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent); }
   .cite a:hover, .msg.bot a:hover { border-bottom-style:solid; }
   .doc a.open { font-size:12px; color:var(--accent); }
+  .ck { padding:7px 10px; border-bottom:1px solid var(--line); font-size:12.5px; display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:start; }
+  .ck .pill { font-size:10.5px; padding:2px 7px; border-radius:999px; background:#eef2f6; color:var(--muted); white-space:nowrap; margin-top:2px; }
+  .ck .pill.received { background:#e7f5ec; color:var(--ok); } .ck .pill.not_applicable { background:#f1f1f1; color:#888; text-decoration:line-through; } .ck .pill.pending { background:#fdf3e2; color:var(--warn); }
+  .ck small { color:var(--muted); display:block; }
+  .ck .acts { display:flex; gap:6px; margin-top:4px; }
+  .ck .acts label, .ck .acts button { font-size:11px; padding:2px 7px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; color:var(--accent); }
+  .ckhead { display:flex; gap:8px; align-items:center; padding:8px 10px; flex-wrap:wrap; }
+  .cat { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:8px 10px 2px; }
+  textarea.email { width:calc(100% - 20px); margin:0 10px; min-height:180px; font-size:12px; font-family:inherit; }
   .cite .ex { color:var(--muted); display:block; margin-top:3px; max-height:60px; overflow:hidden; }
   .drop { margin:8px 10px; padding:14px; border:2px dashed #cfd8e3; border-radius:10px; text-align:center; color:var(--muted); font-size:13px; }
   .drop.over { background:var(--accent-2); border-color:var(--accent); }
@@ -113,6 +122,7 @@ or “What should we expect 2026 revenue and net income to look like?”</div>
       <button class="on" onclick="tab('docs',this)">Documents</button>
       <button onclick="tab('cites',this)">Citations</button>
       <button onclick="tab('risk',this)">Risk &amp; forecast</button>
+      <button onclick="tab('check',this)">Checklist</button>
     </div>
     <div id="tab-docs" class="scroll">
       <div class="drop" id="drop">Drop files here or click to upload<br><small>PDF · CSV · XLSX · JSON · TXT</small>
@@ -126,6 +136,7 @@ or “What should we expect 2026 revenue and net income to look like?”</div>
       <div id="docList"></div>
     </div>
     <div id="tab-cites" class="scroll" hidden><div class="cite" style="color:var(--muted)">Citations for the latest answer appear here.</div></div>
+    <div id="tab-check" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a tax client to draft a document request list from last year's return.</div></div>
     <div id="tab-risk" class="scroll" hidden><div style="padding:10px;color:var(--muted);font-size:13px">Select a client to see deterministic ratio screens and projections computed from extracted facts.</div></div>
   </section>
 </main>
@@ -190,7 +201,7 @@ async function selectClient(id){
   const chips = c ? ['Summarise the most recent financial statements','Which areas are riskiest for this year\'s engagement?','Forecast next year\'s revenue and net income','List every document we hold and its year','What changed most between the last two years?']
                   : ['Which clients had a net loss last year?','Find engagement letters uploaded this year','Which clients have receivables growing faster than revenue?'];
   $('#chips').innerHTML = chips.map(t=>`<span class="chip" onclick="$('#q').value=this.textContent;ask()">${esc(t)}</span>`).join('');
-  await loadClients(); await loadDocs(); await loadRisk();
+  await loadClients(); await loadDocs(); await loadRisk(); await loadChecklists();
 }
 
 // ------------------------------------------------------------ documents
@@ -261,6 +272,52 @@ function linkCites(html, cites){
   });
   return html;
 }
+// ------------------------------------------------------------ tax checklist
+let currentList = null;
+async function loadChecklists(){
+  const el = $('#tab-check'); currentList = null;
+  if (!activeClient) { el.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:13px">Select a tax client.</div>'; return; }
+  const lists = await api(`/api/clients/${activeClient}/request-lists`);
+  const c = clients.find(x=>x.id===activeClient) || {};
+  const nextYear = (c.latest_year || new Date().getFullYear()-1) + 1;
+  el.innerHTML = `<div class="ckhead"><input id="ckYear" type="number" value="${nextYear}" style="max-width:90px"><button class="btn primary" onclick="draftChecklist()">Draft request list</button></div>
+    <div style="padding:0 10px 6px;font-size:12px;color:var(--muted)">Reads last year's return and the folder, lists what to ask the client for, drafts the email, then tracks what comes back.</div>
+    ${lists.map(l=>`<div class="doc" style="cursor:pointer" onclick="openChecklist('${l.id}')"><b>${l.tax_year} request list</b><span class="tag ${l.status==='complete'?'ready':'processing'}">${l.status}</span> <small>${l.pending} pending · ${l.received} received · ${l.total} items</small></div>`).join('')}
+    <div id="ckDetail"></div>`;
+  if (lists.length) openChecklist(lists[0].id);
+}
+async function draftChecklist(){
+  try { const r = await api(`/api/clients/${activeClient}/request-lists`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tax_year:Number($('#ckYear').value)||null})}); await loadChecklists(); openChecklist(r.id); }
+  catch(e){ alert(e.message); }
+}
+async function openChecklist(id){ currentList = await api(`/api/request-lists/${id}`); renderChecklist(); }
+function renderChecklist(){
+  const l = currentList; if (!l) return;
+  const el = $('#ckDetail'); const byCat = {};
+  for (const it of l.items) (byCat[it.category||'Other'] ||= []).push(it);
+  const mailto = `mailto:?subject=${encodeURIComponent(l.email_subject||'')}&body=${encodeURIComponent(l.email_body||'')}`;
+  el.innerHTML = `<div class="ckhead"><b>${l.tax_year} · ${l.counts.pending} items pending</b><span class="tag">${l.status}</span>
+      <button class="btn" onclick="navigator.clipboard.writeText($('#ckEmail').value)">Copy email</button>
+      <a class="btn" href="${mailto}">Open in email app</a>
+      <button class="btn" onclick="markSent()">Mark sent</button></div>
+    <textarea id="ckEmail" class="email" onchange="saveEmail()">${esc(l.email_body||'')}</textarea>
+    <div class="ckhead" style="justify-content:space-between"><b style="font-size:12px">Client reply came in?</b>
+      <label class="btn" style="font-size:12px">Drop attachments <input type="file" multiple hidden onchange="inbound(this.files)"></label></div>
+    ${Object.entries(byCat).map(([cat, items])=>`<div class="cat">${esc(cat)}</div>`+items.map(it=>`
+      <div class="ck"><span class="pill ${it.status}">${it.status.replace('_',' ')}</span>
+        <div>${esc(it.item)}<small>${esc(it.why||'')}${it.received_filename?' · received: '+esc(it.received_filename):''}</small>
+          ${it.status==='pending'?`<div class="acts"><label>Upload received <input type="file" hidden onchange="itemUpload('${it.id}',this.files)"></label><button onclick="itemStatus('${it.id}','not_applicable')">Not applicable</button></div>`:`<div class="acts"><button onclick="itemStatus('${it.id}','pending')">Reopen</button></div>`}
+        </div></div>`).join('')).join('')}
+    <div class="ckhead"><input id="ckNewItem" placeholder="Add an item…" style="flex:1"><button class="btn" onclick="addItem()">Add</button></div>`;
+}
+async function saveEmail(){ currentList = await api(`/api/request-lists/${currentList.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({email_body:$('#ckEmail').value})}); }
+async function markSent(){ currentList = await api(`/api/request-lists/${currentList.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'sent'})}); renderChecklist(); }
+async function itemStatus(id, status){ currentList = await api(`/api/request-lists/${currentList.id}/items/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); renderChecklist(); loadClients(); }
+async function itemUpload(id, files){ const fd = new FormData(); for (const f of files) fd.append('files', f); const r = await api(`/api/request-lists/${currentList.id}/items/${id}/upload`,{method:'POST',body:fd}); currentList = r.list; renderChecklist(); loadDocs(); loadClients(); }
+async function inbound(files){ const fd = new FormData(); for (const f of files) fd.append('files', f); const r = await api(`/api/request-lists/${currentList.id}/inbound`,{method:'POST',body:fd}); currentList = r.list; renderChecklist(); loadDocs(); loadClients();
+  alert(r.results.map(x=>`${x.filename}: ${x.matched_item?'matched → '+x.matched_item:'filed, no matching item (assign manually)'}`).join('\n')); }
+async function addItem(){ const v = $('#ckNewItem').value.trim(); if(!v) return; await api(`/api/request-lists/${currentList.id}/items`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item:v, category:'Other'})}); openChecklist(currentList.id); }
+
 // ------------------------------------------------------------ risk & forecast
 async function loadRisk(){
   const el = $('#tab-risk');
@@ -286,7 +343,7 @@ async function openSettings(){ $('#token').value = TOKEN; await refreshModels();
 async function switchProfile(){ try { await api('/api/admin/models/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:$('#profileSelect').value})}); await refreshModels(); } catch(e){ alert(e.message); } }
 async function reindex(){ try { const r = await api('/api/admin/reindex',{method:'POST'}); alert(`Re-embedded ${r.reembedded} chunks with ${r.embedding_model}`); await refreshModels(); } catch(e){ alert(e.message); } }
 function saveToken(){ TOKEN = $('#token').value.trim(); localStorage.setItem('firm_rag_token', TOKEN); refreshModels(); loadClients(); }
-function tab(name, btn){ for (const b of document.querySelectorAll('.tabs button')) b.classList.toggle('on', b===btn); for (const t of ['docs','cites','risk']) $('#tab-'+t).hidden = t!==name; }
+function tab(name, btn){ for (const b of document.querySelectorAll('.tabs button')) b.classList.toggle('on', b===btn); for (const t of ['docs','cites','risk','check']) $('#tab-'+t).hidden = t!==name; }
 
 refreshModels(); loadClients().then(()=>selectClient(null));
 </script>

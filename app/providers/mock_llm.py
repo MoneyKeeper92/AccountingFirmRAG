@@ -155,6 +155,11 @@ _FACT_LABELS = {
     "interest_income": r"interest\s+income",
     "dividend_income": r"(?:ordinary\s+)?dividends?",
     "schedule_c_net_profit": r"schedule\s+c\s+net\s+profit|net\s+profit\s+\(schedule\s+c\)",
+    "estimated_payments": r"estimated\s+(?:tax\s+)?payments",
+    "depreciation": r"depreciation(?:\s+expense)?",
+    "distributions": r"(?:shareholder\s+)?distributions",
+    "retained_earnings": r"retained\s+earnings",
+    "capital_expenditures": r"capital\s+expenditures|capex",
 }
 
 

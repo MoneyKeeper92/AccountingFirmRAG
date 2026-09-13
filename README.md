@@ -11,6 +11,10 @@ lets a partner ask questions in plain English:
 The answer cites the source files, and every number comes from deterministic tools (ratio screens,
 trend projections) rather than from the language model's imagination.
 
+Beyond search, the prototype does two engagement-level jobs: **risk and forecast screens** per
+client, and **tax-season request lists** that read last year's return, draft the document request
+email, file the client's replies into their folder, and keep an "items pending" list.
+
 ## What is in this repository
 
 | Path | What it is |
