@@ -10,10 +10,12 @@ Three components, priced separately so the firm sees where the money goes:
 | Component | What it is | Pricing idea |
 |---|---|---|
 | Onboarding | Inventory, format conversion, bulk ingestion, extraction tuning, security setup | One-time, scaled by number of clients and years (e.g. $3–8k for a 5–15 person firm) |
-| Platform | Hosting, updates, model upgrades, monitoring, backups | Monthly per firm, tiered by staff seats (e.g. $400–1,500/month) |
+| Platform | Hosting, updates, model upgrades, monitoring, backups, model API costs | Monthly per firm, tiered by client count rather than seats (e.g. $400–1,500/month). Research puts the underlying ZDR model + OCR + infra cost at roughly $180–230 per firm per month at steady state, so the platform line carries margin from the first firm |
 | Fractional AI lead | The weekly hour: review usage, tune, train staff, evaluate new models, extend to new document types | Monthly retainer (e.g. $1–3k/month), can be dropped after year one |
 
-Model API costs are passed through or bundled; they are small (see `docs/MODEL_RECOMMENDATIONS.md`).
+Price per firm, not per user: the bundled practice-management AI tiers the same firms already
+see are $59–149 per user per month, and Copilot is $30 per user. A per-firm price positions
+this as an add-on to those tools rather than a replacement (see `docs/RESEARCH_FINDINGS.md`).
 
 ## Why a small firm buys this instead of waiting for their DMS vendor
 
@@ -66,15 +68,13 @@ Working hypothesis to verify with Prompt 6 in `docs/RESEARCH_BOT_PROMPTS.md`:
 - Firms above roughly 30–50 staff, firms with an outsourced IT provider that runs vendor
   reviews, and firms with peer-review or PCAOB exposure will ask, and a Type II is the
   expected answer.
-- Ballpark cost for a company this size: a compliance-automation platform at roughly $8–20k a
-  year plus an auditor at roughly $8–20k for a Type I and $15–40k for a Type II, plus a
-  penetration test at $5–15k and real founder hours. Type I is reachable in two to three months;
-  Type II needs a three- to twelve-month observation window on top.
-- Suggested path: run the controls from day one (SSO, MDM, logging, policies, vendor list) so a
-  later audit is cheap; start Type I when the first prospect over 30 staff or the first formal
-  procurement questionnaire appears; move to Type II once three or more firms are paying. A
-  single mid-size firm at typical pricing covers the annual cost, which is why it is a timing
-  question rather than a yes/no question.
+- Research result (Prompt 6): not legally required by the FTC Safeguards Rule, but the sales
+  gate from mid-market up and effectively mandatory at 75+ staff or PCAOB-adjacent firms.
+  Recommended path: Type I around month 6, Type II around month 18, roughly $45–85k cash over
+  24 months. Trigger: three or more mid-market opportunities or about $150–250k ARR.
+- Until then: run the controls from day one (SSO, MDM, logging, policies, vendor list) so the
+  audit is cheap later, and answer small-firm diligence with the data-handling sheet, a
+  penetration-test letter, cyber insurance and the in-tenant deployment option.
 
 ## What could kill it
 

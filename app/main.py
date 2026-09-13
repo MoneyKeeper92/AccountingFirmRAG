@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import checklist, forecast
+from .connectors import FolderConnector, run_sync
 from .config import Settings
 from .ingest import IngestPipeline
 from .providers import build_embedding_provider, build_llm_provider
@@ -42,6 +43,13 @@ class ChatIn(BaseModel):
 
 class ProfileIn(BaseModel):
     profile: str
+
+
+class FolderSyncIn(BaseModel):
+    root: str
+    client_depth: int = 0
+    source_prefix: str | None = None
+    create_clients: bool = True
 
 
 class RequestListIn(BaseModel):
@@ -350,6 +358,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/api/admin/reindex", dependencies=[Depends(auth)])
     def reindex(actor: str = Depends(auth)):
         return current().pipeline.reindex(actor)
+
+    @app.post("/api/admin/sync/folder", dependencies=[Depends(auth)])
+    def sync_folder(body: FolderSyncIn, actor: str = Depends(auth)):
+        """Pull new or changed files from a client file share (or Drake DMS / OneDrive-synced folder) into the archive."""
+        st = current()
+        if not Path(body.root).is_dir():
+            raise HTTPException(400, f"'{body.root}' is not a directory reachable from the server")
+        conn = FolderConnector(body.root, client_depth=body.client_depth, source_prefix=body.source_prefix)
+        r = run_sync(conn, st.store, st.pipeline, actor=actor, create_clients=body.create_clients)
+        r["files"] = r["files"][:200]
+        return r
+
+    @app.get("/api/admin/sync", dependencies=[Depends(auth)])
+    def sync_state():
+        return current().store.list_sync_state()
 
     @app.get("/api/admin/audit", dependencies=[Depends(auth)])
     def audit(limit: int = 100):

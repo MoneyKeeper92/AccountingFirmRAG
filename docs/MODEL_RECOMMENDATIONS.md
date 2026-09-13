@@ -43,11 +43,13 @@ Working hypotheses to verify with Prompt 5 in `docs/RESEARCH_BOT_PROMPTS.md`:
 | **B. One account per firm, in the firm's name** | The firm is the vendor's customer; you hold delegated admin. Each firm would need its own ZDR request and DPA | Only when a firm's counsel insists; slow, and small firms will not want another vendor relationship |
 | **C. In the firm's own cloud tenant** | Bedrock / Vertex / Foundry in the firm's AWS, Google or Microsoft account. Those routes do not retain prompts by default, so no separate ZDR request; the firm's existing cloud agreement and controls apply | What larger firms and any firm with an active IT provider will ask for; also your cleanest privacy story |
 
-Expected cost picture (verify): ZDR itself is usually not a per-token surcharge on the Claude
-API; it is a configuration granted on request, sometimes tied to an enterprise conversation.
-Cloud routes charge the same per-token list prices as the platform, with no retention to opt
-out of. The real costs of structure A are the DPA work and the attestation firms will ask for;
-the real cost of structure C is deployment effort per firm.
+Research result (Prompt 5, Sept 2026): zero retention itself is usually a $0 list uplift; what
+costs money is model tier, OCR packs and data residency (about +10%). Steady state for the
+assumed firm is roughly $180–230 per firm per month on a Sonnet-class ZDR stack including about
+$150 of shared infrastructure, so the model line is not the constraint. Start with structure A
+for 3–30 staff firms; expect larger and PCAOB-adjacent firms to require structure C. §7216
+firm-side notices are needed under every structure. The real costs of A are the DPA work and
+the attestation firms will ask for; the real cost of C is deployment effort per firm.
 
 Whatever the structure, IRC §7216 sits on the *firm*: they are the preparer disclosing return
 information to a contractor. Your job is to make their compliance easy: a one-page description

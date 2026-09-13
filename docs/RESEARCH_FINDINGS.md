@@ -1,0 +1,99 @@
+# Research findings and the decisions they drove
+
+Results from the research agent runs (Prompts 1, 3, 5 and 6 in `docs/RESEARCH_BOT_PROMPTS.md`),
+as reported on 2026-09-13. Full write-ups live outside this repo:
+`prompt1_competitive_landscape.md`, `prompt3_document_storage.md`,
+`prompt5_zdr_and_accounts.md`, `prompt6_soc2.md`. Prompt 4 (feature backlog) is still running.
+Figures below are the agent's; verify the cited sources before quoting them to a firm.
+
+## 1. Competitive landscape
+
+**Who actually answers "client X, last three years, what looked risky?" against the firm's own
+files:** Fieldguide, Basis, Caseware AiDA, CoCounsel (with workspace uploads), DataSnipper
+DocuMine, TaxGPT Client Intelligence, and Microsoft 365 Copilot where the file permissions
+allow it. Not that: Blue J and Checkpoint research alone (public corpus); Karbon Kai and Canopy
+Coworker (practice-operations Q&A, not multi-year return archives).
+
+**Price reality for 3 to 25 staff firms:** practice-management AI is bundled at roughly $59 to
+$149 per user per month; Copilot about $30 per user per month; DataSnipper starts around
+$3.8k to $10.5k a year; Cranston about $30 per book and $40 per return; Fieldguide, Basis and
+Black Ore are quote-only enterprise.
+
+**White space:** an affordable automatic index of the legacy archive (GoFileRoom, SmartVault,
+file shares) for small US CPA firms is still largely missing. True zero data retention is rarer
+than "we don't train on your data", and IRC §7216 is almost never named on product pages.
+
+**Decisions**
+- Positioning stays "index the archive you already have, privately, with numbers that trace to
+  the form and line", aimed at 3 to 30 staff firms. Name §7216 and zero data retention
+  explicitly on the product page and in the firm-facing data-handling sheet.
+- Price the platform per firm, not per user, and below the bundled practice-management AI tiers
+  so it is an add-on rather than a replacement: see `docs/BUSINESS_MODEL.md`.
+
+## 2. Where documents live and how to get them out
+
+**US adoption, mid and large firms (CPAFMA 2026):** CCH Axcess Document 29%, GoFileRoom 16%,
+Windows file shares or none about 13%; portals: SafeSend 47%, ShareFile 25%.
+**Small-firm skew (Readers' Choice 2025):** Drake DMS 39%, TaxDome 28%, plus OneDrive /
+SharePoint, Dropbox and SmartVault.
+
+**API status today:** ready: Microsoft Graph, Google Drive, Box, Dropbox, Egnyte, ShareFile,
+SmartVault, Karbon, QuickBooks Online, Xero. Partner-gated: CCH Axcess, GoFileRoom, SafeSend.
+Watched folder or export only: FileCabinet CS, TaxDome without a partner agreement, most audit
+engagement binders.
+
+**Connector order for 3 to 30 staff firms:** 1. Microsoft Graph (SharePoint / OneDrive),
+2. NAS / Windows watched folder, 3. Dropbox, 4. SmartVault or the Drake filesystem,
+5. ShareFile or Karbon.
+
+**Decisions (built)**
+- `app/connectors/`: a connector interface, a **folder connector** (covers the NAS, mapped
+  drives, OneDrive-synced folders, Drake DMS and FileCabinet CS storage) and a **Microsoft
+  Graph connector** using the drive delta API. Client, year and engagement are inferred from
+  the path; every file is stored in pointer mode with a `source_uri` so citations open the file
+  where it lives. `POST /api/admin/sync/folder` and `scripts/sync_folder.py --watch` run it.
+- Dropbox, SmartVault and ShareFile are next and follow the same interface; each is a listing
+  call plus a download call.
+- TaxDome's 28% share with no public bulk API is a real gap: use its export folder through the
+  folder connector, and put a partner-API request on the backlog.
+
+## 3. Zero data retention and account structure
+
+- Zero retention itself is usually a $0 list uplift. What costs money: model tier, OCR packs,
+  and data residency (about +10%).
+- Steady state for the assumed firm (about 300 clients, 8 years, 1,000 questions a month):
+  roughly $180 to $230 per firm per month on a Sonnet-class ZDR stack (Anthropic direct or
+  Bedrock with no retention, Voyage with the retention opt-out, Azure Document Intelligence or
+  Textract for OCR), including about $150 of shared infrastructure.
+- Account structure: start with **A**, one vendor account you own with a workspace per firm
+  and a DPA with each firm, for 3 to 30 staff. Larger and PCAOB-adjacent firms will push toward
+  **C**, in-tenant Bedrock or Azure. §7216 still requires firm-side notices under A; legal
+  review is required.
+
+**Decisions**
+- `models.yaml` default production profile stays Anthropic direct with Voyage; the Bedrock route
+  is the documented alternative for structure C.
+- The per-firm cost line in `docs/BUSINESS_MODEL.md` uses the $180 to $230 figure. Note the
+  $150 shared-infrastructure component is per firm only at one firm; it amortises quickly.
+- The answer slot stays on Opus-class for quality; the extractor slot is Sonnet-class. The
+  agent's cost figure assumed Sonnet-class throughout, so budget the answer slot separately.
+
+## 4. SOC 2
+
+- Not legally required by the FTC Safeguards Rule (firms need evidence of safeguards, not a
+  specific report), but it is the sales gate from mid-market up and effectively mandatory at
+  75+ staff or PCAOB-adjacent firms.
+- Recommended path: Type I around month 6, Type II around month 18; about $45k to $85k cash
+  over 24 months. Start readiness when there are three or more mid-market opportunities or
+  roughly $150k to $250k ARR.
+
+**Decisions**
+- Run the controls from day one (SSO, MDM, logging, policies, vendor list) so the audit is
+  cheap later; do not buy the audit before the trigger. Interim evidence for small firms: the
+  data-handling sheet, a penetration-test letter, cyber insurance, in-tenant deployment option.
+
+## Still open
+
+- Prompt 4 feature backlog (client-request tools, review flows for extracted figures, reminder
+  cadences).
+- Weekly landscape monitor is running (Monday 09:00); it reports only material changes.

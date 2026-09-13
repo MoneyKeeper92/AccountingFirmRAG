@@ -338,7 +338,7 @@ def _guess_doc_type(text: str, filename: str = "") -> str:
         (r"1099-?nec", "1099_nec"), (r"1099-?misc", "1099_misc"), (r"1099-?r\b", "1099_r"), (r"1099-?k\b", "1099_k"),
         (r"1099-?g\b", "1099_g"), (r"ssa-?1099", "ssa_1099"), (r"1098-?t\b", "1098_t"), (r"1098-?e\b", "1098_e"),
         (r"\b1098\b", "1098_mortgage"), (r"1095-?a", "1095_a"), (r"form\s+941|\b941\b", "form_941"),
-        (r"trial\s+balance", "trial_balance"), (r"general\s+ledger", "general_ledger"), (r"depreciation\s+schedule", "depreciation_schedule"),
+        (r"trial\s+balance|\btb\b", "trial_balance"), (r"general\s+ledger", "general_ledger"), (r"depreciation\s+schedule", "depreciation_schedule"),
         (r"bank\s+statement", "bank_statement"), (r"payroll\s+(?:summary|report|register)", "payroll_report"),
         (r"organizer|questionnaire", "organizer"), (r"engagement\s+letter", "engagement_letter"),
         (r"(?:irs|internal\s+revenue\s+service).{0,80}(?:notice|letter)|notice\s+cp\d+", "irs_notice"),

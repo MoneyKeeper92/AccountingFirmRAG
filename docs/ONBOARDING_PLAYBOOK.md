@@ -56,9 +56,24 @@ to validate with Prompt 3 in `docs/RESEARCH_BOT_PROMPTS.md` and with each firm's
 | Email attachments | Everywhere, and never filed | Microsoft Graph / Gmail API search on client domains; low priority for the pilot | Mailbox rule that files into the client folder | Sender, date |
 | Paper and scan-only PDFs | Legacy years in almost every firm | OCR first (Acrobat, OCRmyPDF, cloud OCR), then treat as PDF | Scan-to-folder with OCR enabled on the scanner | Little; rely on filename and extraction |
 
-Practical order for a pilot: file share or SharePoint first (covers most of the archive with one
-connector), tax and audit software exports second (the highest-value finals), DMS/portal APIs when
-a firm is paying, email last.
+Research result (Prompt 3, Sept 2026): among mid and large US firms CCH Axcess Document (29%)
+and GoFileRoom (16%) lead, with SafeSend (47%) and ShareFile (25%) as portals; among small firms
+Drake DMS (39%) and TaxDome (28%) lead, alongside OneDrive/SharePoint, Dropbox and SmartVault.
+API-ready today: Microsoft Graph, Google Drive, Box, Dropbox, Egnyte, ShareFile, SmartVault,
+Karbon, QuickBooks Online, Xero. Partner-gated: CCH Axcess, GoFileRoom, SafeSend. Export or
+watched folder only: FileCabinet CS, TaxDome without a partner agreement, most engagement binders.
+
+Connector order for 3–30 staff firms, and what exists in this repo:
+
+1. **Microsoft Graph (SharePoint / OneDrive)**: built, `app/connectors/graph.py`, drive delta API.
+2. **Watched folder on the NAS / file server**: built, `app/connectors/folder.py`. Also covers
+   Drake DMS and FileCabinet CS (both store files on the filesystem) and OneDrive-synced folders.
+   Run `python scripts/sync_folder.py "S:\Clients" --watch 300` on a machine that sees the share.
+3. Dropbox, 4. SmartVault (or the Drake filesystem via 2), 5. ShareFile or Karbon: same
+   interface, listing call plus download call each. TaxDome: use its export folder through 2.
+
+Every synced file is stored in pointer mode with the share path or SharePoint URL as its source,
+so citations open the file where it already lives and nothing is duplicated.
 
 ### Copies or pointers?
 

@@ -93,6 +93,11 @@ CREATE TABLE IF NOT EXISTS request_items (
   note TEXT
 );
 CREATE INDEX IF NOT EXISTS request_items_list ON request_items(list_id);
+CREATE TABLE IF NOT EXISTS sync_state (
+  connector TEXT PRIMARY KEY,
+  cursor TEXT,
+  updated_at REAL NOT NULL
+);
 CREATE TABLE IF NOT EXISTS audit_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ts REAL NOT NULL,
@@ -384,6 +389,19 @@ class Store:
         self.conn.execute("UPDATE request_lists SET updated_at=?, status=CASE WHEN ?=0 THEN 'complete' WHEN status='complete' THEN 'sent' ELSE status END WHERE id=?",
                           (time.time(), pending, lid))
         self.conn.commit()
+
+    # ------------------------------------------------------------ connectors
+    def get_sync_cursor(self, connector: str) -> str | None:
+        row = self.conn.execute("SELECT cursor FROM sync_state WHERE connector=?", (connector,)).fetchone()
+        return row["cursor"] if row else None
+
+    def set_sync_cursor(self, connector: str, cursor: str) -> None:
+        self.conn.execute("INSERT INTO sync_state(connector,cursor,updated_at) VALUES(?,?,?) ON CONFLICT(connector) DO UPDATE SET cursor=excluded.cursor, updated_at=excluded.updated_at",
+                          (connector, cursor, time.time()))
+        self.conn.commit()
+
+    def list_sync_state(self) -> list[dict]:
+        return [dict(r) for r in self.conn.execute("SELECT * FROM sync_state ORDER BY connector").fetchall()]
 
     # ----------------------------------------------------------------- audit
     def log(self, action: str, actor: str | None, client_id: str | None = None, **detail: Any) -> None:
