@@ -509,7 +509,82 @@ at a vendor we use. Output: a diff against the previous quarter and a recommenda
 to trial a new model profile.
 ```
 
-## Prompt 14: Short weekly monitoring prompt
+## Prompt 14: Follow-ups the first pack left open
+
+Specific, checkable items. Each unblocks a piece of code or a claim made to a firm. Same method
+rules: primary sources, URL and access date, mark unverified.
+
+```
+A. MeF element names (unblocks replacing the alias table in app/ingest/mef.py)
+   For tax years 2023, 2024 and 2025, from the IRS MeF schema packages: the exact element names
+   for the core lines we extract on IRS1040 (wages, taxable interest, dividends, capital gain,
+   total income, adjustments, AGI, deduction, QBI, taxable income, total tax, withholding,
+   estimated payments, refund, owed, penalty), IRS1040ScheduleC net profit, IRS1040ScheduleSE
+   tax, IRS1065 (gross receipts, COGS, guaranteed payments, ordinary income, Schedule L capital),
+   IRS1120S (gross receipts, officer compensation, ordinary income, Schedule K distributions,
+   Schedule L loans from shareholders and retained earnings, Schedule M-2 AAA), IRS1120 (taxable
+   income, total tax, estimated payments, retained earnings, NOL), and Schedule K-1 per-owner
+   elements. Note every rename between years. Also: does the UltraTax / Lacerte "View XML" file
+   contain the accepted submission (post-acknowledgement) and the state return package, what is
+   it named on disk, and is there any batch or macro path to save XML for many clients.
+
+B. IRS transcript formats (unblocks hardening app/ingest/transcript.py)
+   The exact layout of a Wage and Income transcript as delivered by the Transcript Delivery
+   System (file type, field labels, section order, how multiple payers of the same form appear,
+   how masked IDs are printed) and as exported by Canopy, Tax Help Software and THS; whether any
+   machine-readable format exists; Form 8821 processing time; whether business account
+   transcripts (1120 / 1065) and Form 941 filings can be pulled the same way; a redacted public
+   sample if one exists.
+
+C. Azure Document Intelligence specifics (unblocks per-form routing in the OCR slot)
+   Exact model IDs and output field names for the US tax prebuilts (W-2, the 1099 variants, 1040
+   and which schedules, 1098 family), whether a multi-form PDF is split automatically, page
+   pricing tiers, US region availability, and Document Intelligence's own data-retention and
+   no-training terms (they differ from Azure OpenAI's).
+
+D. Connector shapes for the next three (unblocks Dropbox, SmartVault, ShareFile connectors)
+   For each: auth flow suitable for a firm-installed app, list and download endpoints, change
+   notification or delta mechanism, rate limits, and any partner or app-review requirement.
+   For Microsoft Graph specifically: least-privilege application permissions for one SharePoint
+   library (Sites.Selected), the admin-consent flow a firm's IT provider will run, and whether
+   Business Standard licensing is enough.
+
+E. Sending reminders from the firm's own mailbox (unblocks the reminder transport)
+   On Microsoft 365: SMTP AUTH availability by tenant default in 2026 versus Graph sendMail with
+   Mail.Send scoped to one shared mailbox; on Google Workspace the equivalent. For SMS: 10DLC
+   registration requirements, cost and timeline for a small sender, and which gateways (Twilio,
+   Telnyx, and any TaxDome / Liscio built-ins) small firms actually use.
+
+F. Client-facing organizer identity (unblocks the magic-link page)
+   Which small-firm portals (ShareFile, SmartVault, Liscio, TaxDome, SafeSend) allow an embedded
+   or linked third-party page, what identity signal they pass, and what an acceptable magic-link
+   pattern looks like under the firm's security expectations (expiry, single use, IP binding).
+
+G. Consent mechanics (unblocks the compliance kit's consent template)
+   The verbatim Rev. Proc. 2013-14 mandatory paragraphs for 1040 consents to disclose and to
+   use; whether e-signature is acceptable; default and maximum duration; whether sub-processors
+   can be named generically; any state-level consent rules that go beyond federal (California,
+   New York, Massachusetts).
+
+H. State withholding and state returns (unblocks estimates and withholding screens)
+   Since IRS transcripts carry no state withholding: which states offer preparer transcript or
+   account access, and whether state returns are included in the UltraTax / Lacerte XML.
+
+I. Evaluation data (unblocks the evaluation harness)
+   Any public or purchasable labelled datasets of tax documents (synthetic 1040 packages, W-2
+   and 1099 images, K-1s) usable to measure extraction accuracy, with licence terms.
+
+J. Archive composition (sizes the OCR budget)
+   For small US firms, what share of the archive is scanned versus born-digital by year, and
+   typical pages per return package; state board record-retention requirements by state (years),
+   to set the deletion policy.
+
+K. Firm IT baseline (validates the compliance kit's SSO / MDM claims)
+   What Microsoft 365 Business Standard versus Business Premium includes for a 3-30 staff firm
+   (Entra ID plan, Intune, Purview, Defender), and what CPA-focused MSPs deploy by default.
+```
+
+## Prompt 15: Short weekly monitoring prompt
 
 Run this every Monday to stay current:
 
