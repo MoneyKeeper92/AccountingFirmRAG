@@ -50,3 +50,30 @@ def test_mef_upload_skips_the_model_and_feeds_planning(client):
     # a non-MeF xml file still goes through the normal path
     r2 = client.post("/api/documents", data={"client_id": c["id"]}, files=[("files", ("note.xml", b"<note><body>Gross receipts: 5</body></note>", "application/xml"))]).json()["results"][0]
     assert r2["status"] == "ready" and client.get(f"/api/documents/{r2['document_id']}").json()["extractor_model"] != "mef_xml:deterministic"
+
+
+def test_mef_verified_aliases_and_k1s():
+    """Element names verified against the public MeF stylesheets TY2023-2025 (research 14A)."""
+    xml = b"""<?xml version="1.0"?><Return xmlns="http://www.irs.gov/efile"><ReturnHeader><TaxYr>2025</TaxYr><ReturnTypeCd>1120S</ReturnTypeCd>
+    <Filer><EIN>111222333</EIN><BusinessName><BusinessNameLine1Txt>RIVER LLC</BusinessNameLine1Txt></BusinessName></Filer></ReturnHeader>
+    <ReturnData><IRS1120S><GrossReceiptsOrSalesAmt>900000</GrossReceiptsOrSalesAmt><OfficersCompensationAmt>80000</OfficersCompensationAmt>
+    <OrdinaryBusinessIncomeLossAmt>200000</OrdinaryBusinessIncomeLossAmt></IRS1120S>
+    <IRS1120SScheduleL><RetainedEarningEOYAmt>410000</RetainedEarningEOYAmt><TotalAssetsEOYAmt>1200000</TotalAssetsEOYAmt></IRS1120SScheduleL>
+    <IRS1120SScheduleM2><BalanceBOYAccumAdjAcctAmt>300000</BalanceBOYAccumAdjAcctAmt><BalanceEOYAccumAdjAcctAmt>390000</BalanceEOYAccumAdjAcctAmt></IRS1120SScheduleM2>
+    <IRS1120SScheduleK1><ShareholderPersonNm>ANA RIVER</ShareholderPersonNm><OrdinaryIncomeLossAmt>120000</OrdinaryIncomeLossAmt><DistributionsAmt>70000</DistributionsAmt></IRS1120SScheduleK1>
+    <IRS1120SScheduleK1><ShareholderPersonNm>BEN RIVER</ShareholderPersonNm><OrdinaryIncomeLossAmt>80000</OrdinaryIncomeLossAmt><DistributionsAmt>50000</DistributionsAmt></IRS1120SScheduleK1>
+    </ReturnData></Return>"""
+    rec = parse_mef(xml)["record"]
+    facts = {f["name"]: f["value"] for f in rec["facts"]}
+    assert facts["officer_compensation"] == 80000 and facts["retained_earnings"] == 410000 and facts["aaa_balance"] == 390000
+    assert [k["owner"] for k in rec["k1s"]] == ["ANA RIVER", "BEN RIVER"]
+    assert rec["k1s"][0]["ordinary_income"] == 120000 and rec["k1s"][1]["distributions"] == 50000
+    assert {"name": "ANA RIVER", "role": "shareholder"} in rec["entities"]
+    assert "2 K-1(s)" in rec["summary"]
+    # per-owner amounts never enter the facts series
+    assert "ordinary_income" not in facts
+
+    xml1040 = b"""<?xml version="1.0"?><Return xmlns="http://www.irs.gov/efile"><ReturnHeader><TaxYr>2025</TaxYr><ReturnTypeCd>1040</ReturnTypeCd></ReturnHeader>
+    <ReturnData><IRS1040><AdjustedGrossIncomeAmt>100000</AdjustedGrossIncomeAmt><TotalAdditionalDeductionsAmt>6000</TotalAdditionalDeductionsAmt></IRS1040></ReturnData></Return>"""
+    facts = {f["name"]: f["value"] for f in parse_mef(xml1040)["record"]["facts"]}
+    assert facts["additional_deductions"] == 6000          # TY2025 line 13b, Schedule 1-A

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your tax documents</title>
+<style>
+  body { margin:0; font:15px/1.5 -apple-system, Segoe UI, Roboto, sans-serif; color:#1c2430; background:#f6f7f9; }
+  main { max-width:640px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:20px; margin:0 0 4px; } .sub { color:#6b7280; margin:0 0 20px; font-size:14px; }
+  section { background:#fff; border:1px solid #e3e6ea; border-radius:10px; padding:14px 16px; margin-bottom:14px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:#6b7280; margin:0 0 8px; }
+  .q { display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid #eef1f4; align-items:center; }
+  .q:last-child { border-bottom:none; }
+  .yn button { padding:5px 12px; border:1px solid #cfd8e3; border-radius:6px; background:#fff; cursor:pointer; }
+  .yn button.on { background:#1f4e79; color:#fff; border-color:#1f4e79; }
+  .it { padding:8px 0; border-bottom:1px solid #eef1f4; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+  .it:last-child { border-bottom:none; }
+  .it.received { color:#15803d; }
+  label.up { padding:5px 10px; border:1px solid #cfd8e3; border-radius:6px; cursor:pointer; white-space:nowrap; font-size:13px; }
+  .done { font-size:13px; color:#15803d; }
+  .err { background:#fde8e8; color:#b91c1c; padding:10px 12px; border-radius:8px; }
+  footer { font-size:12px; color:#6b7280; margin-top:16px; }
+</style></head>
+<body><main>
+<h1 id="title">Your tax documents</h1>
+<p class="sub" id="sub">Loading…</p>
+<div id="content"></div>
+<footer>This page works for a limited time and is only for you. Files you upload go straight to your preparer's secure client folder. Do not forward this link.</footer>
+<script>
+const TOKEN = "__TOKEN__";
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function load(){
+  const r = await fetch(`/api/client/${TOKEN}/list`);
+  if (!r.ok) { const d = await r.json().catch(()=>({detail:r.statusText})); document.getElementById('content').innerHTML = `<div class="err">${esc(d.detail)}</div>`; document.getElementById('sub').textContent=''; return; }
+  const d = await r.json();
+  document.getElementById('title').textContent = `${d.tax_year} tax documents for ${d.client_name}`;
+  document.getElementById('sub').textContent = `Answer the quick questions, then upload what you have. You can come back to this page for the next ${Math.max(1, Math.round((d.session_until*1000 - Date.now())/60000))} minutes.`;
+  const pending = d.items.filter(i=>i.status==='pending'), received = d.items.filter(i=>i.status==='received');
+  document.getElementById('content').innerHTML = `
+    <section><h2>Quick questions</h2>${d.questions.map(q=>`<div class="q"><span>${esc(q.text)}</span><span class="yn"><button class="${q.answer==='yes'?'on':''}" onclick="answer('${q.key}','yes')">Yes</button> <button class="${q.answer==='no'?'on':''}" onclick="answer('${q.key}','no')">No</button></span></div>`).join('')}</section>
+    <section><h2>Still needed (${pending.length})</h2>${pending.length?pending.map(i=>`<div class="it"><span>${esc(i.item)}</span><label class="up">Upload<input type="file" hidden multiple onchange="upload('${i.id}', this.files)"></label></div>`).join(''):'<div class="done">Nothing outstanding. Thank you!</div>'}</section>
+    ${received.length?`<section><h2>Received (${received.length})</h2>${received.map(i=>`<div class="it received">✓ ${esc(i.item)}</div>`).join('')}</section>`:''}`;
+}
+async function answer(key, a){ await fetch(`/api/client/${TOKEN}/answers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers:[{key, answer:a}]})}); load(); }
+async function upload(id, files){ const fd = new FormData(); for (const f of files) fd.append('files', f); const r = await fetch(`/api/client/${TOKEN}/upload/${id}`,{method:'POST',body:fd}); if(!r.ok){ alert('Upload failed. Please try again or email your preparer.'); } load(); }
+load();
+</script></main></body></html>

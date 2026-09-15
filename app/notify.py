@@ -112,3 +112,61 @@ def reminder_text(rl: dict, pending_items: list[dict], firm_name: str = "our off
               "", "Thank you,", firm_name]
     sms = f"{firm_name}: {len(pending_items)} item(s) still needed for your {rl['tax_year']} return, e.g. {pending_items[0]['item'][:60]}. Please upload or reply to our email. (reminder {n})"
     return subject, "\n".join(lines), sms
+
+
+class GraphMailNotifier(Notifier):
+    """Send from one of the firm's own Microsoft 365 mailboxes through Microsoft Graph.
+
+    Research (Prompt 14E): SMTP AUTH is off by default for tenants created after January 2020
+    and Basic Auth for SMTP is disable-by-default after December 2026, so Graph `sendMail` on a
+    single shared mailbox is the durable path. Scope the app registration with Exchange
+    Application Access Policy / RBAC to that one mailbox, not tenant-wide Mail.Send.
+
+    Environment: MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET (shared with the Graph connector),
+    GRAPH_MAIL_FROM = the shared mailbox address (e.g. documents@firm.com).
+    """
+
+    def __init__(self, http: httpx.Client | None = None, token_provider=None):
+        self.mailbox = os.environ["GRAPH_MAIL_FROM"]
+        self.http = http or httpx.Client(timeout=60)
+        self._token_provider = token_provider or self._client_credentials_token
+        self._token: tuple[str, float] | None = None
+        self.sms = SmsNotifier() if os.environ.get("SMS_WEBHOOK_URL") else LogNotifier()
+
+    def _client_credentials_token(self) -> str:
+        import time as _time
+        if self._token and self._token[1] > _time.time() + 60:
+            return self._token[0]
+        r = self.http.post(
+            f"https://login.microsoftonline.com/{os.environ['MS_TENANT_ID']}/oauth2/v2.0/token",
+            data={"client_id": os.environ["MS_CLIENT_ID"], "client_secret": os.environ["MS_CLIENT_SECRET"],
+                  "scope": "https://graph.microsoft.com/.default", "grant_type": "client_credentials"},
+        )
+        r.raise_for_status()
+        body = r.json()
+        self._token = (body["access_token"], _time.time() + int(body.get("expires_in", 3600)))
+        return self._token[0]
+
+    def send_email(self, to, subject, body):
+        if not to:
+            return Delivery("email", None, False, "no client email on the request list")
+        payload = {"message": {"subject": subject, "body": {"contentType": "Text", "content": body},
+                               "toRecipients": [{"emailAddress": {"address": to}}]}, "saveToSentItems": True}
+        try:
+            r = self.http.post(f"https://graph.microsoft.com/v1.0/users/{self.mailbox}/sendMail",
+                               headers={"Authorization": f"Bearer {self._token_provider()}"}, json=payload)
+            r.raise_for_status()
+            return Delivery("email", to, True, f"sent from {self.mailbox} via Graph")
+        except Exception as e:  # noqa: BLE001
+            return Delivery("email", to, False, f"{type(e).__name__}: {e}")
+
+    def send_sms(self, to, body):
+        return self.sms.send_sms(to, body)
+
+
+def build_notifier() -> Notifier:  # noqa: F811 - replaces the earlier definition; Graph preferred over SMTP
+    if os.environ.get("GRAPH_MAIL_FROM"):
+        return GraphMailNotifier()
+    if os.environ.get("SMTP_HOST"):
+        return SmtpNotifier()
+    return LogNotifier()

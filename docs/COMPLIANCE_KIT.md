@@ -9,10 +9,16 @@ here is a starting draft for the firm's own counsel and insurer to review.
   a **disclosure** under IRC §7216. Do not rely on the domestic "auxiliary services" exception
   when the model summarises, classifies or reasons over the return; that looks like a substantive
   determination.
-- Conservative path: **named-vendor written consent** using the Rev. Proc. 2013-14 mandatory
-  language for 1040 taxpayers (copy the required blocks verbatim from the Revenue Procedure; do
-  not paraphrase them), plus a **data processing agreement** covering AICPA ET section 1.700.040
-  (use of a third-party service provider).
+- Conservative path: **named-vendor written consent** using the Rev. Proc. 2013-14 §5.04(1)(a–d)
+  mandatory language for 1040 taxpayers (the verbatim blocks are in the research file
+  `prompt14g_consent_mechanics.md` and the primary PDF; copy them, never paraphrase), plus a
+  **data processing agreement** covering AICPA ET section 1.700.040.
+- Consent mechanics (research 14G): electronic signature is acceptable (a PIN of at least five
+  digits, a typed name, or five or more unique characters); duration defaults to one year if the
+  consent does not state one, with no federal maximum; 1040 consents must **name** the recipients
+  (generic classes are only allowed for non-1040 taxpayers), so the sub-processor list is part of
+  the consent. State overlays to check: California BPC §17530.5, New York 8 NYCRR §29.10(c),
+  Massachusetts 252 CMR 3.03.
 - **US-only inference.** Offshore processing adds mandatory consent language and SSN-masking rules.
   The production profiles pin `inference_geo: us`; keep it that way for US firms.
 - Human review is part of the service, not a disclaimer: extracted figures are verified in the
@@ -41,6 +47,26 @@ here is a starting draft for the firm's own counsel and insurer to review.
 5. **Cyber questionnaire answers**, ready to paste: MFA for all staff logins; encryption in
    transit and at rest; per-client access scoping; audit log of every query, file open and
    verification; SOC 2 status and plan; incident-response SLA; backups and restore test dates.
+
+## What not to claim (research 14K)
+
+A firm on Microsoft 365 **Business Standard** has Entra Free, Basic Mobility only and Exchange
+Online Protection: no conditional access, no Intune, no Defender for Business, no DLP. Only
+**Business Premium** (or E3/E5 plus add-ons, which MSPs such as Rightworks often layer) gives
+SSO policies, MDM and DLP. So: describe the product's own controls (per-client scoping, audit
+log, encryption, zero-retention vendors, US inference) as facts, and describe SSO / MDM / DLP as
+"available when the firm's licence includes them". Ask the firm's IT provider which SKU is in
+place before the questionnaire goes out.
+
+## Sub-processor retention windows to disclose
+
+| Sub-processor | Retention | Note |
+|---|---|---|
+| Model vendor (Claude API, ZDR) | none | Structure A; or in-tenant Bedrock / Foundry |
+| Embedding vendor (Voyage, opt-out) | none | |
+| Azure Document Intelligence | about 24 hours | Differs from Azure OpenAI's no-train terms; list it separately |
+| Cloud host | firm-controlled | Encrypted volume, backups per policy |
+| Mail (Graph shared mailbox) | firm's own tenant | Sent items kept in the shared mailbox |
 
 ## Insurance
 

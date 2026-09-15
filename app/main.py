@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import logging
 import mimetypes
+import secrets
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -88,6 +90,11 @@ class FeedbackIn(BaseModel):
 
 class OrganizerAnswersIn(BaseModel):
     answers: list[dict[str, Any]]      # [{key, answer: yes|no|null, note?}]
+
+
+class ClientLinkIn(BaseModel):
+    ttl_minutes: int = Field(default=15, ge=5, le=60 * 24 * 7)     # link must be opened within this window
+    session_minutes: int = Field(default=60, ge=10, le=240)         # once opened, how long the client can keep working
 
 
 class RequestItemIn(BaseModel):
@@ -434,6 +441,105 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         result["transcript_document_id"] = doc_id
         result["list"] = st.store.get_request_list(list_id)
         return result
+
+    # ------------------------------------------------- client-facing organizer (magic link)
+    # Research (Prompt 14F): portals are link-only (SmartVault forbids iframes); Liscio-style magic links are
+    # short-lived and single-use. Pattern here: short expiry, consumed on first open, then a bounded working
+    # session; IP recorded but not enforced. The page shows only this list's questions and upload slots.
+    def _hash(token: str) -> str:
+        return hashlib.sha256(token.encode()).hexdigest()
+
+    @app.post("/api/request-lists/{list_id}/client-link", dependencies=[Depends(auth)])
+    def create_client_link(list_id: str, body: ClientLinkIn, request: Request, actor: str = Depends(auth)):
+        st = current()
+        rl = st.store.get_request_list(list_id)
+        if not rl:
+            raise HTTPException(404, "request list not found")
+        token = secrets.token_urlsafe(32)
+        st.store.create_client_link(list_id, _hash(token), actor, body.ttl_minutes * 60)
+        st.store.log("client_link_create", actor, rl["client_id"], list_id=list_id, ttl_minutes=body.ttl_minutes, session_minutes=body.session_minutes)
+        base = str(request.base_url).rstrip("/")
+        return {"url": f"{base}/client/{token}", "expires_in_minutes": body.ttl_minutes, "session_minutes": body.session_minutes,
+                "note": "Single use. Send it to the client through the firm's usual channel; do not post it anywhere."}
+
+    @app.delete("/api/request-lists/{list_id}/client-link", dependencies=[Depends(auth)])
+    def revoke_client_links(list_id: str, actor: str = Depends(auth)):
+        n = current().store.revoke_client_links(list_id)
+        return {"revoked": n}
+
+    def _client_session(token: str, request: Request, consume: bool = False) -> dict:
+        st = current()
+        link = st.store.get_client_link(_hash(token))
+        now = dt.datetime.now().timestamp()
+        if not link:
+            raise HTTPException(404, "This link is not valid.")
+        if link["opened_at"] is None:
+            if now > link["expires_at"]:
+                raise HTTPException(410, "This link has expired. Ask your preparer for a new one.")
+            if consume:
+                ip = request.client.host if request.client else None
+                session_seconds = int(request.query_params.get("s", "3600"))
+                st.store.open_client_link(_hash(token), ip, max(600, min(session_seconds, 4 * 3600)))
+                link = st.store.get_client_link(_hash(token))
+            else:
+                raise HTTPException(403, "Open the link first.")
+        elif now > (link["session_until"] or 0):
+            raise HTTPException(410, "This session has ended. Ask your preparer for a new link.")
+        return link
+
+    @app.get("/client/{token}", response_class=HTMLResponse, include_in_schema=False)
+    def client_page(token: str, request: Request):
+        link = _client_session(token, request, consume=True)
+        return HTMLResponse((STATIC / "client.html").read_text().replace("__TOKEN__", token))
+
+    @app.get("/api/client/{token}/list")
+    def client_list(token: str, request: Request):
+        st = current()
+        link = _client_session(token, request)
+        rl = st.store.get_request_list(link["list_id"])
+        client = st.store.get_client(rl["client_id"]) or {}
+        rt = checklist._return_type(client, st.store.canonical_records(rl["client_id"]))
+        answers = st.store.organizer_answers(rl["id"])
+        qs = [{"key": q["key"], "text": q["text"], "answer": answers.get(q["key"], {}).get("answer")} for q in checklist.organizer_for(rt, rl["tax_year"])]
+        items = [{"id": i["id"], "item": i["item"], "category": i["category"], "status": i["status"]} for i in rl["items"] if i["status"] != "not_applicable"]
+        return {"client_name": client.get("name"), "tax_year": rl["tax_year"], "questions": qs, "items": items,
+                "session_until": link["session_until"]}
+
+    @app.post("/api/client/{token}/answers")
+    def client_answers(token: str, body: OrganizerAnswersIn, request: Request):
+        st = current()
+        link = _client_session(token, request)
+        rl = st.store.get_request_list(link["list_id"])
+        qmap = {q["key"]: q for q in checklist.ORGANIZER_QUESTIONS}
+        for a in body.answers:
+            q = qmap.get(a.get("key"))
+            if q and a.get("answer") in ("yes", "no", None):
+                st.store.set_organizer_answer(rl["id"], q["key"], a.get("answer"), a.get("note"))
+                checklist.apply_organizer_answer(st.store, rl, q, a.get("answer"))
+        st.store.log("client_organizer_answers", "client", rl["client_id"], list_id=rl["id"], answers=[(a.get("key"), a.get("answer")) for a in body.answers])
+        return {"ok": True}
+
+    @app.post("/api/client/{token}/upload/{item_id}")
+    async def client_upload(token: str, item_id: str, request: Request, files: list[UploadFile] = File(...)):
+        st = current()
+        link = _client_session(token, request)
+        rl = st.store.get_request_list(link["list_id"])
+        it = st.store.get_request_item(item_id)
+        if not it or it["list_id"] != rl["id"]:
+            raise HTTPException(404, "item not found")
+        results = []
+        for f in files:
+            data = await f.read()
+            if len(data) > 50 * 1024 * 1024:
+                results.append({"filename": f.filename, "status": "failed", "error": "file larger than 50 MB"})
+                continue
+            r = st.pipeline.ingest_bytes(client_id=rl["client_id"], filename=f.filename or "upload", data=data, uploaded_by="client",
+                                         engagement="tax", tax_year=rl["tax_year"])
+            if r["status"] in ("ready", "duplicate"):
+                st.store.set_request_item(item_id, "received", document_id=r["document_id"])
+            results.append({"filename": f.filename, "status": r["status"]})
+        st.store.log("client_upload", "client", rl["client_id"], list_id=rl["id"], item_id=item_id, files=[x["filename"] for x in results])
+        return {"results": results}
 
     def _ingest_for_list(st: AppState, rl: dict, filename: str, data: bytes, actor: str, source_uri: str | None = None) -> dict:
         return st.pipeline.ingest_bytes(client_id=rl["client_id"], filename=filename, data=data, uploaded_by=actor,

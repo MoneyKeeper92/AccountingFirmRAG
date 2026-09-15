@@ -22,6 +22,7 @@ FACT_NAMES_1040 = [
     "income_tax_before_credits", "child_tax_credit", "education_credits", "other_credits", "self_employment_tax",
     "total_tax", "federal_withholding", "estimated_payments", "refund", "amount_owed", "underpayment_penalty",
     "dependents_count", "home_office_deduction", "hsa_contributions", "ira_contributions", "student_loan_interest",
+    "additional_deductions",   # TY2025 Form 1040 line 13b, Schedule 1-A
 ]
 FACT_NAMES_ENTITY = [
     "gross_receipts", "returns_and_allowances", "cost_of_goods_sold", "gross_profit", "officer_compensation",

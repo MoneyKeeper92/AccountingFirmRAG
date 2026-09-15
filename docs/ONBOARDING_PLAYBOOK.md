@@ -104,7 +104,7 @@ The system accepts PDF, CSV, XLSX, JSON and plain text. What to prefer:
 | Audit software (CaseWare, Engagement, AdvanceFlow) | Export the final statements PDF and the adjusted trial balance as XLSX |
 | Excel workpapers | Upload the XLSX directly; each sheet is indexed separately |
 | Scanned paper | Configure the `ocr` slot (Azure Document Intelligence for W-2 / 1099 / 1040 pages, Claude vision for K-1s and messy scans) or OCR before upload (Acrobat, OCRmyPDF). The uploader flags scans that have no text layer and says which OCR route transcribed them |
-| IRS wage & income transcripts | Pull through the Transcript Delivery System (Form 8821 / 2848 on file) and drop the transcript on the client's request list: it becomes one item per payer the IRS knows about. Best after late March for the current year |
+| IRS wage & income transcripts | Pull through the Transcript Delivery System (Form 8821 / 2848 on file; 8821 processing takes about 8 business days, so file them in the autumn) and drop the transcript on the client's request list: it becomes one item per payer the IRS knows about. Individual (IMF) only; entity clients get account transcripts. Best after late March for the current year. Federal only: state withholding comes from state preparer portals (CA MyFTB, NY TR-2000, MA MassTaxConnect, IL, WI, IN, PA, NJ...) |
 | Existing structured data | Send JSON that matches the canonical record; see `docs/ARCHITECTURE.md`. The sample 1040 summaries in `sample_data/john_doe/` show a good shape |
 
 Naming convention that helps the extractor and the humans:
@@ -162,6 +162,15 @@ to assign. Reopen, add or mark items not applicable at any time.
 
 Firms using a portal keep using it: point the portal's upload webhook at the inbound route and
 the matching happens without anyone touching the files.
+
+### Client self-service link
+
+For clients without a portal, the **Create client link** button on a request list makes a
+single-use link: it must be opened within 15 minutes, then gives the client an hour to answer the
+organizer questions and upload against the open items. The page shows nothing else. Send it
+through the firm's usual channel; the audit log records the open, every answer and every upload
+as "client". Firms on ShareFile or SmartVault keep using those (they are link-only; SmartVault
+forbids embedding); Liscio-style firms will recognise the pattern.
 
 ### Client self-upload
 

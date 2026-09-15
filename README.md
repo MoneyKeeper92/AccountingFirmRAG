@@ -40,6 +40,8 @@ correct every extracted figure before it is used; rejected figures drop out of p
 | `docs/ONBOARDING_PLAYBOOK.md` | How to onboard a firm and get files into the right format, including client self-upload |
 | `docs/PILOT_PLAN.md` | A busy-season pilot plan for a small tax/audit practice, with a weekly one-hour cadence |
 | `docs/BUSINESS_MODEL.md` | Pricing, positioning and the "remote fractional AI lead" service model |
+| `docs/GRAPH_SETUP.md` | Least-privilege Microsoft 365 setup for a firm's IT provider (SharePoint read, shared-mailbox send) |
+| `docs/EVALUATION.md` | How to run and grow the evaluation set; labelled datasets for OCR accuracy |
 | `docs/COMPLIANCE_KIT.md` | Engagement-letter paragraph, §7216 consent approach, sub-processor list, questionnaire answers (drafts for counsel) |
 | `docs/ROADMAP.md` | Feature status against the research backlog, next steps, do-not-build list |
 | `docs/PRD.md` | One-page prototype PRD |

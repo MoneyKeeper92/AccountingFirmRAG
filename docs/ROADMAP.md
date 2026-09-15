@@ -26,13 +26,14 @@ things adjacent vendors do well.
   helper or Canopy export, and account transcripts for notices and balances.
 - **OCR slot is built** (Azure DI and Claude vision). Next: route by page type (Azure tax
   prebuilts for W-2 / 1099 pages, vision for K-1s) inside one document.
-- **Client-facing organizer page.** Today the preparer records answers. A per-client magic
-  link with only the questions and upload slots (no search) is about a day on the existing
-  routes and belongs behind the firm's portal identity where one exists.
-- **Reminder job scheduling.** `scripts/send_reminders.py` is cron-ready; add a settings page
-  for firm-wide defaults and quiet hours.
-- **Evaluation set.** Ten to twenty real questions per client type with expected facts and
-  files, run before every model profile change.
+- **Client-facing organizer page is built** (single-use magic link, bounded session, questions
+  and upload slots only). Next: optional access code (SafeSend pattern) for firms that want a
+  second factor, and per-firm branding.
+- **Reminder transport is built** (Graph sendMail on a shared mailbox, SMTP fallback, SMS
+  webhook). Next: Gmail API for Google Workspace firms; a settings page for firm-wide defaults
+  and quiet hours; 10DLC registration guidance for firms that want SMS.
+- **Evaluation harness is built** (`scripts/run_eval.py`, `evals/questions.jsonl`). Next: grow
+  the set from the pilot's audit log; build an internal labelled scan set for OCR accuracy.
 - **Verify-before-use, second pass.** Side-by-side source view (PDF page next to the figure)
   and a "must be verified before it appears in an answer" firm setting for high-stakes facts.
 - **Partner, don't build:** tax-software proforma lists (UltraTax / Lacerte organizers),

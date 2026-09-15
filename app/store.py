@@ -113,6 +113,16 @@ CREATE TABLE IF NOT EXISTS request_items (
   note TEXT
 );
 CREATE INDEX IF NOT EXISTS request_items_list ON request_items(list_id);
+CREATE TABLE IF NOT EXISTS client_links (
+  token_hash TEXT PRIMARY KEY,
+  list_id TEXT NOT NULL REFERENCES request_lists(id) ON DELETE CASCADE,
+  created_by TEXT,
+  created_at REAL NOT NULL,
+  expires_at REAL NOT NULL,     -- link must be opened before this
+  opened_at REAL,               -- single use: first open consumes the link...
+  session_until REAL,           -- ...and starts a short working session for the client
+  opened_ip TEXT
+);
 CREATE TABLE IF NOT EXISTS sync_state (
   connector TEXT PRIMARY KEY,
   cursor TEXT,
@@ -502,6 +512,29 @@ class Store:
             out[r["status"]] = r["n"]
         out["total"] = sum(out.values())
         return out
+
+    # ------------------------------------------------------------ client links
+    def create_client_link(self, list_id: str, token_hash: str, created_by: str | None, ttl_seconds: int) -> dict:
+        now = time.time()
+        self.conn.execute("INSERT INTO client_links(token_hash,list_id,created_by,created_at,expires_at) VALUES(?,?,?,?,?)",
+                          (token_hash, list_id, created_by, now, now + ttl_seconds))
+        self.conn.commit()
+        return {"list_id": list_id, "expires_at": now + ttl_seconds}
+
+    def get_client_link(self, token_hash: str) -> dict | None:
+        row = self.conn.execute("SELECT * FROM client_links WHERE token_hash=?", (token_hash,)).fetchone()
+        return dict(row) if row else None
+
+    def open_client_link(self, token_hash: str, ip: str | None, session_seconds: int) -> None:
+        now = time.time()
+        self.conn.execute("UPDATE client_links SET opened_at=?, session_until=?, opened_ip=? WHERE token_hash=?",
+                          (now, now + session_seconds, ip, token_hash))
+        self.conn.commit()
+
+    def revoke_client_links(self, list_id: str) -> int:
+        n = self.conn.execute("DELETE FROM client_links WHERE list_id=?", (list_id,)).rowcount
+        self.conn.commit()
+        return n
 
     # ------------------------------------------------------------ connectors
     def get_sync_cursor(self, connector: str) -> str | None:

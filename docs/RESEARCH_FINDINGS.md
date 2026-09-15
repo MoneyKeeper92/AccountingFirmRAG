@@ -197,9 +197,77 @@ after the pilot targets the June events with the case study in hand.
 The Monday 09:00 watch now also catches pricing, zero-retention, model and OCR benchmark
 changes, with a deeper quarterly pass on the first Monday of January, April, July and October.
 
+## 11. Follow-ups (Prompt 14 A–K)
+
+**A. MeF element names.** Public MeF stylesheets for TY2023–2025 cover the core lines; full SOR
+XSDs need the e-Services Software Developer role. Core `*Amt` tags are mostly stable. Notable:
+TY2025 adds `TotalAdditionalDeductionsAmt`; 1120-S uses `OfficersCompensationAmt`,
+`RetainedEarningEOYAmt` (singular) and AAA `BalanceEOYAccumAdjAcctAmt`; K-1 ordinary income is
+`OrdinaryIncomeLossAmt`. View XML can be post-acknowledgement if the local XML was kept; no batch
+export or standard filename. **Built:** alias table updated, K-1 per-owner parsing, Schedule 1-A
+fact `additional_deductions`.
+
+**B. Transcript layouts.** W&I from TDS is a masked PDF-style product with repeating form
+sections; no IRS XML/CSV. Canopy stores the IRS PDFs; THS produces analysis reports. Form 8821
+takes about 8 business days. 1120 / 1065 / 941 share the TDS/CAF path, but W&I is individual
+(IMF) only. **Decision:** parser stays text-based over the PDF text layer; file 8821s in the
+autumn; entity clients get account transcripts, not W&I.
+
+**C. Azure Document Intelligence.** v4.0 model IDs for W-2 / W-4, 1095, 1098, the 1099 variants
+and 1040 with schedules (field names from the `2024-11-30-ga` schemas). Multi-form PDFs split
+logically via `documents[]`. Prebuilt about $10 per 1,000 pages; Read $1.50 falling to $0.60.
+**DI retains data about 24 hours**, unlike the no-train story for Azure OpenAI. **Decision:**
+W-2 / 1099 pages → DI prebuilt; K-1 → custom model or layout plus LLM; DI listed as a
+sub-processor with its retention window.
+
+**D. Connectors.** Dropbox (team OAuth, list_folder / download, webhooks with cursor),
+SmartVault (developer signup, OAuth tokens, nodes / files, poll only), ShareFile (OAuth by
+subdomain, Items / Children / Download, webhooks), Graph (`Sites.Selected` plus site permission
+grant plus admin consent; Business Standard is enough for one library). **Built:**
+`docs/GRAPH_SETUP.md` for firm IT.
+
+**E. Mail and SMS.** SMTP AUTH off by default for tenants created after January 2020; Basic Auth
+for SMTP disable-by-default after December 2026. Prefer Graph `sendMail` on one shared mailbox
+under an Exchange application access policy, not tenant-wide Mail.Send; Google: Gmail API with
+domain-wide delegation. TaxDome has SMS but no automated reminders; Liscio does two-way SMS.
+**Built:** `GraphMailNotifier`, preferred over SMTP when `GRAPH_MAIL_FROM` is set.
+
+**F. Organizer identity.** ShareFile and SmartVault are link-only (SmartVault forbids iframes);
+Liscio uses ~15-minute single-use magic links plus SSO; TaxDome uses password plus email OTP;
+SafeSend uses email link plus partial SSN or access code. **Built:** single-use magic link with a
+15-minute open window and a bounded working session; IP recorded, not enforced; the page shows
+only the questions and upload slots.
+
+**G. Consent.** Rev. Proc. 2013-14 §5.04(1)(a–d) blocks are quoted verbatim in the research
+file; never paraphrase them in the kit. E-signature is acceptable (PIN of 5+ digits, typed
+name, or 5+ unique characters). Default duration one year if unspecified, no federal maximum.
+1040 disclosures need named recipients (generic classes only for non-1040). Watch CA BPC
+§17530.5, NY 8 NYCRR §29.10(c), MA 252 CMR 3.03. **Written:** compliance kit updated.
+
+**H. State withholding.** IRS transcripts are federal only. Preparer portals: CA MyFTB, NY
+TR-2000, MA MassTaxConnect, plus IL, WI, IN, PA, NJ and others. UltraTax / Lacerte View XML is
+per e-file package: state XML exists when that state e-file exists. **Decision:** withholding
+screen is labelled federal; state portals are a playbook item per firm.
+
+**I. Evaluation datasets.** NIST SD2 (free), Kaggle synthetic W-2 (CC0), Symage coherent 1040
+(gated), purchasable SymageDocs sets; no solid public K-1 / 1099 corpus. **Built:**
+`docs/EVALUATION.md` and `scripts/run_eval.py` with a seed question set.
+
+**J. Archive composition and retention.** Scan-to-digital timeline proxies from CPAFMA and JoA
+(2003–2023): older years are scan-heavier, budget OCR accordingly. Retention: IRC §6107 three
+years; many state boards five to seven (CA and WA 7, MN 6, AL / AR / MI / TN / TX / NH 5; FL FAQ
+3). **Decision:** deletion policy = the stricter of federal and the state of practice, set per
+firm in onboarding.
+
+**K. Microsoft 365 baseline.** Business Standard: Entra Free, Basic Mobility only, EOP.
+Premium: Entra P1, Intune P1, Defender for Business, Defender for Office P1, DLP. Rightworks
+often deploys E3 or Apps plus MSP layers, not always Premium; Boomer is consulting, not a
+deployer. **Decision:** do not claim SSO or MDM as defaults for Standard shops; the compliance
+kit's questionnaire answers now say which controls depend on the firm's licence.
+
 ## Still open
 
-- Exact MeF element names per tax year from the IRS schema packages (to replace the alias table).
+- Full SOR XSDs (Software Developer role) to confirm the element set beyond the core lines.
 - TaxDome private-beta API terms once available.
 - A survey-based check on the willingness-to-pay model before pricing is published.
 

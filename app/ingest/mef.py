@@ -47,12 +47,13 @@ MEF_FACT_MAP: dict[str, list[str]] = {
     "refund": ["RefundAmt", "OverpaidAmt"],
     "amount_owed": ["OwedAmt", "AmountOwedAmt", "BalanceDueAmt"],
     "underpayment_penalty": ["EsPenaltyAmt", "EstimatedTaxPenaltyAmt"],
+    "additional_deductions": ["TotalAdditionalDeductionsAmt"],          # TY2025 Form 1040 line 13b (Schedule 1-A)
     # ---- 1065 / 1120-S / 1120
     "gross_receipts": ["GrossReceiptsOrSalesAmt", "GrossReceiptsAmt"],
     "returns_and_allowances": ["ReturnsAndAllowancesAmt"],
     "cost_of_goods_sold": ["CostOfGoodsSoldAmt"],
     "gross_profit": ["GrossProfitAmt"],
-    "officer_compensation": ["CompensationOfOfficersAmt"],
+    "officer_compensation": ["CompensationOfOfficersAmt", "OfficersCompensationAmt"],   # 1120: CompensationOfOfficersAmt; 1120-S: OfficersCompensationAmt (verified TY2023-2025)
     "salaries_and_wages": ["SalariesAndWagesLessCreditsAmt", "SalariesAndWagesAmt"],
     "guaranteed_payments": ["GuaranteedPaymentsToPartnersAmt", "GuaranteedPymtToPartnersAmt", "GuaranteedPaymentsAmt"],
     "rent_expense": ["RentsAmt", "RentExpenseAmt"],
@@ -71,8 +72,8 @@ MEF_FACT_MAP: dict[str, list[str]] = {
     "total_liabilities": ["TotalLiabilitiesEOYAmt"],
     "loans_from_shareholders": ["LoansFromShareholdersEOYAmt", "LoansFromShareholdersAmt"],
     "partners_capital": ["PartnersCapitalAccountsEOYAmt", "PartnersCapitalAcctEOYAmt"],
-    "retained_earnings": ["RetainedEarningsEOYAmt", "RetainedEarningsApprEOYAmt", "RetainedEarningsUnapprEOYAmt"],
-    "aaa_balance": ["AAAEndOfYearAmt", "AccumulatedAdjustmentsAcctEOYAmt", "BalanceAtEndOfTaxYearAmt"],
+    "retained_earnings": ["RetainedEarningEOYAmt", "RetainedEarningsEOYAmt", "RetainedEarningsApprEOYAmt", "RetainedEarningsUnapprEOYAmt"],   # 1120-S Schedule L uses the singular RetainedEarningEOYAmt
+    "aaa_balance": ["BalanceEOYAccumAdjAcctAmt", "AAAEndOfYearAmt", "AccumulatedAdjustmentsAcctEOYAmt", "BalanceAtEndOfTaxYearAmt"],   # Schedule M-2: BalanceBOY/EOYAccumAdjAcctAmt
     "corporate_taxable_income": ["TaxableIncomeAmt"],           # only used for 1120, see below
     "corporate_total_tax": ["TotalTaxAmt"],                     # only used for 1120, see below
     "net_operating_loss": ["NetOperatingLossDeductionAmt", "NOLDeductionAmt"],
@@ -208,6 +209,24 @@ def parse_mef(data: bytes, filename: str = "") -> dict[str, Any]:
             if hit:
                 facts.append({"name": "self_employment_tax", "value": hit[0], "period": tax_year, "unit": "USD", "source_quote": f"MeF IRS1040ScheduleSE {hit[1]} = {hit[0]:,.0f}"}); used.add(hit[1])
 
+    # Schedule K-1 per owner (1065 and 1120-S): kept on the record and in the text, not in the facts series,
+    # because per-owner amounts would collapse into one number per name.
+    k1s: list[dict[str, Any]] = []
+    for tag in ("IRS1065ScheduleK1", "IRS1120SScheduleK1"):
+        for k1 in rdata.findall(f".//{tag}"):
+            owner = (k1.findtext(".//PartnerPersonNm") or k1.findtext(".//ShareholderPersonNm") or k1.findtext(".//PartnerBusinessNameLine1Txt")
+                     or k1.findtext(".//ShareholderBusinessNameLine1Txt") or k1.findtext(".//PersonNm") or k1.findtext(".//BusinessNameLine1Txt") or "Owner")
+            entry: dict[str, Any] = {"owner": owner.strip(), "form": "Schedule K-1 (1065)" if tag == "IRS1065ScheduleK1" else "Schedule K-1 (1120-S)"}
+            for key, aliases in (("ordinary_income", ["OrdinaryIncomeLossAmt", "OrdinaryBusinessIncomeLossAmt"]),
+                                 ("guaranteed_payments", ["GuaranteedPaymentsAmt", "GuaranteedPymtServicesAmt", "GuaranteedPaymentsTotalAmt"]),
+                                 ("distributions", ["DistributionsAmt", "TotalDistributionsAmt", "CashPropertyDistributionsAmt"]),
+                                 ("ownership_pct", ["OwnershipPct", "ProfitSharingEndPct", "StockOwnershipPct"])):
+                hit = _first_amount(k1, aliases)
+                if hit:
+                    entry[key] = hit[0]
+            k1s.append(entry)
+            names.append({"name": entry["owner"], "role": "partner" if tag == "IRS1065ScheduleK1" else "shareholder"})
+
     # Render a readable, searchable text version: every amount element by form, SSN masked
     lines = [f"MeF e-file return {return_type} for tax year {tax_year} ({code})",
              f"Filer: {', '.join(n['name'] + ' (' + n['role'] + ')' for n in names) or 'n/a'}  ID {_mask(ssn)}",
@@ -215,7 +234,8 @@ def parse_mef(data: bytes, filename: str = "") -> dict[str, Any]:
     unmapped: list[str] = []
     for child in rdata:
         form = _form_name(child.tag) or child.tag
-        lines.append(f"[{form}]")
+        owner = child.findtext(".//PartnerPersonNm") or child.findtext(".//ShareholderPersonNm") if child.tag.endswith("ScheduleK1") else None
+        lines.append(f"[{form}]" + (f" owner: {owner.strip()}" if owner else ""))
         for el in child.iter():
             if el is child or not el.text or not el.text.strip():
                 continue
@@ -231,6 +251,8 @@ def parse_mef(data: bytes, filename: str = "") -> dict[str, Any]:
         "doc_type": DOC_TYPE.get(return_type, "other"), "return_type": return_type, "tax_year": tax_year, "filing_status": filing_status,
         "forms_present": forms, "entities": names, "facts": facts,
         "summary": f"{return_type} e-file XML for {tax_year}: {len(forms)} forms/schedules, {len(facts)} figures read directly from the MeF elements.",
-        "risk_flags": [], "source": "mef_xml", "unmapped_amount_elements": unmapped[:200],
+        "risk_flags": [], "source": "mef_xml", "unmapped_amount_elements": unmapped[:200], "k1s": k1s,
     }
+    if k1s:
+        record["summary"] += f" {len(k1s)} K-1(s): " + "; ".join(f"{k['owner']} ordinary income {k.get('ordinary_income', 'n/a'):,}" if isinstance(k.get('ordinary_income'), float) else k['owner'] for k in k1s) + "."
     return {"record": record, "pages": [text], "unmapped": unmapped}
