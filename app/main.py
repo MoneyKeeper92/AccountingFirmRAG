@@ -15,7 +15,9 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import checklist, forecast
+from . import checklist, forecast, statements, workflows
+from .ingest.forms_catalog import forms_for_dashboard
+from fastapi.responses import Response
 from .connectors import FolderConnector, run_sync
 from .notify import build_notifier, reminder_text
 from .config import Settings
@@ -45,6 +47,16 @@ class ChatIn(BaseModel):
     question: str = Field(min_length=2)
     client_id: str | None = None
     history: list[dict[str, str]] = Field(default_factory=list)
+    style: str = Field(default="detailed", pattern="^(brief|detailed)$")
+
+
+class StartReturnIn(BaseModel):
+    tax_year: int | None = None
+    firm_name: str = "our office"
+
+
+class ReviewReturnIn(BaseModel):
+    document_id: str
 
 
 class ProfileIn(BaseModel):
@@ -181,6 +193,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # ------------------------------------------------------------- pages
     @app.get("/", include_in_schema=False)
     def index():
+        return FileResponse(STATIC / "app.html")
+
+    @app.get("/workbench", include_in_schema=False)
+    def workbench():
         return FileResponse(STATIC / "index.html")
 
     @app.get("/api/health")
@@ -223,6 +239,79 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/clients/{client_id}/risk", dependencies=[Depends(auth)])
     def client_risk(client_id: str):
         return forecast.assess_risk(current().store.facts_for_client(client_id))
+
+    # -------------------------------------------------- dashboard actions
+    @app.get("/api/forms", dependencies=[Depends(auth)])
+    def forms():
+        return forms_for_dashboard()
+
+    @app.get("/api/clients/{client_id}/overview", dependencies=[Depends(auth)])
+    def client_overview(client_id: str):
+        st = current()
+        c = st.store.get_client(client_id)
+        if not c:
+            raise HTTPException(404, "client not found")
+        prior = workflows.prior_return(st.store, client_id)
+        lists = st.store.list_request_lists(client_id)
+        current_list = st.store.get_request_list(lists[0]["id"]) if lists else None
+        this_year = (prior["tax_year"] + 1) if prior else None
+        docs = workflows.documents_this_year(st.store, client_id, this_year) if this_year else []
+        return {"client": c, "prior_return": prior, "this_year": this_year, "request_list": current_list and {
+                    "id": current_list["id"], "tax_year": current_list["tax_year"], "status": current_list["status"], "counts": current_list["counts"],
+                    "pending_items": [i["item"] for i in current_list["items"] if i["status"] == "pending"][:12]},
+                "documents_this_year": docs, "verification": st.store.verification_summary(client_id),
+                "documents_total": len(st.store.list_documents(client_id))}
+
+    @app.post("/api/clients/{client_id}/start-return", dependencies=[Depends(auth)])
+    def start_return(client_id: str, body: StartReturnIn, actor: str = Depends(auth)):
+        st = current()
+        if not st.store.get_client(client_id):
+            raise HTTPException(404, "client not found")
+        try:
+            r = workflows.start_return(st.store, st.llm, client_id, body.tax_year, body.firm_name)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        st.store.log("start_return", actor, client_id, tax_year=r["tax_year"], list_id=r["request_list"]["id"])
+        return r
+
+    @app.post("/api/clients/{client_id}/review-return", dependencies=[Depends(auth)])
+    def review_return(client_id: str, body: ReviewReturnIn, actor: str = Depends(auth)):
+        st = current()
+        try:
+            r = workflows.review_return(st.store, client_id, body.document_id)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        st.store.log("review_return", actor, client_id, document_id=body.document_id, headline=r["headline"])
+        return r
+
+    @app.get("/api/clients/{client_id}/statements", dependencies=[Depends(auth)])
+    def client_statements(client_id: str, year: int | None = None, format: str = "json", actor: str = Depends(auth)):
+        st = current()
+        c = st.store.get_client(client_id)
+        if not c:
+            raise HTTPException(404, "client not found")
+        stm = statements.build_statements(st.store, client_id, year)
+        if not stm:
+            raise HTTPException(400, "Not enough figures on file yet. Upload a trial balance or the business return first.")
+        st.store.log("statements", actor, client_id, year=stm["year"], source=stm["source"], format=format)
+        if format == "xlsx":
+            data = statements.to_xlsx(stm, c["name"])
+            return Response(data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            headers={"Content-Disposition": f'attachment; filename="{c["name"]} statements {stm["year"]}.xlsx"'})
+        return stm
+
+    @app.get("/api/clients/{client_id}/keying-sheet", dependencies=[Depends(auth)])
+    def client_keying_sheet(client_id: str, tax_year: int, format: str = "json", actor: str = Depends(auth)):
+        st = current()
+        c = st.store.get_client(client_id)
+        if not c:
+            raise HTTPException(404, "client not found")
+        sheet = workflows.keying_sheet(st.store, client_id, tax_year)
+        st.store.log("keying_sheet", actor, client_id, tax_year=tax_year, rows=sheet["count"], format=format)
+        if format == "xlsx":
+            return Response(workflows.keying_sheet_xlsx(sheet, c["name"]), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            headers={"Content-Disposition": f'attachment; filename="{c["name"]} keying sheet {tax_year}.xlsx"'})
+        return sheet
 
     # -------------------------------------------------- verify before use
     @app.get("/api/clients/{client_id}/facts/review", dependencies=[Depends(auth)])
@@ -594,7 +683,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if body.client_id and not st.store.get_client(body.client_id):
             raise HTTPException(404, "client not found")
         try:
-            r = st.rag.ask(body.question, body.client_id, body.history, actor=actor, today=dt.date.today().isoformat())
+            r = st.rag.ask(body.question, body.client_id, body.history, actor=actor, today=dt.date.today().isoformat(), style=body.style)
         except RuntimeError as e:
             raise HTTPException(502, str(e))
         return {"answer": r.answer, "citations": r.citations, "tool_trace": r.tool_trace, "model": r.model, "usage": r.usage}

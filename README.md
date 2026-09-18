@@ -24,6 +24,29 @@ between a 1040 client and a 1065 / 1120-S / 1120 client, carry a conditional org
 retire items, and send scheduled reminders until nothing is pending. A **Verify** tab lets staff accept, reject or
 correct every extracted figure before it is used; rejected figures drop out of planning and answers.
 
+## The MVP screen
+
+`http://127.0.0.1:8000/` opens the preparer's view, built for someone who does not want to learn
+software: pick a client on the left, see last year's return, what is still needed from the
+client and what has come in, then press one of four buttons.
+
+| Button | What happens |
+|---|---|
+| **Start this year's return** | Drafts the document request from last year's return, writes a one-page brief (figures, forms to expect, watch items), and lists the next steps |
+| **Review a return** | Compares a draft or filed return (the PDF from the tax software) with last year: what moved, which forms are missing, what to check |
+| **Financial statements** | Builds a balance sheet and income statement from the trial balance or the return, with an Excel download |
+| **Keying sheet for ATX** | Every figure from this year's source documents and the IRS transcript, grouped by the ATX input worksheet, with an Excel download |
+
+The chat below the buttons answers in a few plain sentences; "more" expands. Files are added
+with one button or by dropping them anywhere on the page, and the archive recognises the major
+IRS forms on the way in (W-2, the 1099 and 1098 families, K-1s, 1095s, 5498s, the 1040 schedules,
+1065 / 1120-S / 1120 and their schedules, payroll filings, notices, transcripts; see
+`app/ingest/forms_catalog.py`). The earlier working screen is still at `/workbench` for the
+checklist, verification, reminders and model settings.
+
+ATX has no API; the keying sheet and ATX's own CSV / K-1 / trial-balance imports are the bridge.
+See `docs/ATX_INTEGRATION.md`.
+
 ## What is in this repository
 
 | Path | What it is |
@@ -40,6 +63,7 @@ correct every extracted figure before it is used; rejected figures drop out of p
 | `docs/ONBOARDING_PLAYBOOK.md` | How to onboard a firm and get files into the right format, including client self-upload |
 | `docs/PILOT_PLAN.md` | A busy-season pilot plan for a small tax/audit practice, with a weekly one-hour cadence |
 | `docs/BUSINESS_MODEL.md` | Pricing, positioning and the "remote fractional AI lead" service model |
+| `docs/ATX_INTEGRATION.md` | What ATX can import, why the MVP does not automate its screens, and the keying-sheet bridge |
 | `docs/GRAPH_SETUP.md` | Least-privilege Microsoft 365 setup for a firm's IT provider (SharePoint read, shared-mailbox send) |
 | `docs/EVALUATION.md` | How to run and grow the evaluation set; labelled datasets for OCR accuracy |
 | `docs/COMPLIANCE_KIT.md` | Engagement-letter paragraph, §7216 consent approach, sub-processor list, questionnaire answers (drafts for counsel) |
@@ -54,7 +78,7 @@ correct every extracted figure before it is used; rejected figures drop out of p
 pip install -r requirements.txt
 cp .env.example .env            # defaults to the offline profile
 python scripts/seed_demo.py     # loads the two sample clients
-uvicorn app.main:app --reload   # open http://127.0.0.1:8000
+uvicorn app.main:app --reload   # open http://127.0.0.1:8000 (preparer view) or /workbench
 ```
 
 The default access token is `change-me` (set in `.env`). The UI stores it in the browser after

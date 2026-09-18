@@ -33,7 +33,7 @@ Ground rules:
   evidence shows them.
 - You support a licensed preparer; you do not replace their judgement. Flag positions that need professional
   review (elections, basis, reasonable compensation, penalties) rather than concluding on them.
-- Be concise and structured. Tables are welcome for year-over-year comparisons.
+- Length: {style_rule}
 
 Active client: {client_line}
 Firm context: today's date is {today}. Retrieved evidence follows.
@@ -132,13 +132,21 @@ class RagEngine:
             return json.dumps({"error": f"{type(e).__name__}: {e}"})
 
     # ------------------------------------------------------------------ chat
+    STYLE_RULES = {
+        "brief": "Answer in at most four short sentences in plain words, as if speaking to a colleague across the desk. "
+                 "No headings, no bullet lists, no tables. Give the number and the source, then stop. If more detail exists, end with "
+                 "'Say \"more\" for the detail.'",
+        "detailed": "Be concise and structured. Short tables are welcome for year-over-year comparisons.",
+    }
+
     def ask(self, question: str, client_id: str | None, history: list[dict[str, str]] | None = None,
-            actor: str | None = None, today: str = "") -> ChatResult:
+            actor: str | None = None, today: str = "", style: str = "detailed") -> ChatResult:
         hits = self.retrieve(question, client_id)
         client = self.store.get_client(client_id) if client_id else None
         client_line = (f"client_id={client['id']} | {client['name']} | {client.get('entity_type') or 'n/a'} | "
                        f"industry: {client.get('industry') or 'n/a'} | FYE: {client.get('fiscal_year_end') or 'n/a'}") if client else "none selected (firm-wide search)"
-        system = SYSTEM_TEMPLATE.format(client_line=client_line, today=today, evidence=self._format_evidence(hits))
+        system = SYSTEM_TEMPLATE.format(client_line=client_line, today=today, evidence=self._format_evidence(hits),
+                                        style_rule=self.STYLE_RULES.get(style, self.STYLE_RULES["detailed"]))
 
         messages: list[dict[str, Any]] = []
         for turn in (history or [])[-8:]:

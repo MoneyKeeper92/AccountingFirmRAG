@@ -15,6 +15,19 @@ things adjacent vendors do well.
 | 4 | Configurable reminders, email plus optional SMS, stop on complete | Karbon / TaxDome reminder cadences | **Built.** Per-list schedule (default 7, 14, 21 days), channel, client contact; due-reminder job; log-only when no SMTP/SMS is configured; stops at zero pending |
 | 5 | Conditional organizer: yes/no answers open upload slots | TaxDome / Intuit Link organizers | **Built.** Question set per return type; yes adds or reopens items, no retires them; answers logged |
 
+## MVP (September 2026)
+
+Built for the pilot firm on ATX, tax only:
+
+- Preparer view at `/`: client list, last-year card, needed-vs-received card, four action
+  buttons, short-answer chat with "more", one-button file upload and drop-anywhere.
+- Forms catalog of 80+ IRS forms driving document recognition at upload.
+- Actions: start this year's return (request list + brief), review a return (year-over-year,
+  missing forms, checks), financial statements (trial balance or return, Excel), keying sheet
+  for ATX (Excel).
+- ATX bridge: keying sheet now; Form 8949 CSV exporter once the column spec is confirmed
+  (Prompt 16); K-1 and trial-balance imports through ATX's own menus.
+
 ## Next
 
 - **Connectors** (Prompt 3 order): Graph and folder are built; Dropbox, SmartVault, ShareFile,

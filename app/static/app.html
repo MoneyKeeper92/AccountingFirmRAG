@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tax Assistant</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg:#f4f5f7; --panel:#fff; --line:#dde2e8; --ink:#1b2430; --muted:#5f6b78; --blue:#1f4e79; --blue-soft:#e6eef7; --ok:#15803d; --ok-soft:#e7f5ec; --warn:#b45309; --warn-soft:#fdf3e2; --bad:#b91c1c; }
+  * { box-sizing:border-box; }
+  html { font-size:17px; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Roboto, Arial, sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+  a { color:var(--blue); }
+  .shell { display:grid; grid-template-columns:300px 1fr; height:100vh; }
+  aside { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+  aside header { padding:18px 18px 10px; }
+  aside h1 { font-size:20px; margin:0 0 10px; }
+  aside input.search { width:100%; font-size:17px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; }
+  .clients { overflow:auto; flex:1; padding:0 10px 10px; }
+  .client { padding:14px 12px; border-radius:10px; cursor:pointer; font-size:17px; }
+  .client small { display:block; color:var(--muted); font-size:14px; }
+  .client:hover { background:#f1f4f8; } .client.active { background:var(--blue-soft); font-weight:600; }
+  .addclient { padding:12px 18px 18px; border-top:1px solid var(--line); }
+  .addclient input, .addclient select { width:100%; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; }
+  main { display:flex; flex-direction:column; min-height:0; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 26px; background:var(--panel); border-bottom:1px solid var(--line); }
+  .topbar h2 { margin:0; font-size:22px; }
+  .topbar .sub { color:var(--muted); font-size:15px; }
+  .topbar .links a { font-size:14px; margin-left:16px; color:var(--muted); }
+  .scroll { overflow:auto; flex:1; padding:22px 26px 10px; }
+  .content { max-width: 860px; margin: 0 auto; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:18px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+  .card h3 { margin:0 0 8px; font-size:15px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .card .big { font-size:26px; font-weight:700; }
+  .card p { margin:6px 0 0; font-size:16px; }
+  .card ul { margin:8px 0 0; padding-left:20px; font-size:16px; }
+  .card li { margin:3px 0; }
+  .fig { display:flex; justify-content:space-between; font-size:16px; padding:3px 0; border-bottom:1px dashed #eef1f4; }
+  .fig:last-child { border-bottom:none; }
+  .fig b { font-variant-numeric:tabular-nums; }
+  .actions { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:22px; }
+  .action { background:var(--blue); color:#fff; border:none; border-radius:14px; padding:18px 16px; font-size:17px; font-weight:600; cursor:pointer; text-align:left; line-height:1.3; }
+  .action small { display:block; font-weight:400; font-size:14px; opacity:.85; margin-top:4px; }
+  .action.secondary { background:var(--panel); color:var(--blue); border:2px solid var(--blue); }
+  .action:disabled { opacity:.5; cursor:default; }
+  .pill { display:inline-block; font-size:13px; padding:2px 10px; border-radius:999px; background:#eef2f6; color:var(--muted); margin-right:6px; }
+  .pill.ok { background:var(--ok-soft); color:var(--ok);} .pill.warn { background:var(--warn-soft); color:var(--warn);} .pill.bad { background:#fde8e8; color:var(--bad);}
+  .thread { display:flex; flex-direction:column; gap:14px; }
+  .msg { max-width:92%; padding:14px 18px; border-radius:16px; font-size:17px; white-space:pre-wrap; }
+  .msg.user { align-self:flex-end; background:var(--blue); color:#fff; }
+  .msg.bot { align-self:flex-start; background:var(--panel); border:1px solid var(--line); }
+  .msg.bot table { border-collapse:collapse; margin:6px 0; font-size:15px; }
+  .msg.bot td, .msg.bot th { border:1px solid var(--line); padding:4px 10px; }
+  .msg .tools { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .msg .tools button, .msg .tools a { font-size:14px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--blue); cursor:pointer; text-decoration:none; }
+  .sources { margin-top:8px; font-size:14px; color:var(--muted); }
+  .sources a { display:block; }
+  .composer { border-top:1px solid var(--line); background:var(--panel); padding:14px 26px 18px; }
+  .composer .row { max-width:860px; margin:0 auto; display:flex; gap:10px; align-items:flex-end; }
+  .composer textarea { flex:1; font-size:18px; padding:14px 16px; border:1px solid var(--line); border-radius:14px; min-height:58px; resize:none; font-family:inherit; }
+  .composer button { font-size:17px; padding:14px 22px; border-radius:14px; border:none; background:var(--blue); color:#fff; cursor:pointer; font-weight:600; }
+  .composer .hint { max-width:860px; margin:8px auto 0; color:var(--muted); font-size:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .composer label.upload { border:1px solid var(--line); border-radius:14px; padding:14px 16px; cursor:pointer; font-size:16px; color:var(--blue); background:#fff; }
+  .dropping::after { content:"Drop files to add them to this client"; position:fixed; inset:0; background:rgba(31,78,121,.85); color:#fff; font-size:28px; display:flex; align-items:center; justify-content:center; z-index:9; }
+  .empty { text-align:center; color:var(--muted); padding:60px 20px; font-size:18px; }
+  .empty b { display:block; font-size:24px; color:var(--ink); margin-bottom:8px; }
+  .toast { position:fixed; bottom:24px; right:24px; background:#1b2430; color:#fff; padding:12px 16px; border-radius:10px; font-size:15px; max-width:420px; display:none; z-index:10; }
+  dialog { border:1px solid var(--line); border-radius:14px; padding:22px; width:min(820px, 94vw); font-size:16px; }
+  dialog h3 { margin-top:0; }
+  dialog table { border-collapse:collapse; width:100%; font-size:15px; }
+  dialog td, dialog th { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; }
+  dialog td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  dialog .btns { text-align:right; margin-top:14px; }
+  dialog button, .btn { font-size:15px; padding:8px 14px; border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; color:var(--blue); }
+  dialog button.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+  @media (max-width: 900px) { .shell { grid-template-columns:1fr; height:auto; } aside { max-height:40vh; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <header><h1>Tax Assistant</h1><input class="search" id="search" placeholder="Find a client…" oninput="renderClients()"></header>
+    <div class="clients" id="clients"></div>
+    <div class="addclient">
+      <details><summary style="cursor:pointer;color:var(--blue);font-size:16px">Add a new client</summary>
+        <div style="margin-top:8px">
+          <input id="newName" placeholder="Client name">
+          <select id="newType"><option value="individual">Individual (1040)</option><option value="s_corp">S corporation (1120-S)</option><option value="partnership">Partnership (1065)</option><option value="c_corp">C corporation (1120)</option><option value="trust">Trust (1041)</option></select>
+          <button class="btn" onclick="createClient()">Add client</button>
+        </div></details>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div><h2 id="title">Pick a client</h2><div class="sub" id="subtitle">Choose a client on the left to see their file.</div></div>
+      <div class="links"><a href="/workbench" target="_blank">Advanced view</a><a href="#" onclick="openSettings();return false">Settings</a></div>
+    </div>
+    <div class="scroll" id="scroll">
+      <div class="content" id="content">
+        <div class="empty"><b>Welcome</b>Pick a client on the left. You will see last year's return, what we still need from them, and buttons for the next steps.</div>
+      </div>
+    </div>
+    <div class="composer">
+      <div class="row">
+        <label class="upload" title="Add files to this client's folder">Add files <input type="file" id="files" multiple hidden onchange="uploadFiles(this.files)"></label>
+        <textarea id="q" placeholder="Ask about this client… (for example: what did they owe last year?)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ask();}"></textarea>
+        <button id="askBtn" onclick="ask()">Ask</button>
+      </div>
+      <div class="hint"><span>Answers are short. Say “more” for detail. Every number comes from the client's own files.</span><span id="status"></span></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<dialog id="dlg"><div id="dlgBody"></div><div class="btns"><button onclick="document.getElementById('dlg').close()">Close</button></div></dialog>
+<dialog id="settings">
+  <h3>Settings</h3>
+  <p>Access code: <input id="token" style="font-size:16px;padding:8px"> <button class="primary" onclick="saveToken()">Save</button></p>
+  <p id="modelInfo" style="color:var(--muted);font-size:14px"></p>
+  <div class="btns"><button onclick="document.getElementById('settings').close()">Close</button></div>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+let TOKEN = localStorage.getItem('firm_rag_token') || 'change-me';
+let clients = [], active = null, overview = null, history = [], lastQ = '';
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money = v => v==null ? '—' : (v<0?'-':'') + '$' + Math.abs(Math.round(v)).toLocaleString();
+async function api(path, opts={}) {
+  opts.headers = Object.assign({'X-API-Token': TOKEN}, opts.headers||{});
+  const r = await fetch(path, opts);
+  if (r.status === 401) { openSettings(); throw new Error('Please enter the access code under Settings.'); }
+  if (!r.ok) { let d; try { d = (await r.json()).detail; } catch { d = r.statusText; } throw new Error(typeof d==='string'?d:JSON.stringify(d)); }
+  return r;
+}
+const apiJson = async (p, o) => (await api(p, o)).json();
+function toast(msg, ms=4000){ const t=$('#toast'); t.textContent=msg; t.style.display='block'; clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none', ms); }
+function md(s){
+  s = esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])_([^_\n]+?)_(?=[\s).,:;!?]|$)/g,'$1<i>$2</i>');
+  s = s.replace(/((?:^\|.*\|\s*$\n?)+)/gm, block => { const rows = block.trim().split('\n').filter(r=>!/^\|\s*:?-+/.test(r)); return '<table>'+rows.map((r,i)=>'<tr>'+r.split('|').slice(1,-1).map(c=>`<${i?'td':'th'}>${c.trim()}</${i?'td':'th'}>`).join('')+'</tr>').join('')+'</table>'; });
+  return s.replace(/^\s*[-•] (.+)$/gm,'• $1');
+}
+const fileUrl = (id, page) => `/api/documents/${id}/file?token=${encodeURIComponent(TOKEN)}${page?'#page='+page:''}`;
+
+// ---------------------------------------------------------------- clients
+async function loadClients(){ clients = await apiJson('/api/clients'); renderClients(); }
+function renderClients(){
+  const q = ($('#search').value||'').toLowerCase();
+  const el = $('#clients'); el.innerHTML = '';
+  for (const c of clients.filter(c=>!q || c.name.toLowerCase().includes(q))) {
+    const d = document.createElement('div'); d.className = 'client' + (active===c.id?' active':'');
+    const type = {individual:'1040', s_corp:'1120-S', partnership:'1065', c_corp:'1120', trust:'1041', llc:'1065'}[c.entity_type] || (c.entity_type||'');
+    d.innerHTML = `${esc(c.name)}<small>${esc(type)}${c.latest_year?' · last return '+c.latest_year:''}${c.document_count?' · '+c.document_count+' files':' · no files yet'}</small>`;
+    d.onclick = () => selectClient(c.id); el.appendChild(d);
+  }
+}
+async function createClient(){ const name = $('#newName').value.trim(); if(!name) return; const c = await apiJson('/api/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name, entity_type:$('#newType').value})}); $('#newName').value=''; await loadClients(); selectClient(c.id); }
+
+async function selectClient(id){
+  active = id; history = []; renderClients();
+  const c = clients.find(x=>x.id===id);
+  $('#title').textContent = c.name;
+  $('#subtitle').textContent = 'Loading…';
+  overview = await apiJson(`/api/clients/${id}/overview`);
+  renderDashboard();
+}
+
+// ---------------------------------------------------------------- dashboard
+function renderDashboard(){
+  const o = overview, c = o.client, p = o.prior_return, rl = o.request_list;
+  const type = {individual:'Individual (1040)', s_corp:'S corporation (1120-S)', partnership:'Partnership (1065)', c_corp:'C corporation (1120)', trust:'Trust (1041)'}[c.entity_type] || (c.entity_type||'');
+  $('#subtitle').textContent = `${type}${c.industry?' · '+c.industry:''}${o.documents_total?' · '+o.documents_total+' files on record':' · no files yet'}`;
+  let html = '';
+  if (!p) {
+    html += `<div class="card" style="margin-bottom:18px"><h3>Nothing on file yet</h3><p>Start by adding last year's return for ${esc(c.name)} (the PDF from the tax software, or the e-file XML). Use <b>Add files</b> below or drop the file anywhere on this page.</p></div>`;
+  } else {
+    html += `<div class="cards">
+      <div class="card"><h3>Last year</h3><div class="big">${p.tax_year} ${esc(p.return_type||'')}</div>
+        <p>${p.forms_present.length} forms and schedules${p.filing_status?' · '+esc(p.filing_status):''}</p>
+        <div style="margin-top:8px">${p.figures.map(f=>`<div class="fig"><span>${esc(f.label)}</span><b>${money(f.value)}</b></div>`).join('')}</div>
+        ${p.notes.length?`<p style="color:var(--warn);margin-top:10px">⚑ ${esc(p.notes[0])}</p>`:''}
+        <p style="margin-top:10px"><a href="${fileUrl(p.document_id)}" target="_blank">Open the return</a></p></div>
+      <div class="card"><h3>What we still need for ${o.this_year}</h3>
+        ${rl ? `<div class="big">${rl.counts.pending} item${rl.counts.pending===1?'':'s'}</div>
+          <p><span class="pill ${rl.status==='complete'?'ok':rl.status==='sent'?'warn':''}">${rl.status==='draft'?'request not sent yet':rl.status}</span> ${rl.counts.received} received</p>
+          <ul>${rl.pending_items.slice(0,6).map(i=>`<li>${esc(i)}</li>`).join('')}${rl.counts.pending>6?`<li>… and ${rl.counts.pending-6} more</li>`:''}</ul>
+          <p><a href="#" onclick="openChecklist();return false">See the full list, email and reminders</a></p>`
+        : `<p>No request list yet. Press <b>Start this year's return</b> and one is drafted from last year's return.</p>`}
+      </div>
+      <div class="card"><h3>Received so far for ${o.this_year}</h3>
+        ${o.documents_this_year.length ? `<ul>${o.documents_this_year.slice(0,8).map(d=>`<li><a href="${fileUrl(d.id)}" target="_blank">${esc(d.form||d.plain)}</a> <span style="color:var(--muted)">${esc(d.filename)}</span></li>`).join('')}</ul>` : '<p>Nothing yet. Files you add for this year appear here and are matched to the list.</p>'}
+        ${o.verification.extracted?`<p style="margin-top:10px"><span class="pill warn">${o.verification.extracted} figures to check</span> <a href="/workbench" target="_blank">Check them</a></p>`:''}
+      </div></div>`;
+  }
+  html += `<div class="actions">
+    <button class="action" onclick="startReturn()" ${p?'':'disabled'}>Start this year's return<small>Drafts the document request and a one-page brief from last year</small></button>
+    <button class="action secondary" onclick="reviewReturn()" ${p?'':'disabled'}>Review a return<small>Compare a draft or filed return with last year</small></button>
+    <button class="action secondary" onclick="showStatements()" ${p&&p.return_type!=='1040'?'':'disabled'}>Financial statements<small>Balance sheet and income statement from the books</small></button>
+    <button class="action secondary" onclick="keyingSheet()" ${p?'':'disabled'}>Keying sheet for ATX<small>Every figure to enter, with its source</small></button>
+  </div>
+  <div class="thread" id="thread"></div>`;
+  $('#content').innerHTML = html;
+  if (p) addBot(`Ready for ${esc(c.name)}. Ask me anything about their file, or press one of the buttons above.`);
+}
+function openChecklist(){ window.open('/workbench', '_blank'); toast('The full checklist, email and reminders are in the advanced view (Checklist tab).'); }
+
+// ---------------------------------------------------------------- actions
+function busy(on, text){ $('#status').textContent = on ? (text||'Working…') : ''; $('#askBtn').disabled = on; }
+async function startReturn(){
+  busy(true, 'Reading last year and drafting the request…');
+  try {
+    const r = await apiJson(`/api/clients/${active}/start-return`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    let t = `<b>${esc(r.headline)}</b>\n`;
+    t += r.next_steps.map(s=>`• ${esc(s)}`).join('\n');
+    if (r.watch.length) t += `\n\n<b>Watch this year</b>\n` + r.watch.map(w=>`• ${esc(w)}`).join('\n');
+    addBot(t, `<a href="#" onclick="openChecklist();return false">Open the request email</a>`);
+    overview = await apiJson(`/api/clients/${active}/overview`); const th = $('#thread').innerHTML; renderDashboard(); $('#thread').innerHTML = th;
+  } catch(e){ addBot(esc(e.message)); }
+  busy(false);
+}
+async function reviewReturn(){
+  const docs = await apiJson(`/api/clients/${active}/documents`);
+  const returns = docs.filter(d=>(d.doc_type||'').startsWith('form_') && d.status==='ready');
+  if (!returns.length) { addBot('Add the draft return first (the PDF from ATX), then press Review again.'); return; }
+  $('#dlgBody').innerHTML = `<h3>Which return should I review?</h3>${returns.map(d=>`<p><button class="primary" onclick="doReview('${d.id}')">${d.tax_year||''} ${esc(d.return_type||d.doc_type)}</button> <span style="color:var(--muted)">${esc(d.filename)}</span></p>`).join('')}`;
+  $('#dlg').showModal();
+}
+async function doReview(id){
+  $('#dlg').close(); busy(true, 'Comparing with last year…');
+  try {
+    const r = await apiJson(`/api/clients/${active}/review-return`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({document_id:id})});
+    let t = `<b>${esc(r.headline)}</b>\n`;
+    const big = r.changes.filter(c=>c.big).slice(0,6);
+    if (big.length) t += big.map(c=>`• ${esc(c.label)}: ${money(c.prior)} → ${money(c.current)} (${c.pct>0?'+':''}${Math.round(c.pct*100)}%)`).join('\n') + '\n';
+    if (r.missing_forms.length) t += `• Not on this return but on last year's: ${esc(r.missing_forms.join(', '))}\n`;
+    if (r.checks.length) t += `• Check: ${esc(r.checks[0])}\n`;
+    addBot(t.trim(), `<button onclick="reviewDetail=${JSON.stringify(r).replace(/"/g,'&quot;')};showReviewDetail()">Show every line</button>`);
+  } catch(e){ addBot(esc(e.message)); }
+  busy(false);
+}
+let reviewDetail = null;
+function showReviewDetail(){ const r = reviewDetail; $('#dlgBody').innerHTML = `<h3>${r.document.tax_year} vs ${r.prior_year}</h3><table><tr><th>Line</th><th>${r.prior_year}</th><th>${r.document.tax_year}</th><th>Change</th></tr>${r.changes.map(c=>`<tr><td>${esc(c.label)}</td><td class="num">${money(c.prior)}</td><td class="num">${money(c.current)}</td><td class="num">${c.pct!=null?(c.pct>0?'+':'')+Math.round(c.pct*100)+'%':''}</td></tr>`).join('')}</table>${r.new_forms.length?`<p>New this year: ${esc(r.new_forms.join(', '))}</p>`:''}${r.checks.length?`<p><b>Check</b><br>${r.checks.map(esc).join('<br>')}</p>`:''}`; $('#dlg').showModal(); }
+async function showStatements(){
+  busy(true, 'Building statements…');
+  try {
+    const s = await apiJson(`/api/clients/${active}/statements`);
+    const inc = s.income_statement, bs = s.balance_sheet;
+    $('#dlgBody').innerHTML = `<h3>${esc(overview.client.name)} — ${s.year}</h3><p style="color:var(--muted)">From the ${esc(s.source)}${s.source_filename?' ('+esc(s.source_filename)+')':''}. ${esc(s.note)}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div><h4>Income statement</h4><table>
+        <tr><td>Revenue</td><td class="num">${money(inc.Revenue)}</td></tr><tr><td>Cost of goods sold</td><td class="num">${money(inc['Cost of goods sold'])}</td></tr><tr><th>Gross profit</th><td class="num"><b>${money(inc['Gross profit'])}</b></td></tr>
+        ${inc.expenses.map(([k,v])=>`<tr><td style="padding-left:18px">${esc(k)}</td><td class="num">${money(v)}</td></tr>`).join('')}
+        <tr><td>Total expenses</td><td class="num">${money(inc['Total expenses'])}</td></tr><tr><th>Net income</th><td class="num"><b>${money(inc['Net income'])}</b></td></tr></table></div>
+      <div><h4>Balance sheet</h4><table>
+        ${bs.assets.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${money(v)}</td></tr>`).join('')}<tr><th>Total assets</th><td class="num"><b>${money(bs['Total assets'])}</b></td></tr>
+        ${bs.liabilities.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${money(v)}</td></tr>`).join('')}<tr><th>Total liabilities</th><td class="num"><b>${money(bs['Total liabilities'])}</b></td></tr>
+        ${bs.equity.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${money(v)}</td></tr>`).join('')}<tr><th>Total equity</th><td class="num"><b>${money(bs['Total equity'])}</b></td></tr></table>
+        ${bs.balances===false?'<p style="color:var(--warn)">Assets do not equal liabilities plus equity; some accounts are unclassified.</p>':''}</div></div>
+      ${s.unclassified_accounts.length?`<p style="color:var(--muted);font-size:14px">Not classified: ${esc(s.unclassified_accounts.join(', '))}</p>`:''}
+      <p><button class="primary" onclick="download('/api/clients/${active}/statements?format=xlsx&year=${s.year}','statements.xlsx')">Download as Excel</button></p>`;
+    $('#dlg').showModal();
+    addBot(`${s.year} statements built from the ${esc(s.source)}: revenue ${money(inc.Revenue)}, net income ${money(inc['Net income'])}, total assets ${money(bs['Total assets'])}.`, `<button onclick="showStatements()">Show the statements</button>`);
+  } catch(e){ addBot(esc(e.message)); }
+  busy(false);
+}
+async function keyingSheet(){
+  const yr = overview.this_year || (overview.prior_return && overview.prior_return.tax_year);
+  busy(true, 'Collecting every figure…');
+  try {
+    const s = await apiJson(`/api/clients/${active}/keying-sheet?tax_year=${yr}`);
+    if (!s.count) { addBot(`No source documents for ${yr} yet. Add the W-2s, 1099s and other forms as they arrive, then press this again.`); busy(false); return; }
+    $('#dlgBody').innerHTML = `<h3>Keying sheet — ${yr}</h3><p style="color:var(--muted)">${esc(s.note)}</p><table><tr><th>ATX input</th><th>Form</th><th>Payer</th><th>Field</th><th>Amount</th></tr>${s.rows.map(r=>`<tr><td>${esc(r.atx_input)}</td><td>${esc(r.form||'')}</td><td>${esc(r.payer||'')}</td><td>${esc(r.field)}</td><td class="num">${r.value!=null?money(r.value):''}</td></tr>`).join('')}</table>
+      <p><button class="primary" onclick="download('/api/clients/${active}/keying-sheet?tax_year=${yr}&format=xlsx','keying.xlsx')">Download as Excel</button></p>`;
+    $('#dlg').showModal();
+    addBot(`${s.count} figures ready to key for ${yr}, grouped by ATX input worksheet.`, `<button onclick="keyingSheet()">Show the sheet</button>`);
+  } catch(e){ addBot(esc(e.message)); }
+  busy(false);
+}
+async function download(path, name){ const r = await api(path); const b = await r.blob(); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click(); }
+
+// ---------------------------------------------------------------- chat
+function addBot(html, tools){ const m = document.createElement('div'); m.className='msg bot'; m.innerHTML = html + (tools?`<div class="tools">${tools}</div>`:''); $('#thread').appendChild(m); $('#scroll').scrollTop = 1e9; return m; }
+function addUser(text){ const m = document.createElement('div'); m.className='msg user'; m.textContent = text; $('#thread').appendChild(m); $('#scroll').scrollTop = 1e9; }
+async function ask(style){
+  let q = $('#q').value.trim();
+  if (style === 'detailed') q = lastQ; else if (!q) return;
+  if (!active) { toast('Pick a client first.'); return; }
+  if (style !== 'detailed') { $('#q').value=''; lastQ = q; addUser(q); history.push({role:'user', content:q}); }
+  if (/^more\.?$/i.test(q) && lastQ && style !== 'detailed') { history.pop(); return ask('detailed'); }
+  const pending = addBot('Looking in the file…'); busy(true);
+  try {
+    const r = await apiJson('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, client_id:active, history:history.slice(0,-1), style: style||'brief'})});
+    const cites = r.citations.slice(0, 4).map(c=>`<a href="${fileUrl(c.document_id, c.page)}" target="_blank">${esc(c.filename)}${c.page?' p.'+c.page:''}</a>`).join('');
+    pending.innerHTML = md(r.answer) + `<div class="tools">${style!=='detailed'?`<button onclick="ask('detailed')">More detail</button>`:''}<button onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">Sources</button><div class="sources" hidden>${cites||'No file passages were used.'}</div></div>`;
+    history.push({role:'assistant', content:r.answer});
+  } catch(e){ pending.innerHTML = `<span style="color:var(--bad)">${esc(e.message)}</span>`; }
+  busy(false);
+}
+
+// ---------------------------------------------------------------- files
+async function uploadFiles(files){
+  if (!active) { toast('Pick a client first, then add files.'); return; }
+  if (!files.length) return;
+  const fd = new FormData(); fd.append('client_id', active); for (const f of files) fd.append('files', f);
+  busy(true, `Reading ${files.length} file${files.length>1?'s':''}…`);
+  try {
+    const r = await apiJson('/api/documents',{method:'POST',body:fd});
+    const lines = r.results.map(x => x.status==='ready' ? `✓ ${esc(x.filename)}: ${esc((x.doc_type||'document').replace(/_/g,' '))}${x.tax_year?' for '+x.tax_year:''}${x.return_type&&x.return_type!=='none'?' ('+esc(x.return_type)+')':''}${x.forms_present&&x.forms_present.length?' · '+x.forms_present.length+' forms':''}`
+      : x.status==='duplicate' ? `• ${esc(x.filename)} was already on file` : `✗ ${esc(x.filename)}: ${esc(x.error||'could not be read')}`);
+    addBot(lines.join('\n'));
+    overview = await apiJson(`/api/clients/${active}/overview`); const th = $('#thread').innerHTML; renderDashboard(); $('#thread').innerHTML = th; await loadClients();
+  } catch(e){ addBot(esc(e.message)); }
+  $('#files').value = ''; busy(false);
+}
+document.addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('dropping'); });
+document.addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('dropping'); });
+document.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('dropping'); uploadFiles(e.dataTransfer.files); });
+
+// ---------------------------------------------------------------- settings
+async function openSettings(){ $('#token').value = TOKEN; try { const m = await apiJson('/api/admin/models'); $('#modelInfo').textContent = `Models in use: ${m.llm} for answers, ${m.extractor} for reading files, ${m.embedding} for search, OCR ${m.ocr}. Change these in the advanced view.`; } catch{} $('#settings').showModal(); }
+function saveToken(){ TOKEN = $('#token').value.trim(); localStorage.setItem('firm_rag_token', TOKEN); $('#settings').close(); loadClients(); }
+loadClients();
+</script>
+</body>
+</html>

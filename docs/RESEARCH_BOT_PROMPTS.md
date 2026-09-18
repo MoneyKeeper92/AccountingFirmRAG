@@ -584,6 +584,32 @@ K. Firm IT baseline (validates the compliance kit's SSO / MDM claims)
    (Entra ID plan, Intune, Purview, Defender), and what CPA-focused MSPs deploy by default.
 ```
 
+## Prompt 16: ATX import paths, exactly
+
+```
+For Wolters Kluwer ATX (the desktop professional tax program, tax years 2024-2026), document
+every way data can enter a return without keying, from the vendor's own materials first (the
+ATX User Guide PDF, the "ATXLP <year> - Importing Data" support PDF, files.cchsfs.com help pages,
+support.atxinc.com knowledge base), then the ATX Community forum.
+1. Returns > Import Data: list every menu item and what it imports.
+2. Form 8949 / Schedule D CSV import: the exact column headers and order, date formats, how
+   short/long term and wash sales are coded, row limits, and whether the same import exists for
+   1099-DA digital-asset transactions.
+3. W-2 and 1099 data: is there any way to import a W-2 into a 1040 other than from ATX's own
+   payroll module? Any CSV or spreadsheet template?
+4. K-1 import: confirm the ATX-to-ATX path and whether a K-1 from another program can be
+   imported.
+5. Accounting / trial balance import: supported sources (iFirm, CAS, QuickBooks Desktop or
+   Online, CSV), the mapping file format, and whether the mapping can be reused year to year.
+6. Client data: the CSV / XML conversion formats, and whether a client list or organizer
+   answers can be imported.
+7. Licence terms: any clause in the ATX EULA about automation, macros, screen scraping or
+   third-party tools interacting with the program.
+8. Any announced ATX API, integration marketplace, or scan-and-populate partnership, with date.
+Output: a table of import paths with format specs, quotes from the guides with page numbers,
+the EULA clause text if any, and a recommendation on which two imports to build exporters for.
+```
+
 ## Prompt 15: Short weekly monitoring prompt
 
 Run this every Monday to stay current:

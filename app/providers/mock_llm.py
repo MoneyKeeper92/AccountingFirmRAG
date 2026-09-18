@@ -14,6 +14,7 @@ from typing import Any
 
 from ..config import SlotConfig
 from ..ingest.extractor import FACT_NAMES, FORMS
+from ..ingest import forms_catalog
 from .base import LLMProvider, LLMResponse, ToolCall, ToolSpec
 from .registry import register_llm
 
@@ -310,6 +311,13 @@ def _primary_year(text: str) -> int | None:
 
 
 def _guess_doc_type(text: str, filename: str = "") -> str:
+    spec = forms_catalog.detect(text, filename)
+    if spec is not None:
+        return spec.doc_type
+    return _guess_doc_type_legacy(text, filename)
+
+
+def _guess_doc_type_legacy(text: str, filename: str = "") -> str:
     t = text.lower().replace("_", " ")
     head = t[:600]
     if filename:

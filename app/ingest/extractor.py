@@ -49,6 +49,8 @@ DOC_TYPES = [
     # engagement paperwork
     "organizer", "engagement_letter", "irs_notice", "state_notice", "estimated_payment_record", "extension",
     "irs_transcript_wage_income", "irs_transcript_account", "irs_transcript_return",
+    "w2g", "1099_da", "1099_oid", "1099_sa", "1099_s", "1099_q", "1099_c", "1099_ltc", "1099_patr", "rrb_1099", "1042_s",
+    "1098_c", "1095_b", "1095_c", "5498", "5498_sa", "3921", "3922", "form_940", "form_w3", "form_1096",
     "correspondence", "prior_year_workpaper", "other",
 ]
 

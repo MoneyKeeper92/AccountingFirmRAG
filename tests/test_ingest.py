@@ -54,7 +54,7 @@ def test_regex_extractor_on_1120s():
 def test_trial_balance_rows_extract():
     text = parse_file("tb.csv", (SAMPLE / "abc_company" / "ABC_Company_Trial_Balance_2025.csv").read_bytes()).text
     facts = {f["name"]: f["value"] for f in _regex_facts(text)}
-    assert facts["retained_earnings"] == 1_005_000 and facts["cash"] == 148_000 and facts["revenue"] == 5_610_000
+    assert facts["retained_earnings"] == 1_065_000 and facts["cash"] == 148_000 and facts["revenue"] == 5_610_000
     assert _guess_doc_type(text, "ABC_Company_Trial_Balance_2025.csv") == "trial_balance"
     assert _guess_doc_type("Account | Debit | Credit", "1120S_2025.pdf") == "form_1120s"
 

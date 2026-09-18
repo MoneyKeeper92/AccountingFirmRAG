@@ -346,7 +346,8 @@ class Store:
             sql += " AND f.status != 'rejected'"
         if names:
             sql += f" AND f.name IN ({','.join('?' * len(names))})"; args.extend(names)
-        sql += " ORDER BY f.name, f.period"
+        # last row wins in series_by_metric: books and transcripts first, returns last, then upload order
+        sql += " ORDER BY f.name, f.period, CASE WHEN d.doc_type LIKE 'form_%' THEN 1 ELSE 0 END, d.created_at"
         return [dict(r) for r in self.conn.execute(sql, args).fetchall()]
 
     # ------------------------------------------------------- client context
@@ -360,6 +361,11 @@ class Store:
             if n > max_chars:
                 break
         return "\n".join(out)
+
+    def document_text(self, document_id: str) -> str:
+        rows = self.conn.execute("SELECT text FROM chunks WHERE document_id=? AND section IS NOT 'canonical_record' ORDER BY ordinal", (document_id,)).fetchall()
+        # strip the per-chunk header line added at ingest
+        return "\n".join(r["text"].split("\n", 1)[1] if r["text"].startswith("[client_id=") else r["text"] for r in rows)
 
     def canonical_records(self, client_id: str) -> list[dict]:
         rows = self.conn.execute("SELECT id, filename, doc_type, tax_year, canonical_json FROM documents WHERE client_id=? AND status='ready'", (client_id,)).fetchall()
