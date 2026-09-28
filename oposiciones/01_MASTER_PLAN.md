@@ -80,6 +80,7 @@ Week 1 starts **Mon 28 Sep 2026**.
 
 ### Phase 0: Decide & set up (Weeks 1–2, 28 Sep – 11 Oct)
 - [ ] Kyle answers the blocking questions in [10](10_OPEN_QUESTIONS.md) (name, structure, website platform, who posts)
+- [ ] Send the Consulta Tesón feedback app to 8–15 Spanish advisors ([12](12_ADVISOR_FEEDBACK.md)); paste replies to Claude for synthesis
 - [ ] Trademark + handle check for "Tesón" (OEPM, TMview, Instagram/TikTok/YouTube)
 - [ ] **Chrome session**: Blocks A–D of [03](03_ACCOUNTS_RUNBOOK.md) (isolation, Gmail, domain, Workspace, new Claude account, GitHub, Anthropic API, Cloudflare, GA4, GSC, Mixpanel EU, Supabase EU, Brevo, Tally, Make)
 - [ ] File the OEPM trademark (classes 9, 41, 42)

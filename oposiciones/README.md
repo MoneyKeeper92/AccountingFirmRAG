@@ -27,6 +27,7 @@ Tesón GitHub organisation, so nothing stays linked to other businesses.
 | 09 | [Legal, company & compliance (Spain)](09_LEGAL_AND_COMPANY.md) |
 | 10 | [Open questions for Kyle](10_OPEN_QUESTIONS.md) |
 | 11 | [Competitors & market facts](11_COMPETITORS.md) |
+| 12 | [Questions for Spanish advisors + feedback app](12_ADVISOR_FEEDBACK.md) |
 
 *Research snapshot: 28 Sept 2026. Figures marked [U] or "verify" come from search summaries
 and must be checked before being quoted publicly. This is not legal or tax advice.*

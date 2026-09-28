@@ -1,0 +1,611 @@
+<title>Consulta Tesón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --card: #FFFFFF;
+    --ink: #1D2320;
+    --muted: #5C6661;
+    --line: #E3DED2;
+    --green: #1F5E4A;
+    --green-ink: #FAF7F0;
+    --green-soft: #E6EFEA;
+    --amber: #E9A23B;
+    --amber-soft: #FBEFD9;
+    --amber-ink: #7A4F0C;
+    --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121715;
+      --card: #1A211E;
+      --ink: #ECEFEA;
+      --muted: #9AA39F;
+      --line: #2C3531;
+      --green: #62B38F;
+      --green-ink: #0F1512;
+      --green-soft: #1C2B24;
+      --amber: #F0B45A;
+      --amber-soft: #2E2616;
+      --amber-ink: #F0C27A;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121715;
+    --card: #1A211E;
+    --ink: #ECEFEA;
+    --muted: #9AA39F;
+    --line: #2C3531;
+    --green: #62B38F;
+    --green-ink: #0F1512;
+    --green-soft: #1C2B24;
+    --amber: #F0B45A;
+    --amber-soft: #2E2616;
+    --amber-ink: #F0C27A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.55 var(--body);
+    padding-inline: 16px;
+    padding-block: 0 64px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+
+  /* Sticky progress */
+  .bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    margin-inline: -16px;
+    padding: 10px 16px;
+  }
+  .bar-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .wm-small { font: 700 20px/1 var(--display); color: var(--green); letter-spacing: -0.01em; }
+  .track { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--green); transition: width .25s ease; }
+  .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Wordmark with tick accent */
+  .wm { font: 700 clamp(44px, 9vw, 64px)/1 var(--display); color: var(--green); letter-spacing: -0.02em; }
+  .wm .o { position: relative; display: inline-block; }
+  .wm .tick { position: absolute; left: 50%; top: -0.2em; width: 0.42em; height: 0.3em; transform: translateX(-35%); }
+  .wm .tick path { fill: none; stroke: var(--amber); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  header.intro { padding-block: 36px 8px; display: grid; gap: 14px; }
+  header.intro h1 { font: 700 clamp(26px, 5vw, 34px)/1.15 var(--display); margin: 0; text-wrap: balance; }
+  header.intro p { margin: 0; max-width: 62ch; }
+  .sign { color: var(--muted); }
+  .note { font-size: 14px; color: var(--muted); }
+
+  .about {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: grid;
+    gap: 8px;
+  }
+  .about h2 { font: 600 13px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .about ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+  /* Sections */
+  section.block { padding-top: 40px; display: grid; gap: 22px; scroll-margin-top: 60px; }
+  .sec-head { display: grid; gap: 6px; border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .sec-head .eyebrow { font: 600 12px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--green); }
+  .sec-head h2 { font: 700 24px/1.2 var(--display); margin: 0; }
+  .sec-head p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .q { display: grid; gap: 10px; }
+  .q-top { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
+  .qnum {
+    font: 600 13px/28px var(--body);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--green-soft);
+    color: var(--green);
+  }
+  .q.done .qnum { background: var(--green); color: var(--green-ink); }
+  .q-label { font-weight: 600; }
+  .q-help { font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .q-body { margin-left: 44px; display: grid; gap: 10px; }
+
+  /* Answer-sheet bubbles */
+  .opts { display: grid; gap: 6px; }
+  .opt {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--card);
+    cursor: pointer;
+  }
+  .opt:hover { border-color: var(--green); }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .bub {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    display: grid; place-items: center;
+    font: 600 12px/1 var(--body);
+    color: var(--muted);
+  }
+  .opt.multi .bub { border-radius: 6px; }
+  .opt input:checked + .bub { background: var(--green); border-color: var(--green); color: var(--green-ink); }
+  .opt:has(input:checked) { border-color: var(--green); background: var(--green-soft); }
+  .opt input:focus-visible + .bub { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+  .scale { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .scale .opt { grid-template-columns: 30px; padding: 6px; }
+  .scale-ends { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 250px; }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    font: 15px/1.5 var(--body);
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  textarea { min-height: 84px; resize: vertical; }
+  textarea:focus, input[type="text"]:focus { outline: 3px solid var(--amber); outline-offset: 1px; border-color: var(--amber); }
+
+  /* Brand preview card */
+  .preview {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 10px;
+    padding: 22px 18px 18px;
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+  }
+  .preview .tag { font: 500 17px/1.3 var(--display); color: var(--ink); }
+  .preview .dom { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* Send */
+  .send { padding-top: 44px; display: grid; gap: 14px; }
+  .send h2 { font: 700 24px/1.2 var(--display); margin: 0; }
+  .send textarea { min-height: 220px; font: 13px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 600 15px/1 var(--body);
+    padding: 13px 18px;
+    border-radius: 8px;
+    border: 1.5px solid var(--green);
+    background: var(--green);
+    color: var(--green-ink);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn.ghost { background: transparent; color: var(--green); }
+  .btn.quiet { border-color: var(--line); background: transparent; color: var(--muted); }
+  .btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  .status { font-size: 14px; color: var(--amber-ink); background: var(--amber-soft); border-radius: 6px; padding: 8px 12px; }
+  .confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 14px; }
+
+  @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+  @media (max-width: 480px) {
+    .q-body { margin-left: 0; }
+  }
+</style>
+
+<div class="bar" aria-label="Progreso">
+  <div class="bar-inner">
+    <span class="wm-small">tesón</span>
+    <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+    <span class="count" id="count">0 de 0</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>¿Me ayudas con tu opinión antes de lanzar Tesón?</h1>
+    <p>Estoy montando <strong>Tesón</strong>, una plataforma de tests para opositores, y antes de lanzarla quiero escuchar a gente de aquí. Tu opinión como español/a vale mucho más que cualquier estudio de mercado.</p>
+    <p>Son unos <strong>10 minutos</strong>. <strong>Todo es opcional</strong>: responde solo a lo que sepas o te apetezca. Tus respuestas se guardan en este navegador mientras escribes, y al final me las envías por WhatsApp o copiándolas.</p>
+    <p class="sign">Gracias de verdad. Kyle</p>
+
+    <div class="about">
+      <h2>Qué es Tesón, en 30 segundos</h2>
+      <ul>
+        <li>Tests para <strong>Auxiliar Administrativo del Estado</strong> (luego Administrativo, Justicia, Policía…).</li>
+        <li>Cada respuesta explicada: por qué la correcta lo es, por qué las otras tres no, y el artículo del BOE enlazado.</li>
+        <li>Simulacros con el formato oficial (90 minutos, cada fallo resta 1/3) y repaso automático de tus fallos.</li>
+        <li><strong>Gratis durante 6 meses</strong> mientras aprendemos de cómo la usan los opositores.</li>
+      </ul>
+    </div>
+  </header>
+
+  <form id="form" autocomplete="off" novalidate></form>
+
+  <section class="send" id="enviar">
+    <h2>Enviar tus respuestas</h2>
+    <p class="note">Este es el resumen de lo que has contestado. Pulsa <strong>Enviar por WhatsApp</strong> y elige el chat conmigo, o cópialo y pégamelo donde prefieras.</p>
+    <textarea id="summary" readonly aria-label="Resumen de tus respuestas"></textarea>
+    <div class="actions">
+      <a class="btn" id="wa" href="https://wa.me/" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+      <button class="btn ghost" type="button" id="copy">Copiar respuestas</button>
+      <button class="btn quiet" type="button" id="reset">Borrar y empezar de nuevo</button>
+    </div>
+    <div class="status" id="status" hidden></div>
+    <div class="confirm" id="confirmReset" hidden>
+      <span>¿Borrar todas tus respuestas de este navegador?</span>
+      <button class="btn quiet" type="button" id="resetYes">Sí, borrar</button>
+      <button class="btn ghost" type="button" id="resetNo">Cancelar</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SECTIONS = [
+    {
+      id: "perfil", eyebrow: "Parte 1 de 6", title: "Sobre ti",
+      intro: "Para saber desde dónde me respondes.",
+      qs: [
+        { id: "P1", type: "short", label: "Tu nombre", help: "Opcional. Solo para saber a quién dar las gracias." },
+        { id: "P2", type: "multi", label: "¿Qué relación tienes con las oposiciones?", help: "Marca todas las que apliquen.",
+          options: ["He preparado alguna oposición", "Soy funcionario/a o personal de la Administración", "Conozco de cerca a gente que oposita", "Trabajo o he trabajado en una academia, o soy preparador/a", "Soy abogado/a, gestor/a o asesor/a", "Ninguna de estas"] },
+        { id: "P3", type: "short", label: "Si opositaste o eres funcionario/a: ¿qué oposición?", help: "Por ejemplo: Auxiliar del Estado 2019, Tramitación Procesal, Policía Nacional…" }
+      ]
+    },
+    {
+      id: "marca", eyebrow: "Parte 2 de 6", title: "El nombre y la marca",
+      intro: "El nombre es lo primero que verán los opositores. Quiero saber si suena natural a un oído español.",
+      preview: true,
+      qs: [
+        { id: "B1", type: "scale", label: "Primera impresión del nombre «Tesón»", ends: ["No me gusta", "Me encanta"] },
+        { id: "B2", type: "text", label: "¿Qué te sugiere «Tesón»? ¿Suena serio, cercano, antiguo, raro…?" },
+        { id: "B3", type: "single", label: "Si tuvieras que elegir un nombre, ¿cuál?",
+          options: ["Tesón", "Plaza Plan", "Hincacodos", "Mérito", "Aprobaya"], other: true },
+        { id: "B4", type: "multi", label: "¿Alguno de estos nombres te suena mal, ridículo o con un doble sentido que yo no pillo?",
+          options: ["Tesón", "Plaza Plan", "Hincacodos", "Mérito", "Aprobaya", "Ninguno"], note: "¿Por qué?" },
+        { id: "B5", type: "single", label: "¿Qué lema te convence más?",
+          options: ["Tu plaza, pregunta a pregunta.", "Estudia con tesón. Aprueba con datos.", "Sabes qué has fallado. Ahora sabes por qué.", "El test que te explica la ley, artículo por artículo."], other: true },
+        { id: "B6", type: "single", label: "La web sería «tesonopos.es». ¿Suena natural lo de «opos»?",
+          options: ["Sí, es como hablan los opositores", "Regular, preferiría otra cosa", "No, suena raro"], note: "Comentario" },
+        { id: "B7", type: "single", label: "El botón para avisar de una pregunta mal hecha se llamaría «Impugnar». ¿Se entiende?",
+          options: ["Sí, es justo la palabra que usan", "Se entiende, pero suena demasiado formal", "No, usaría otra palabra"], note: "¿Cuál usarías?" }
+      ]
+    },
+    {
+      id: "producto", eyebrow: "Parte 3 de 6", title: "El producto",
+      intro: "Cómo preparan los tests los opositores de verdad, y qué les falta.",
+      qs: [
+        { id: "C1", type: "multi", label: "¿Con qué practican los tests los opositores que conoces (o tú)?",
+          options: ["OpositaTest", "Apps gratuitas del móvil", "PDFs o Word de la academia", "Exámenes oficiales del INAP", "Grupos de Telegram", "Libros de test (MAD, ADAMS…)", "No lo sé"], other: true },
+        { id: "C2", type: "multi", label: "¿Qué es lo que más frustra al practicar tests?",
+          options: ["Preguntas con errores o respuestas mal", "Leyes desactualizadas", "Explicaciones pobres o inexistentes", "El precio", "No saber si vas bien para la nota de corte", "Anuncios y apps de baja calidad", "Demasiadas preguntas repetidas"], other: true },
+        { id: "C3", type: "multi", label: "De estas ideas, ¿cuáles te parecen más atractivas? Elige hasta dos.", max: 2,
+          options: ["Un registro público con cada error corregido y cuándo", "Ver en qué percentil estás frente a otros opositores", "Todo gratis durante 6 meses, sin tarjeta", "Todos los exámenes oficiales explicados pregunta a pregunta", "Repaso automático de tus fallos"] },
+        { id: "C4", type: "single", label: "«Gratis durante 6 meses, sin tarjeta.» ¿Cómo sonaría a un opositor?",
+          options: ["Genial, lo probaría", "Me haría sospechar que hay truco", "Me da igual, lo que importa es la calidad"], note: "¿Algo que lo haría más creíble?" },
+        { id: "C5", type: "single", label: "Después de la beta, ¿cuánto sería razonable pagar al mes por algo así?",
+          options: ["Nada: solo usaría algo gratis", "Menos de 5 €", "De 5 a 10 €", "De 10 a 15 €", "De 15 a 20 €", "Más de 20 €"] },
+        { id: "C6", type: "single", label: "¿Qué forma de pago prefieren los opositores?",
+          options: ["Suscripción mensual que se puede cancelar", "Pago único por convocatoria (unos 40–60 €)", "Da igual"], note: "Comentario" }
+      ]
+    },
+    {
+      id: "canales", eyebrow: "Parte 4 de 6", title: "Llegar a los opositores",
+      intro: "Dónde se informan de verdad y en quién confían.",
+      qs: [
+        { id: "D1", type: "multi", label: "¿Dónde pasan el rato y se informan los opositores?",
+          options: ["Telegram", "Instagram", "TikTok", "YouTube", "Foros (Buscaoposiciones…)", "Reddit", "Grupos de Facebook", "Grupos de WhatsApp", "Discord", "Boca a boca en la academia"], other: true },
+        { id: "D2", type: "text", label: "¿Conoces grupos, canales, profesores o creadores concretos en los que confíen?", help: "Nombres, enlaces, lo que recuerdes." },
+        { id: "D3", type: "single", label: "La web diría «un equipo con experiencia en preparación de exámenes profesionales», sin nombres ni caras. ¿Genera confianza?",
+          options: ["Sí, es suficiente", "Regular: querría ver quién está detrás", "No: sin caras no me fiaría"] },
+        { id: "D4", type: "single", label: "Si supieras que el fundador es extranjero, con experiencia en preparación de exámenes en EE. UU., ¿cómo lo verías?",
+          options: ["Me daría igual", "Me daría más confianza", "Me daría menos confianza"], note: "¿Por qué?" }
+      ]
+    },
+    {
+      id: "empresa", eyebrow: "Parte 5 de 6", title: "Empresa, legal y academias",
+      intro: "Sobre todo para quien sepa de gestorías, derecho o academias. Si no es tu tema, sáltatela.",
+      qs: [
+        { id: "E1", type: "single", label: "Para una beta gratuita sin ingresos, ¿autónomo o Sociedad Limitada?",
+          help: "Como autónomo, mi nombre y NIE aparecerían en el aviso legal de la web. Con una SL aparecería la empresa.",
+          options: ["Autónomo, sin duda", "SL desde el principio", "Autónomo ahora y SL cuando haya ingresos", "No lo sé"], note: "Tu razonamiento" },
+        { id: "E2", type: "text", label: "¿Me recomiendas alguna gestoría o asesor en Madrid? ¿Y alguien que sepa de fiscalidad EE. UU.–España?" },
+        { id: "E3", type: "text", label: "¿Sabes si se pueden publicar los exámenes oficiales del INAP con explicaciones propias, citando la fuente?", help: "Experiencia o algo que hayas visto hacer a otros." },
+        { id: "E4", type: "multi", label: "Más adelante querría hablar con academias pequeñas. ¿Cómo prefieren que las contacten?",
+          options: ["En persona, pasándose por la academia", "Por teléfono", "Por LinkedIn", "Por email", "A través de un conocido", "No lo sé"] },
+        { id: "E5", type: "single", label: "Una persona que revise preguntas a tiempo parcial (funcionario/a o graduado/a en Derecho): ¿qué pago por hora te parece justo?",
+          options: ["10–15 €/h", "15–20 €/h", "20–30 €/h", "Más de 30 €/h", "No lo sé"] }
+      ]
+    },
+    {
+      id: "ayuda", eyebrow: "Parte 6 de 6", title: "¿Te animas a algo más?",
+      intro: "Sin compromiso, solo para saber con quién puedo contar.",
+      qs: [
+        { id: "F1", type: "multi", label: "¿En qué te gustaría ayudar?",
+          options: ["Probar la beta y darme feedback", "Revisar preguntas (pagado)", "Presentarme a alguien que oposite o sea funcionario/a", "Una videollamada de 20 minutos", "Nada por ahora, gracias"] },
+        { id: "F2", type: "text", label: "¿Algo más que deba saber, o que te preocupe del proyecto?" }
+      ]
+    }
+  ];
+
+  var STORE_KEY = "teson-consulta-v1";
+  var answers = {};
+  try {
+    var raw = window.localStorage.getItem(STORE_KEY);
+    if (raw) answers = JSON.parse(raw) || {};
+  } catch (e) { answers = {}; }
+
+  var form = document.getElementById("form");
+  var letters = "ABCDEFGHIJ";
+  var qIndex = {};
+  var numbered = [];
+  var saveTimer = null;
+
+  function el(tag, attrs, text) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function wordmark() {
+    var wm = el("div", { "class": "wm", "aria-label": "tesón" });
+    wm.appendChild(document.createTextNode("tes"));
+    var o = el("span", { "class": "o" }, "o");
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", "tick");
+    svg.setAttribute("viewBox", "0 0 24 16");
+    svg.setAttribute("aria-hidden", "true");
+    var p = document.createElementNS(svgNS, "path");
+    p.setAttribute("d", "M3 9 L9 14 L21 2");
+    svg.appendChild(p);
+    o.appendChild(svg);
+    wm.appendChild(o);
+    wm.appendChild(document.createTextNode("n"));
+    return wm;
+  }
+
+  function isAnswered(q) {
+    var v = answers[q.id];
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === "number") return true;
+    return typeof v === "string" && v.trim() !== "";
+  }
+
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { window.localStorage.setItem(STORE_KEY, JSON.stringify(answers)); } catch (e) {}
+    }, 300);
+  }
+
+  function changed() {
+    save();
+    updateProgress();
+    buildSummary();
+  }
+
+  function renderChoice(q, body, multi) {
+    var wrap = el("div", { "class": "opts", role: multi ? "group" : "radiogroup", "aria-labelledby": "lbl-" + q.id });
+    q.options.forEach(function (opt, i) {
+      var id = q.id + "-" + i;
+      var label = el("label", { "class": "opt" + (multi ? " multi" : ""), "for": id });
+      var input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id: id, value: opt });
+      var cur = answers[q.id];
+      if (multi ? (Array.isArray(cur) && cur.indexOf(opt) !== -1) : cur === opt) input.checked = true;
+      input.addEventListener("change", function () {
+        if (multi) {
+          var arr = Array.isArray(answers[q.id]) ? answers[q.id].slice() : [];
+          if (input.checked) {
+            if (q.max && arr.length >= q.max) { input.checked = false; flash("Elige como máximo " + q.max + " opciones."); return; }
+            arr.push(opt);
+          } else {
+            arr = arr.filter(function (x) { return x !== opt; });
+          }
+          answers[q.id] = arr;
+        } else {
+          answers[q.id] = opt;
+        }
+        markDone(q);
+        changed();
+      });
+      label.appendChild(input);
+      label.appendChild(el("span", { "class": "bub", "aria-hidden": "true" }, letters.charAt(i)));
+      label.appendChild(el("span", null, opt));
+      wrap.appendChild(label);
+    });
+    body.appendChild(wrap);
+    if (q.other) body.appendChild(textInput(q.id + "_otro", "Otra (escríbela)", false));
+    if (q.note) body.appendChild(textInput(q.id + "_nota", q.note, false));
+  }
+
+  function renderScale(q, body) {
+    var wrap = el("div", { "class": "scale", role: "radiogroup", "aria-labelledby": "lbl-" + q.id });
+    for (var i = 1; i <= 5; i++) (function (n) {
+      var id = q.id + "-" + n;
+      var label = el("label", { "class": "opt", "for": id, title: String(n) });
+      var input = el("input", { type: "radio", name: q.id, id: id, value: String(n) });
+      if (answers[q.id] === n) input.checked = true;
+      input.addEventListener("change", function () { answers[q.id] = n; markDone(q); changed(); });
+      label.appendChild(input);
+      label.appendChild(el("span", { "class": "bub" }, String(n)));
+      wrap.appendChild(label);
+    })(i);
+    body.appendChild(wrap);
+    var ends = el("div", { "class": "scale-ends" });
+    ends.appendChild(el("span", null, "1 · " + q.ends[0]));
+    ends.appendChild(el("span", null, "5 · " + q.ends[1]));
+    body.appendChild(ends);
+  }
+
+  function textInput(key, placeholder, big, labelledBy) {
+    var attrs = { id: "f-" + key, placeholder: placeholder || "" };
+    if (labelledBy) attrs["aria-labelledby"] = labelledBy; else attrs["aria-label"] = placeholder || key;
+    var n = big ? el("textarea", attrs) : el("input", Object.assign({ type: "text" }, attrs));
+    if (typeof answers[key] === "string") n.value = answers[key];
+    n.addEventListener("input", function () {
+      answers[key] = n.value;
+      var base = qIndex[key];
+      if (base) markDone(base);
+      changed();
+    });
+    return n;
+  }
+
+  function markDone(q) {
+    var node = document.getElementById("q-" + q.id);
+    if (node) node.classList.toggle("done", isAnswered(q));
+  }
+
+  function render() {
+    var n = 0;
+    SECTIONS.forEach(function (sec) {
+      var s = el("section", { "class": "block", id: sec.id });
+      var head = el("div", { "class": "sec-head" });
+      head.appendChild(el("span", { "class": "eyebrow" }, sec.eyebrow));
+      head.appendChild(el("h2", null, sec.title));
+      if (sec.intro) head.appendChild(el("p", null, sec.intro));
+      s.appendChild(head);
+
+      if (sec.preview) {
+        var pv = el("div", { "class": "preview", "aria-label": "Vista previa de la marca" });
+        pv.appendChild(wordmark());
+        pv.appendChild(el("div", { "class": "tag" }, "Tu plaza, pregunta a pregunta."));
+        pv.appendChild(el("div", { "class": "dom" }, "tesonopos.es"));
+        s.appendChild(pv);
+      }
+
+      sec.qs.forEach(function (q) {
+        n++;
+        q.num = n;
+        qIndex[q.id] = q;
+        qIndex[q.id + "_otro"] = q;
+        qIndex[q.id + "_nota"] = q;
+        numbered.push(q);
+        var wrap = el("div", { "class": "q", id: "q-" + q.id });
+        var top = el("div", { "class": "q-top" });
+        top.appendChild(el("span", { "class": "qnum", "aria-hidden": "true" }, String(n)));
+        var lab = el("div");
+        lab.appendChild(el("div", { "class": "q-label", id: "lbl-" + q.id }, q.label));
+        if (q.help) lab.appendChild(el("div", { "class": "q-help" }, q.help));
+        top.appendChild(lab);
+        wrap.appendChild(top);
+        var body = el("div", { "class": "q-body" });
+        if (q.type === "single") renderChoice(q, body, false);
+        else if (q.type === "multi") renderChoice(q, body, true);
+        else if (q.type === "scale") renderScale(q, body);
+        else if (q.type === "text") body.appendChild(textInput(q.id, "Escribe aquí…", true, "lbl-" + q.id));
+        else body.appendChild(textInput(q.id, "", false, "lbl-" + q.id));
+        wrap.appendChild(body);
+        s.appendChild(wrap);
+        if (isAnswered(q)) wrap.classList.add("done");
+      });
+      form.appendChild(s);
+    });
+  }
+
+  function updateProgress() {
+    var done = numbered.filter(isAnswered).length;
+    document.getElementById("count").textContent = done + " de " + numbered.length;
+    document.getElementById("fill").style.width = (100 * done / numbered.length) + "%";
+  }
+
+  function fmt(v) {
+    if (Array.isArray(v)) return v.join("; ");
+    return String(v).trim();
+  }
+
+  function buildSummary() {
+    var name = typeof answers.P1 === "string" && answers.P1.trim() ? answers.P1.trim() : "(sin nombre)";
+    var today = new Date().toISOString().slice(0, 10);
+    var lines = ["CONSULTA TESÓN · " + name + " · " + today];
+    var any = false;
+    SECTIONS.forEach(function (sec) {
+      var sLines = [];
+      sec.qs.forEach(function (q) {
+        if (q.id === "P1") return;
+        var parts = [];
+        if (isAnswered(q)) parts.push(q.type === "scale" ? answers[q.id] + "/5" : fmt(answers[q.id]));
+        ["_otro", "_nota"].forEach(function (suf) {
+          var t = answers[q.id + suf];
+          if (typeof t === "string" && t.trim()) parts.push((suf === "_otro" ? "Otra: " : "Nota: ") + t.trim());
+        });
+        if (parts.length) sLines.push("[" + q.id + "] " + q.label + "\n→ " + parts.join(" | "));
+      });
+      if (sLines.length) { any = true; lines.push("", "— " + sec.title.toUpperCase() + " —"); lines = lines.concat(sLines); }
+    });
+    var text = any ? lines.join("\n") : "Todavía no has contestado nada. Tus respuestas aparecerán aquí.";
+    document.getElementById("summary").value = text;
+    document.getElementById("wa").href = "https://wa.me/?text=" + encodeURIComponent(any ? text : "");
+    return text;
+  }
+
+  var flashTimer = null;
+  function flash(msg) {
+    var s = document.getElementById("status");
+    s.textContent = msg;
+    s.hidden = false;
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { s.hidden = true; }, 4000);
+  }
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var text = buildSummary();
+    var ta = document.getElementById("summary");
+    function fallback() {
+      ta.focus();
+      ta.select();
+      flash("Texto seleccionado. Cópialo con Ctrl+C (o mantén pulsado y «Copiar» en el móvil).");
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () {
+        flash("Copiado. Pégamelo en WhatsApp o donde prefieras.");
+      }, fallback);
+    } catch (e) { fallback(); }
+  });
+
+  document.getElementById("reset").addEventListener("click", function () {
+    document.getElementById("confirmReset").hidden = false;
+  });
+  document.getElementById("resetNo").addEventListener("click", function () {
+    document.getElementById("confirmReset").hidden = true;
+  });
+  document.getElementById("resetYes").addEventListener("click", function () {
+    answers = {};
+    try { window.localStorage.removeItem(STORE_KEY); } catch (e) {}
+    form.innerHTML = "";
+    numbered = [];
+    render();
+    updateProgress();
+    buildSummary();
+    document.getElementById("confirmReset").hidden = true;
+    flash("Respuestas borradas.");
+    window.scrollTo(0, 0);
+  });
+
+  form.addEventListener("submit", function (e) { e.preventDefault(); });
+
+  render();
+  updateProgress();
+  buildSummary();
+})();
+</script>
