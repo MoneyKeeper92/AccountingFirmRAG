@@ -28,6 +28,7 @@ Tesón GitHub organisation, so nothing stays linked to other businesses.
 | 10 | [Open questions for Kyle](10_OPEN_QUESTIONS.md) |
 | 11 | [Competitors & market facts](11_COMPETITORS.md) |
 | 12 | [Questions for Spanish advisors + feedback app](12_ADVISOR_FEEDBACK.md) |
+| 13 | [**MVP launch: today's session**](13_MVP_LAUNCH_TODAY.md) · app in [mvp/](mvp/) |
 
 *Research snapshot: 28 Sept 2026. Figures marked [U] or "verify" come from search summaries
 and must be checked before being quoted publicly. This is not legal or tax advice.*
