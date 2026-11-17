@@ -11,7 +11,7 @@ out = pathlib.Path(sys.argv[1])
 out.mkdir(parents=True, exist_ok=True)
 
 css = (mvp / "styles.css").read_text()
-questions = (mvp / "questions.js").read_text()
+questions = (mvp / "questions.js").read_text() + "\n" + (mvp / "tags.js").read_text() + "\n" + (mvp / "esquemas.js").read_text()
 app = (mvp / "app.js").read_text()
 config = 'window.TESON_CONFIG = { supabaseUrl: "", supabaseAnonKey: "", contactEmail: "hola@tesonopos.es" };'
 

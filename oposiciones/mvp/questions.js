@@ -354,7 +354,7 @@
       o: ["Según los principios de mérito y capacidad", "Sin requisito alguno", "Mediante oposición en todo caso", "Con los requisitos que señalen las leyes"], k: 3,
       ex: "Art. 23.2: los ciudadanos tienen derecho a acceder en condiciones de igualdad a las funciones y cargos públicos, «con los requisitos que señalen las leyes».",
       w: ["Mérito y capacidad aparecen en el art. 103.3 (acceso a la función pública), no en el 23.2. Es la trampa clásica.", "Las leyes pueden fijar requisitos.", "La Constitución no impone la oposición como único sistema.", null],
-      trap: "Pregunta favorita en oposiciones: 23.2 → igualdad y requisitos legales; 103.3 → mérito y capacidad.", ref: "23" },
+      trap: "Confusión muy habitual: 23.2 → igualdad y requisitos legales; 103.3 → mérito y capacidad.", ref: "23" },
 
     { id: "CE-048", sub: "DF", art: "24.2",
       q: "¿Cuál de los siguientes NO figura entre los derechos del artículo 24.2?",
@@ -588,7 +588,7 @@
       o: ["El Título I completo", "El Título Preliminar, la Sección primera del Capítulo segundo del Título I o el Título II", "El Título Preliminar y el Título VIII", "Los Títulos I, II y X"], k: 1,
       ex: "Art. 168.1: se aplica a la revisión total o a la parcial que afecte al Título Preliminar, al Capítulo segundo, Sección primera, del Título I, o al Título II (la Corona).",
       w: ["Solo la Sección 1ª del Capítulo II del Título I.", null, "El Título VIII no está protegido por el art. 168.", "El Título X no está protegido por el art. 168."],
-      trap: "Curiosidad típica de examen: el Título X (la propia reforma) no está protegido por el art. 168.", ref: "168" },
+      trap: "Curiosidad: el Título X (la propia reforma) no está protegido por el art. 168.", ref: "168" },
 
     { id: "CE-081", sub: "REF", art: "169",
       q: "Según el artículo 169, no podrá iniciarse la reforma constitucional:",

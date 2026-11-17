@@ -75,6 +75,59 @@ create or replace view public.v_tema_interest as
 select payload->>'tema' as tema, count(*) filter (where (payload->>'on')::boolean) as votes
 from public.events where type = 'tema_interest' group by 1 order by 2 desc;
 
+-- ── v0.2: learning model and the adaptive-practice experiment (adapt-v1) ──
+
+-- Accuracy per concept (questions can carry several concepts).
+create or replace view public.v_concept_accuracy as
+select c.concept,
+       count(*) as attempts,
+       round(100.0 * avg(case when e.payload->>'result' = 'correct' then 1 else 0 end), 1) as pct_correct,
+       count(distinct e.uid) as users
+from public.events e
+cross join lateral jsonb_array_elements_text(coalesce(e.payload->'concepts', '[]'::jsonb)) as c(concept)
+where e.type = 'question_answered'
+group by 1 order by pct_correct asc;
+
+-- Which typical confusions students fall into most.
+create or replace view public.v_misconceptions as
+select payload->>'mis' as misconception, count(*) as hits, count(distinct uid) as users
+from public.events where type = 'question_answered' and payload->>'mis' is not null
+group by 1 order by hits desc;
+
+-- One row per participant: arm, diagnostic (pre) and progress check (post) scores, practice volume.
+create or replace view public.v_experiment as
+with arm as (
+  select distinct on (uid) uid, payload->>'arm' as arm, received_at as assigned_at
+  from public.events where type = 'exp_assigned' and payload->>'exp' = 'adapt-v1'
+  order by uid, received_at
+), pre as (
+  select distinct on (uid) uid, payload->>'form' as pre_form, (payload->>'score')::numeric as pre_score
+  from public.events where type = 'checkpoint_completed' and payload->>'kind' = 'pre'
+  order by uid, received_at
+), post as (
+  select distinct on (uid) uid, (payload->>'score')::numeric as post_score,
+         (payload->>'practice_answers')::int as practice_answers, (payload->>'days_since_pre')::numeric as days_since_pre
+  from public.events where type = 'checkpoint_completed' and payload->>'kind' = 'post'
+  order by uid, received_at
+)
+select arm.uid, arm.arm, arm.assigned_at, pre.pre_form, pre.pre_score, post.post_score,
+       post.post_score - pre.pre_score as gain, post.practice_answers, post.days_since_pre
+from arm left join pre using (uid) left join post using (uid);
+
+-- Summary by arm (only participants who completed both checkpoints).
+create or replace view public.v_experiment_summary as
+select arm,
+       count(*) filter (where pre_score is not null) as did_pre,
+       count(*) filter (where post_score is not null) as did_post,
+       round(avg(pre_score) filter (where post_score is not null), 2) as avg_pre,
+       round(avg(post_score), 2) as avg_post,
+       round(avg(gain), 2) as avg_gain,
+       round(stddev_samp(gain), 2) as sd_gain,
+       round(avg(practice_answers), 0) as avg_practice
+from public.v_experiment group by arm;
+
 -- Views are not exposed to anon: revoke to be explicit.
 revoke all on public.v_reports, public.v_feedback, public.v_nps, public.v_onboarding,
-              public.v_question_health, public.v_daily, public.v_tema_interest from anon, authenticated;
+              public.v_question_health, public.v_daily, public.v_tema_interest,
+              public.v_concept_accuracy, public.v_misconceptions, public.v_experiment, public.v_experiment_summary
+         from anon, authenticated;

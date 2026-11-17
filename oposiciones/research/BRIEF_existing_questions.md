@@ -3,7 +3,7 @@
 > **How to use:** paste everything below the line into an AI research tool that can browse
 > the web and open PDFs (ChatGPT Deep Research, Claude with web search, Perplexity Pro, Gemini
 > Deep Research). If the tool can't produce files, ask it to put each table inline as CSV in a
-> code block. Run Part A first; it's the most valuable. Parts B–E can be separate runs.
+> code block. Run Part A first; it's the most valuable. Parts B–G can be separate runs.
 
 ---
 
@@ -189,6 +189,35 @@ Record in `syllabi.csv`:
 `exam | convocatoria_ref | bulletin URL | n_temas | list of temas (numbered, exact wording) | software versions named (Windows/Office/M365) | laws explicitly cited`
 
 ---
+
+## Part G: who already does adaptive practice and visual explanations?
+
+Tesón's planned edge is three things together: **practice-only** (no lessons or video), **visual
+explanations** (comparison tables and diagrams that explain why each option is right or wrong) and
+**adaptive review** (questions chosen from the student's weak concepts, review timing and
+recurring confusions). Find out whether any Spanish oposiciones product already does all three
+well.
+
+For every product in Part D, plus any AI-first entrants you find (OpoRuta, Testualia,
+PreparaOposiciones, Aprobado.app, InnoTest, Typed AI, Oposit.ai, OposiAI, opositest.ai, Red
+Opositor…), record from public pages, demos, app-store screenshots and reviews:
+
+| Column | Meaning |
+|---|---|
+| `adaptive_claim` | Exact quote of any "adaptive / personalised / IA / puntos débiles / repetición espaciada" claim |
+| `adaptive_evidence` | What is visibly implemented: weak-topic tests, spaced repetition (SM-2/Leitner), concept-level tracking, confusion detection, predicted score… |
+| `explains_wrong_options` | Do explanations cover why each wrong option is wrong? (yes / partly / no) |
+| `visual_explanations` | Diagrams, comparison tables or esquemas inside explanations? Describe them; don't copy |
+| `progress_view` | What the student sees: % by tema, ranking/percentile, predicted mark, trends |
+| `practice_only` | Is it test-only, or bundled with temario/video/classes? |
+| `price` | As in Part D |
+| `top_complaints` | The 3 most common complaints in reviews (Google Play, App Store, Trustpilot, Reddit, forums), with links |
+| `top_praise` | The 3 most common positives, with links |
+
+Then answer in `summary.md`:
+1. Does anyone already combine all three well? Who comes closest, and what is missing?
+2. What do students most dislike about current apps' explanations and "adaptive" features?
+3. Is there evidence that any of them measure real learning gains, rather than just engagement?
 
 ## Deliverables (in this order)
 

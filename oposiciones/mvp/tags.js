@@ -1,0 +1,180 @@
+/*
+ * Tesón · etiquetas de aprendizaje (v1)
+ * Áreas → conceptos → preguntas; confusiones típicas por opción incorrecta;
+ * dificultad inicial; formularios de control para el experimento.
+ * Se aplica sobre window.TESON_BANK (questions.js).
+ */
+(function () {
+  var B = window.TESON_BANK;
+
+  // Áreas del tema (lo que ve el opositor en «Tu Constitución»).
+  B.areas = {
+    EST: "Estructura y elaboración",
+    TP: "Título Preliminar",
+    DF: "Derechos fundamentales",
+    DC: "Derechos, deberes y principios rectores",
+    GS: "Garantías y suspensión",
+    REF: "Reforma constitucional"
+  };
+
+  // Conceptos: unidad mínima de seguimiento. area, nombre, artículos.
+  B.concepts = {
+    "est.estructura": { area: "EST", name: "Estructura de la Constitución", arts: "Títulos y artículos" },
+    "est.fechas": { area: "EST", name: "Aprobación, referéndum y entrada en vigor", arts: "Disp. final" },
+    "est.reformas": { area: "EST", name: "Reformas realizadas", arts: "13.2, 135, 49" },
+    "tp.valores": { area: "TP", name: "Estado social y valores superiores", arts: "1.1" },
+    "tp.soberania": { area: "TP", name: "Soberanía y forma política", arts: "1.2–1.3" },
+    "tp.autonomia": { area: "TP", name: "Unidad y autonomía", arts: "2" },
+    "tp.lenguas": { area: "TP", name: "Lenguas oficiales", arts: "3" },
+    "tp.simbolos": { area: "TP", name: "Bandera y capital", arts: "4–5" },
+    "tp.partidos": { area: "TP", name: "Partidos, sindicatos y asociaciones empresariales", arts: "6–7" },
+    "tp.ffaa": { area: "TP", name: "Fuerzas Armadas", arts: "8" },
+    "tp.art9": { area: "TP", name: "Sujeción a la Constitución y principios del art. 9", arts: "9" },
+    "df.nacionalidad": { area: "DF", name: "Interpretación, nacionalidad y mayoría de edad", arts: "10–12" },
+    "df.extranjeros": { area: "DF", name: "Extranjeros y extradición", arts: "13" },
+    "df.igualdad": { area: "DF", name: "Igualdad ante la ley", arts: "14" },
+    "df.vida_religion": { area: "DF", name: "Vida y libertad ideológica y religiosa", arts: "15–16" },
+    "df.detencion": { area: "DF", name: "Libertad y detención", arts: "17" },
+    "df.intimidad": { area: "DF", name: "Intimidad, domicilio y comunicaciones", arts: "18" },
+    "df.expresion": { area: "DF", name: "Libertades de expresión e información", arts: "20" },
+    "df.reunion": { area: "DF", name: "Reunión y asociación", arts: "21–22" },
+    "df.participacion": { area: "DF", name: "Participación y tutela judicial", arts: "23–24" },
+    "df.legalidad": { area: "DF", name: "Legalidad sancionadora y Tribunales de Honor", arts: "25–26" },
+    "df.educacion": { area: "DF", name: "Educación, sindicación, huelga y petición", arts: "27–29" },
+    "df.titulo1": { area: "DF", name: "Estructura del Título I", arts: "Caps. I–V" },
+    "dc.deberes": { area: "DC", name: "Derechos y deberes de los ciudadanos", arts: "30–38" },
+    "dc.rectores": { area: "DC", name: "Principios rectores", arts: "39–52" },
+    "gs.tutela": { area: "GS", name: "Tutela de los derechos y amparo", arts: "53" },
+    "gs.defensor": { area: "GS", name: "Defensor del Pueblo", arts: "54" },
+    "gs.suspension": { area: "GS", name: "Suspensión de derechos", arts: "55" },
+    "gs.estados": { area: "GS", name: "Estados de alarma, excepción y sitio", arts: "116" },
+    "ref.iniciativa": { area: "REF", name: "Iniciativa de reforma", arts: "166" },
+    "ref.ordinaria": { area: "REF", name: "Procedimiento ordinario", arts: "167" },
+    "ref.agravada": { area: "REF", name: "Procedimiento agravado", arts: "168" },
+    "ref.limites": { area: "REF", name: "Límites temporales a la reforma", arts: "169" }
+  };
+
+  // Confusiones típicas (se detectan cuando el opositor elige ciertas opciones incorrectas).
+  B.misconceptions = {
+    "mis.estados": { name: "Alarma, excepción y sitio", esquema: "estados" },
+    "mis.reforma": { name: "Reforma ordinaria (art. 167) y agravada (art. 168)", esquema: "reforma" },
+    "mis.art23_103": { name: "Art. 23.2 (igualdad y requisitos legales) y art. 103.3 (mérito y capacidad)", esquema: null },
+    "mis.amparo": { name: "Qué derechos tienen amparo y procedimiento preferente", esquema: "titulo1" },
+    "mis.literal": { name: "La literalidad exacta del texto (villa/ciudad, deber/derecho…)", esquema: null },
+    "mis.partidos": { name: "Partidos políticos (art. 6) y sindicatos (art. 7)", esquema: null },
+    "mis.autoriza": { name: "Quién puede autorizar: un juez o la Administración", esquema: null },
+    "mis.suspension": { name: "Qué derechos pueden suspenderse (art. 55)", esquema: "suspension" },
+    "mis.rango": { name: "Ley orgánica, ley ordinaria o reglamento", esquema: null },
+    "mis.cifras": { name: "Plazos y cifras (72 horas, 15/30 días, 169 artículos…)", esquema: null },
+    "mis.valores": { name: "Valores superiores (art. 1.1) frente a otros principios", esquema: null },
+    "mis.ubicacion": { name: "Dónde está cada precepto (capítulos y secciones)", esquema: "titulo1" }
+  };
+
+  // id: [conceptos], dificultad inicial (1–3), confusiones por índice de opción.
+  var T = {
+    "CE-001": [["est.estructura"], 1, { 0: "mis.cifras", 1: "mis.cifras", 3: "mis.cifras" }],
+    "CE-002": [["est.fechas"], 2, { 0: "mis.cifras", 1: "mis.cifras", 3: "mis.cifras" }],
+    "CE-003": [["est.estructura"], 1, { 0: "mis.ubicacion", 1: "mis.ubicacion", 2: "mis.ubicacion" }],
+    "CE-004": [["est.reformas"], 2, {}],
+    "CE-005": [["tp.valores"], 2, { 1: "mis.valores", 2: "mis.valores", 3: "mis.valores" }],
+    "CE-006": [["tp.soberania"], 1, {}],
+    "CE-007": [["tp.soberania"], 1, { 0: "mis.valores", 2: "mis.literal" }],
+    "CE-008": [["tp.autonomia"], 2, { 1: "mis.ubicacion", 2: "mis.ubicacion" }],
+    "CE-009": [["tp.lenguas"], 1, { 0: "mis.literal", 2: "mis.literal", 3: "mis.literal" }],
+    "CE-010": [["tp.lenguas"], 1, { 1: "mis.rango" }],
+    "CE-011": [["tp.simbolos"], 1, { 1: "mis.literal", 2: "mis.literal" }],
+    "CE-012": [["tp.simbolos"], 2, { 2: "mis.rango" }],
+    "CE-013": [["tp.simbolos"], 2, { 1: "mis.literal", 3: "mis.rango" }],
+    "CE-014": [["tp.partidos"], 2, { 0: "mis.literal" }],
+    "CE-015": [["tp.partidos"], 1, { 1: "mis.partidos", 3: "mis.ubicacion" }],
+    "CE-016": [["tp.partidos"], 2, { 0: "mis.partidos", 1: "mis.partidos", 2: "mis.partidos" }],
+    "CE-017": [["tp.ffaa"], 1, {}],
+    "CE-018": [["tp.ffaa"], 1, { 0: "mis.rango", 2: "mis.rango", 3: "mis.rango" }],
+    "CE-019": [["tp.art9"], 1, {}],
+    "CE-020": [["tp.art9"], 3, { 0: "mis.valores", 1: "mis.valores", 2: "mis.valores" }],
+    "CE-021": [["tp.art9"], 2, {}],
+    "CE-022": [["tp.art9"], 2, { 1: "mis.literal", 2: "mis.literal", 3: "mis.literal" }],
+    "CE-023": [["df.nacionalidad"], 2, {}],
+    "CE-024": [["df.nacionalidad"], 1, { 1: "mis.cifras", 2: "mis.cifras", 3: "mis.rango" }],
+    "CE-025": [["df.nacionalidad"], 2, { 0: "mis.literal" }],
+    "CE-026": [["df.extranjeros"], 2, {}],
+    "CE-027": [["df.extranjeros"], 1, {}],
+    "CE-028": [["df.igualdad", "df.titulo1"], 3, { 0: "mis.ubicacion", 1: "mis.ubicacion", 3: "mis.ubicacion" }],
+    "CE-029": [["df.igualdad"], 2, {}],
+    "CE-030": [["df.vida_religion"], 2, { 0: "mis.literal" }],
+    "CE-031": [["df.vida_religion"], 1, { 3: "mis.rango" }],
+    "CE-032": [["df.vida_religion"], 1, {}],
+    "CE-033": [["df.detencion"], 1, { 0: "mis.cifras", 1: "mis.cifras", 3: "mis.cifras" }],
+    "CE-034": [["df.detencion"], 2, { 0: "mis.amparo" }],
+    "CE-035": [["df.detencion"], 1, {}],
+    "CE-036": [["df.intimidad"], 2, { 0: "mis.autoriza", 1: "mis.autoriza", 3: "mis.autoriza" }],
+    "CE-037": [["df.intimidad"], 2, { 0: "mis.autoriza", 1: "mis.suspension" }],
+    "CE-038": [["df.intimidad"], 2, { 1: "mis.ubicacion", 2: "mis.ubicacion", 3: "mis.ubicacion" }],
+    "CE-039": [["df.expresion"], 3, { 0: "mis.autoriza", 2: "mis.rango", 3: "mis.suspension" }],
+    "CE-040": [["df.expresion"], 1, { 0: "mis.autoriza", 1: "mis.autoriza", 3: "mis.autoriza" }],
+    "CE-041": [["df.expresion"], 2, { 1: "mis.ubicacion", 2: "mis.ubicacion", 3: "mis.ubicacion" }],
+    "CE-042": [["df.reunion"], 1, { 0: "mis.autoriza", 1: "mis.literal" }],
+    "CE-043": [["df.reunion"], 2, { 3: "mis.literal" }],
+    "CE-044": [["df.reunion"], 1, { 1: "mis.autoriza", 2: "mis.autoriza", 3: "mis.autoriza" }],
+    "CE-045": [["df.reunion"], 1, {}],
+    "CE-046": [["df.reunion"], 2, {}],
+    "CE-047": [["df.participacion"], 3, { 0: "mis.art23_103" }],
+    "CE-048": [["df.participacion"], 2, {}],
+    "CE-049": [["df.legalidad"], 2, { 2: "mis.autoriza", 3: "mis.suspension" }],
+    "CE-050": [["df.legalidad"], 2, { 3: "mis.literal" }],
+    "CE-051": [["df.educacion"], 1, { 3: "mis.cifras" }],
+    "CE-052": [["df.educacion"], 3, { 3: "mis.literal" }],
+    "CE-053": [["df.educacion"], 1, { 1: "mis.cifras" }],
+    "CE-054": [["df.educacion"], 2, {}],
+    "CE-055": [["df.titulo1"], 2, { 0: "mis.ubicacion", 2: "mis.ubicacion", 3: "mis.ubicacion" }],
+    "CE-056": [["gs.tutela", "dc.deberes"], 3, { 0: "mis.amparo", 1: "mis.amparo", 3: "mis.amparo" }],
+    "CE-057": [["dc.deberes"], 1, {}],
+    "CE-058": [["dc.deberes"], 1, { 0: "mis.ubicacion", 2: "mis.ubicacion", 3: "mis.ubicacion" }],
+    "CE-059": [["dc.deberes"], 2, {}],
+    "CE-060": [["dc.deberes"], 1, { 0: "mis.ubicacion" }],
+    "CE-061": [["dc.deberes"], 2, { 1: "mis.literal" }],
+    "CE-062": [["dc.rectores", "gs.tutela"], 2, { 0: "mis.amparo", 2: "mis.amparo" }],
+    "CE-063": [["dc.rectores"], 1, { 0: "mis.ubicacion", 1: "mis.ubicacion", 2: "mis.ubicacion" }],
+    "CE-064": [["dc.rectores", "est.reformas"], 1, { 1: "mis.literal" }],
+    "CE-065": [["dc.rectores", "df.titulo1"], 2, { 0: "mis.ubicacion", 1: "mis.ubicacion", 3: "mis.ubicacion" }],
+    "CE-066": [["gs.tutela"], 2, { 1: "mis.amparo", 2: "mis.amparo", 3: "mis.amparo" }],
+    "CE-067": [["gs.tutela"], 1, {}],
+    "CE-068": [["gs.tutela"], 2, {}],
+    "CE-069": [["gs.defensor"], 1, {}],
+    "CE-070": [["gs.defensor"], 1, { 0: "mis.rango", 1: "mis.rango", 3: "mis.rango" }],
+    "CE-071": [["gs.suspension"], 3, { 0: "mis.suspension", 1: "mis.suspension", 3: "mis.suspension" }],
+    "CE-072": [["gs.suspension"], 3, { 0: "mis.suspension", 1: "mis.suspension", 2: "mis.suspension" }],
+    "CE-073": [["gs.suspension"], 2, {}],
+    "CE-074": [["gs.estados"], 2, { 1: "mis.estados", 2: "mis.estados" }],
+    "CE-075": [["gs.estados"], 2, { 0: "mis.estados", 2: "mis.cifras", 3: "mis.cifras" }],
+    "CE-076": [["gs.estados"], 2, { 0: "mis.estados", 1: "mis.estados", 2: "mis.cifras" }],
+    "CE-077": [["ref.iniciativa"], 1, {}],
+    "CE-078": [["ref.ordinaria"], 2, { 1: "mis.reforma", 2: "mis.cifras", 3: "mis.cifras" }],
+    "CE-079": [["ref.ordinaria"], 3, { 0: "mis.cifras", 1: "mis.cifras", 3: "mis.reforma" }],
+    "CE-080": [["ref.agravada"], 2, { 0: "mis.reforma", 2: "mis.reforma", 3: "mis.reforma" }],
+    "CE-081": [["ref.limites"], 1, { 0: "mis.reforma", 1: "mis.reforma", 2: "mis.reforma" }],
+    "CE-082": [["ref.agravada"], 2, { 1: "mis.reforma", 2: "mis.reforma", 3: "mis.reforma" }]
+  };
+
+  B.questions.forEach(function (q) {
+    var t = T[q.id];
+    if (!t) throw new Error("Pregunta sin etiquetas: " + q.id);
+    q.concepts = t[0];
+    q.diff = t[1];
+    q.mis = t[2];
+    q.area = q.sub;
+  });
+
+  // Esquema visual por concepto (se muestra en la explicación).
+  B.esquemaFor = {
+    "gs.estados": "estados", "ref.ordinaria": "reforma", "ref.agravada": "reforma", "ref.iniciativa": "reforma",
+    "ref.limites": "reforma", "df.titulo1": "titulo1", "gs.tutela": "titulo1", "gs.suspension": "suspension"
+  };
+
+  // Formularios de control (diagnóstico y control de progreso) para el experimento.
+  // Equilibrados por área. Se excluyen de la práctica hasta completar ambos.
+  B.controlForms = {
+    A: ["CE-003", "CE-005", "CE-014", "CE-021", "CE-029", "CE-033", "CE-043", "CE-058", "CE-069", "CE-078"],
+    B: ["CE-002", "CE-009", "CE-016", "CE-020", "CE-028", "CE-034", "CE-044", "CE-063", "CE-074", "CE-081"]
+  };
+})();
