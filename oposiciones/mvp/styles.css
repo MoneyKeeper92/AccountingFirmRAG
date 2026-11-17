@@ -16,8 +16,8 @@
   --bad: #B83A26;
   --bad-soft: #F8E5E1;
   --blank: #8A938F;
-  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --display: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -70,6 +70,8 @@ h3 { font-size: 17px; font-weight: 600; }
 .eyebrow { font: 600 12px/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--green); }
 .muted { color: var(--muted); }
 .small { font-size: 14px; }
+.config-alert { border: 2px solid var(--bad); background: var(--bad-soft); color: var(--ink); border-radius: 10px; padding: 12px 14px; }
+code { overflow-wrap: anywhere; }
 .stack { display: grid; gap: 16px; }
 .stack-lg { display: grid; gap: 28px; }
 section.view { padding-top: 28px; }

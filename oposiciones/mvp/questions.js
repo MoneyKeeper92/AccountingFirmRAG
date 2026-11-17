@@ -3,16 +3,18 @@
  * Constitución Española (I): Título Preliminar, derechos y deberes, garantías,
  * suspensión y reforma.
  *
- * Fuente: Constitución Española, texto consolidado (BOE-A-1978-31229).
- * Estado: redactadas a partir del texto constitucional y PENDIENTES DE REVISIÓN
- * HUMANA (revisor/a de Tesón). La app muestra la marca "en revisión".
+ * Fuente: Constitución Española, texto consolidado (BOE-A-1978-31229),
+ * comprobado automáticamente el 17-11-2026. Estado: PENDIENTES DE REVISIÓN
+ * HUMANA. No se debe cambiar el estado del banco hasta completar REVIEW.md.
  *
  * Campos: id, sub (subbloque), art, q (enunciado), o (4 opciones), k (índice de
  * la correcta), ex (por qué es correcta), w (por qué cada opción es incorrecta;
- * null en la correcta), trap (trampa típica, opcional).
+ * null en la correcta), trap (trampa típica, opcional), ref (ancla BOE).
+ * Los campos de procedencia se añaden de forma uniforme al final del archivo.
  */
 (function () {
-  var BOE = "https://www.boe.es/buscar/act.php?id=BOE-A-1978-31229#a";
+  var BOE = "https://www.boe.es/buscar/act.php?id=BOE-A-1978-31229";
+  var CONTENT_AS_OF = "2026-11-17";
 
   var SUBS = {
     EST: "Estructura y elaboración",
@@ -30,7 +32,7 @@
       o: ["159", "179", "169", "162"], k: 2,
       ex: "La Constitución tiene 169 artículos, además del Preámbulo y las disposiciones adicionales, transitorias, derogatoria y final.",
       w: ["Faltan diez: el último artículo es el 169 (procedimiento de reforma).", "Sobran diez: no existe un artículo 179.", null, "El último artículo es el 169, que cierra el Título X."],
-      trap: "Recuerda que el art. 169 cierra el Título X (reforma): es el último artículo." , ref: "169" },
+      trap: "Recuerda que el art. 169 cierra el Título X (reforma): es el último artículo." , ref: "texto" },
 
     { id: "CE-002", sub: "EST", art: "Disposición final",
       q: "¿Cuándo entró en vigor la Constitución Española?",
@@ -44,14 +46,14 @@
       o: ["En un Título Preliminar y nueve Títulos", "En once Títulos y un Título Preliminar", "En diez Títulos, sin Título Preliminar", "En un Título Preliminar y diez Títulos"], k: 3,
       ex: "La Constitución tiene un Título Preliminar (arts. 1–9) y diez Títulos numerados del I al X.",
       w: ["Son diez Títulos, del I (derechos y deberes) al X (reforma).", "Con el Preliminar suman once divisiones, pero los Títulos numerados son diez.", "Sí existe un Título Preliminar, que recoge los arts. 1 a 9.", null],
-      ref: "1" },
+      ref: "texto" },
 
     { id: "CE-004", sub: "EST", art: "Reformas",
       q: "¿Qué artículos de la Constitución se han modificado mediante reforma constitucional hasta la fecha de esta pregunta?",
       o: ["Los artículos 13.2, 135 y 49", "Solo los artículos 13.2 y 135", "Los artículos 57, 135 y 49", "Los artículos 13.2, 57 y 135"], k: 0,
       ex: "Ha habido tres reformas: 1992 (art. 13.2, sufragio pasivo de extranjeros en elecciones municipales), 2011 (art. 135, estabilidad presupuestaria) y 2024 (art. 49, personas con discapacidad).",
       w: [null, "Olvida la reforma de febrero de 2024 del art. 49.", "El art. 57 (sucesión a la Corona) no se ha reformado; falta el 13.2.", "El art. 57 no se ha reformado; falta el 49 (reforma de 2024)."],
-      trap: "Las reformas siguen el orden 1992 → 2011 → 2024. El art. 57 aparece mucho en debates, pero nunca se ha reformado." , ref: "49" },
+      trap: "Las reformas siguen el orden 1992 → 2011 → 2024. El art. 57 aparece mucho en debates, pero nunca se ha reformado." , ref: "texto" },
 
     // ── Título Preliminar ──────────────────────────────────────
     { id: "CE-005", sub: "TP", art: "1.1",
@@ -605,11 +607,31 @@
       ref: "168" }
   ];
 
-  Q.forEach(function (q) { q.url = BOE + q.ref; q.tema = "CE1"; });
+  Q.forEach(function (q) {
+    q.tema = "CE1";
+    q.sourceType = "teson_original_from_legislation";
+    q.sourceId = "BOE-A-1978-31229";
+    q.sourceUrl = BOE;
+    q.sourceRef = q.ref;
+    q.contentAsOf = CONTENT_AS_OF;
+    q.reviewStatus = "pending_human";
+    q.url = q.ref === "texto" ? BOE : BOE + (String(q.ref).match(/^\d/) ? "#a" : "#") + q.ref;
+  });
 
   window.TESON_BANK = {
-    version: "2026-10-29",
-    status: "en_revision",
+    version: "2026-11-17.1",
+    contentAsOf: CONTENT_AS_OF,
+    status: "pendiente_revision_humana",
+    source: {
+      type: "teson_original_from_legislation",
+      id: "BOE-A-1978-31229",
+      url: BOE,
+      officialExam: false
+    },
+    humanReview: {
+      reviewer: null,
+      completedAt: null
+    },
     temas: [
       { id: "CE1", nombre: "Constitución Española (I)", detalle: "Título Preliminar, derechos y deberes, garantías, suspensión y reforma", activo: true },
       { id: "CE2", nombre: "Constitución Española (II)", detalle: "Corona, Cortes Generales, Gobierno, Poder Judicial y Tribunal Constitucional", activo: false },

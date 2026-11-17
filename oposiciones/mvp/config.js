@@ -7,5 +7,14 @@
 window.TESON_CONFIG = {
   supabaseUrl: "",
   supabaseAnonKey: "",
-  contactEmail: "hola@tesonopos.es"
+  contactEmail: "hola@tesonopos.es",
+  reportResponseHours: 72,
+  legal: {
+    updated: "",
+    controllerName: "",
+    taxId: "",
+    address: "",
+    registryDetails: "",
+    processors: "Supabase, Inc. (alojamiento de datos en la Unión Europea)"
+  }
 };

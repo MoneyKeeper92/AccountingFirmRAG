@@ -20,13 +20,15 @@
   var CFG = window.TESON_CONFIG || {};
   var BANK = window.TESON_BANK;
   var ESQ = window.TESON_ESQUEMAS || {};
-  var APP_VERSION = "mvp-0.2";
+  var APP_VERSION = "mvp-0.2-private-beta";
   var EXP_ID = "adapt-v1";
   var LS_KEY = "teson.v1";
+  var SESSION_KEY = "teson.session.v1";
   var DAY = 86400000;
   var LEITNER = [1, 3, 7, 21];
   var LETTERS = "ABCD";
-  var SID = rid();
+  var ESSENTIAL_TYPES = ["question_reported", "feedback_sent"];
+  var SID = sessionId();
   var WEAK = 0.7;
 
   var QMAP = {};
@@ -39,6 +41,15 @@
     var a = new Uint8Array(12);
     (window.crypto || window.msCrypto).getRandomValues(a);
     return Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+  }
+  function sessionId() {
+    try {
+      var existing = window.sessionStorage.getItem(SESSION_KEY);
+      if (existing) return existing;
+      var created = rid();
+      window.sessionStorage.setItem(SESSION_KEY, created);
+      return created;
+    } catch (e) { return rid(); }
   }
   function fresh() {
     return { v: 1, uid: rid(), consent: null, profile: null, src: null, stats: {}, history: [], days: [], queue: [],
@@ -54,6 +65,10 @@
     return s;
   })();
   function persist() { try { window.localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+  if (!Array.isArray(S.queue) || S.queue.some(function (event) { return !event.basis || !event.bank_version; })) {
+    S.queue = [];
+    persist();
+  }
 
   (function captureSource() {
     if (S.src) return;
@@ -100,33 +115,77 @@
   }
 
   // ── Events ──────────────────────────────────────────────────
-  function backendOn() { return !!(CFG.supabaseUrl && CFG.supabaseAnonKey); }
-  var flushing = false, flushTimer = null;
+  function legalReady() {
+    var legal = CFG.legal || {};
+    return !!(legal.updated && legal.controllerName && legal.taxId && legal.address && legal.processors && CFG.contactEmail);
+  }
+  function backendOn() { return !!(legalReady() && CFG.supabaseUrl && CFG.supabaseAnonKey); }
+  var flushing = false, flushTimer = null, flushController = null, flushGeneration = 0;
   function track(type, payload, opts) {
-    var submitted = !!(opts && opts.submitted);
-    if (!submitted && S.consent !== "yes") return;
+    var essential = !!(opts && opts.essential);
+    if (essential && ESSENTIAL_TYPES.indexOf(type) === -1) return false;
+    if (!essential && S.consent !== "yes") return false;
+    if (essential && !backendOn()) return false;
     payload = payload || {};
-    if (S.consent === "yes" && S.exp && S.exp.participant) { payload.exp = EXP_ID; payload.arm = S.exp.arm; }
-    S.queue.push({ uid: S.consent === "yes" ? S.uid : null, session_id: S.consent === "yes" ? SID : null, type: type,
-      payload: payload, client_ts: new Date().toISOString(), app_version: APP_VERSION });
+    if (!essential && S.exp && S.exp.participant) { payload.exp = EXP_ID; payload.arm = S.exp.arm; }
+    S.queue.push({
+      uid: essential ? null : S.uid,
+      session_id: essential ? null : SID,
+      type: type,
+      payload: payload,
+      client_ts: new Date().toISOString(),
+      app_version: APP_VERSION,
+      bank_version: BANK.version,
+      basis: essential ? "user_request" : "consent"
+    });
     if (S.queue.length > 500) S.queue = S.queue.slice(-500);
     persist();
     clearTimeout(flushTimer);
-    flushTimer = setTimeout(flush, submitted ? 200 : 2500);
+    flushTimer = setTimeout(flush, essential ? 200 : 2500);
+    return true;
   }
   function flush(keepalive) {
     if (!backendOn() || flushing || !S.queue.length) return;
     var batch = S.queue.slice(0, 50);
+    var generation = flushGeneration;
     flushing = true;
+    var controller = window.AbortController ? new AbortController() : null;
+    flushController = controller;
     try {
       fetch(CFG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/events", {
-        method: "POST", keepalive: !!keepalive,
-        headers: { "apikey": CFG.supabaseAnonKey, "Authorization": "Bearer " + CFG.supabaseAnonKey, "Content-Type": "application/json", "Prefer": "return=minimal" },
+        method: "POST",
+        keepalive: !!keepalive,
+        headers: {
+          "apikey": CFG.supabaseAnonKey,
+          "Authorization": "Bearer " + CFG.supabaseAnonKey,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        signal: controller ? controller.signal : undefined,
         body: JSON.stringify(batch)
       }).then(function (r) {
-        if (r.ok) { S.queue = S.queue.slice(batch.length); persist(); if (S.queue.length) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 1000); } }
-      }).catch(function () {}).then(function () { flushing = false; });
-    } catch (e) { flushing = false; }
+        if (generation !== flushGeneration) return;
+        if (r.ok) {
+          S.queue = S.queue.slice(batch.length);
+          persist();
+          if (S.queue.length) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 1000); }
+        } else {
+          toast("El servidor ha rechazado el envío. Tus datos siguen guardados en este navegador.");
+        }
+      }).catch(function () {
+        if (generation !== flushGeneration) return;
+        toast("No hemos podido enviar los datos. Lo reintentaremos mientras sigan guardados en este navegador.");
+      }).then(function () {
+        if (generation !== flushGeneration) return;
+        flushing = false;
+        if (flushController === controller) flushController = null;
+      });
+    } catch (e) {
+      if (generation === flushGeneration) {
+        flushing = false;
+        if (flushController === controller) flushController = null;
+      }
+    }
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(true); });
 
@@ -171,15 +230,42 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, 3500);
   }
   function sheet(build) {
+    var previouslyFocused = document.activeElement;
     var scrim = h("div", { "class": "scrim" });
     var box = h("div", { "class": "sheet", role: "dialog", "aria-modal": "true" });
-    function close() { scrim.remove(); document.removeEventListener("keydown", onKey); }
-    function onKey(e) { if (e.key === "Escape") close(); }
+    function focusable() {
+      return Array.prototype.filter.call(box.querySelectorAll("button:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href]"), function (el) {
+        return !el.hidden && el.offsetParent !== null;
+      });
+    }
+    function close() {
+      scrim.remove();
+      document.removeEventListener("keydown", onKey);
+      if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus();
+    }
+    function onKey(e) {
+      if (e.key === "Escape") return close();
+      if (e.key !== "Tab") return;
+      var items = focusable();
+      if (!items.length) { e.preventDefault(); box.focus(); return; }
+      var first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
     scrim.addEventListener("click", function (e) { if (e.target === scrim) close(); });
     document.addEventListener("keydown", onKey);
     add(box, build(close));
-    scrim.appendChild(box); document.body.appendChild(scrim);
-    var f = box.querySelector("button, input, textarea"); if (f) f.focus();
+    var heading = box.querySelector("h2");
+    if (heading) {
+      heading.id = "dialog-" + rid();
+      box.setAttribute("aria-labelledby", heading.id);
+    } else {
+      box.setAttribute("aria-label", "Diálogo");
+    }
+    box.setAttribute("tabindex", "-1");
+    scrim.appendChild(box);
+    document.body.appendChild(scrim);
+    var f = focusable()[0]; if (f) f.focus(); else box.focus();
     return close;
   }
   function previewNote() { return backendOn() ? null : h("p", { "class": "small muted" }, "Vista previa: en esta versión los envíos no se guardan en ningún servidor."); }
@@ -405,8 +491,11 @@
       h("nav", { "aria-label": "Principal" }, nb("home", "Inicio"), nb("fallos", "Fallos" + (nf ? " (" + nf + ")" : "")), nb("progreso", "Progreso"))));
   }
   function footer() {
+    var reviewCopy = BANK.status === "revisado_humano"
+      ? "Banco revisado · contenido actualizado a " + BANK.contentAsOf + "."
+      : "Beta privada · banco pendiente de revisión humana · contenido comprobado automáticamente a " + BANK.contentAsOf + ".";
     return h("footer", { "class": "foot" },
-      h("div", null, "Tesón · Oposiciones, pregunta a pregunta. Beta gratuita: preguntas en revisión. Si ves algo raro, impúgnalo."),
+      h("div", null, "Tesón · Oposiciones, pregunta a pregunta. " + reviewCopy + " Si ves algo raro, impúgnalo."),
       h("div", null, "Legislación: Agencia Estatal Boletín Oficial del Estado (textos consolidados, de carácter informativo). Tesón no está vinculado al INAP ni a ninguna Administración Pública."),
       h("div", { "class": "row" },
         h("a", { href: "privacidad.html", target: "_blank", rel: "noopener" }, "Privacidad"),
@@ -420,6 +509,12 @@
     var s = h("section", { "class": "view stack-lg" });
     var totalAns = 0; for (var c in S.cs) totalAns += S.cs[c].n;
     var ad = adaptive();
+
+    if (!legalReady()) {
+      s.appendChild(h("div", { "class": "config-alert", role: "alert" },
+        h("b", null, "Versión local no compartible."),
+        h("span", null, " Faltan la identidad legal o la configuración de envíos. Los tests funcionan, pero las impugnaciones y opiniones están desactivadas.")));
+    }
 
     if (!totalAns && !S.exp.pre) {
       s.appendChild(h("div", { "class": "hero" },
@@ -521,7 +616,7 @@
         h("div", { "class": "t" }, tm.nombre),
         h("button", { "class": "chip", type: "button", "aria-pressed": on ? "true" : "false", onclick: function () {
           S.interest[tm.id] = !on; persist();
-          track("tema_interest", { tema: tm.id, on: !on }, { submitted: true });
+          track("tema_interest", { tema: tm.id, on: !on });
           if (!on) toast("Anotado. Priorizamos los temas que más pedís.");
           render();
         } }, on ? "✓ Me interesa" : "Me interesa"),
@@ -654,6 +749,7 @@
     });
     s.appendChild(h("div", { "class": "small muted" }, T.title));
     s.appendChild(nav);
+    s.appendChild(h("div", { "class": "progress", role: "progressbar", "aria-label": "Progreso del test", "aria-valuemin": "0", "aria-valuemax": String(n), "aria-valuenow": String(T.i + (checked ? 1 : 0)) }, h("i", { style: "width:" + pct(T.i + (checked ? 1 : 0), n) + "%" })));
 
     if (T.paused) {
       s.appendChild(h("div", { "class": "empty" }, h("b", null, "En pausa"), h("span", { "class": "small" }, "El cronómetro está parado."), h("button", { "class": "btn", type: "button", onclick: togglePause }, "Reanudar")));
@@ -770,18 +866,27 @@
     track("test_completed", { mode: T.mode, session: T.session, n: n, a: a, f: f, b: b, nota: nt, secs: T.result.secs });
     go("results");
     var done = S.history.filter(function (x) { return x.session !== "review" && x.session !== "diagnostic"; }).length;
-    if (done === 2 && !S.npsDone) setTimeout(openNps, 900);
+    if (done === 2 && !S.npsDone && S.consent === "yes") setTimeout(openNps, 900);
   }
 
   // ── Explanation (+ esquema) ─────────────────────────────────
   function esquemaFor(q) { for (var i = 0; i < q.concepts.length; i++) { var e = BANK.esquemaFor[q.concepts[i]]; if (e && ESQ[e]) return e; } return null; }
+  function sourceLabel(q) {
+    if (/^\d/.test(String(q.sourceRef || "")) && /^\d/.test(String(q.art || ""))) {
+      return "Art. " + q.art + " de la Constitución en el BOE ↗";
+    }
+    if (q.sourceRef === "df") return "Disposición final de la Constitución en el BOE ↗";
+    return "Texto consolidado de la Constitución en el BOE ↗";
+  }
   function explanation(q, sel) {
     var wrongs = h("ul", { "class": "whynot" });
     q.o.forEach(function (_, i) { if (i !== q.k) wrongs.appendChild(h("li", null, h("span", { "class": "l" }, LETTERS[i] + ")"), h("span", null, q.w[i]))); });
     var rated = S.rated[q.id];
     function thumb(v, label) {
       return h("button", { "class": "thumb", type: "button", "aria-pressed": rated === v ? "true" : "false", onclick: function () {
-        S.rated[q.id] = v; persist(); track("explanation_rated", { qid: q.id, helpful: v === "up" }, { submitted: true }); render();
+        S.rated[q.id] = v; persist();
+        track("explanation_rated", { qid: q.id, helpful: v === "up" });
+        render();
       } }, label);
     }
     var esq = esquemaFor(q);
@@ -796,7 +901,7 @@
       esq ? h("details", { "class": "esqbox", ontoggle: function (e) { if (e.target.open) track("esquema_viewed", { esquema: esq, qid: q.id, from: "explanation" }); } },
         h("summary", null, "Ver esquema: " + ESQ[esq].title), h("p", { "class": "swipehint" }, "Desliza la tabla → para ver todas las columnas"), h("div", { "class": "esqwrap", html: ESQ[esq].html })) : null,
       h("div", { "class": "src" },
-        h("a", { href: q.url, target: "_blank", rel: "noopener", onclick: function () { track("boe_link_clicked", { qid: q.id }); } }, "Art. " + q.art + " de la Constitución en el BOE ↗"),
+        h("a", { href: q.url, target: "_blank", rel: "noopener", onclick: function () { track("boe_link_clicked", { qid: q.id }); } }, sourceLabel(q)),
         h("button", { "class": "linkbtn", type: "button", onclick: function () { openReport(q); } }, S.reported[q.id] ? "Impugnada ✓" : "Impugnar esta pregunta")),
       h("div", { "class": "helpful" }, h("span", null, "¿Te ha servido la explicación?"), thumb("up", "👍 Sí"), thumb("down", "👎 No")));
   }
@@ -943,6 +1048,7 @@
 
     s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Tus datos"),
       h("p", { "class": "small muted", style: "margin:0" }, "Tu progreso se guarda en este navegador. Compartir datos de uso anónimos: " + (S.consent === "yes" ? "activado." : "desactivado.")),
+      h("p", { "class": "small muted", style: "margin:0" }, "Identificador para ejercer tus derechos: ", h("code", null, S.uid)),
       h("div", { "class": "row" },
         h("button", { "class": "btn quiet", type: "button", onclick: function () { openConsent(true); } }, "Cambiar preferencia"),
         h("button", { "class": "btn quiet", type: "button", onclick: confirmWipe }, "Borrar mi progreso"))));
@@ -965,6 +1071,15 @@
   function openConsent(fromSettings) {
     sheet(function (close) {
       function pick(v) {
+        if (v === "no") {
+          clearTimeout(flushTimer);
+          flushGeneration++;
+          if (flushController) flushController.abort();
+          flushing = false;
+          flushController = null;
+          S.queue = S.queue.filter(function (event) { return event.basis === "user_request"; });
+          if (S.queue.length) flushTimer = setTimeout(flush, 0);
+        }
         S.consent = v; persist(); close();
         if (v === "yes") track("consent_given", { from_settings: !!fromSettings, src: S.src });
         ensureExperiment(); render();
@@ -996,7 +1111,7 @@
       acad.hidden = true;
       function done(skip) {
         S.profile = skip ? { skipped: true } : P; persist(); close();
-        if (!skip) track("onboarding_completed", { exam: P.exam, cuando: P.cuando, academia: P.academia, academia_nombre: P.academiaNombre || null, fuente: P.fuente, src: S.src }, { submitted: true });
+        if (!skip) track("onboarding_completed", { exam: P.exam, cuando: P.cuando, academia: P.academia, academia_nombre: P.academiaNombre || null, fuente: P.fuente, src: S.src });
         then();
       }
       return [h("h2", null, "Cuatro preguntas rápidas"),
@@ -1015,12 +1130,16 @@
       var reason = null;
       var c = h("div", { "class": "choice" });
       ["La respuesta correcta está mal", "La pregunta es ambigua", "La ley ha cambiado", "Errata o redacción", "Otro"].forEach(function (r, i) {
-        c.appendChild(h("label", null, h("input", { type: "radio", name: "reason", id: "rr" + i, onchange: function () { reason = r; send.disabled = false; } }), h("span", null, r)));
+        c.appendChild(h("label", null, h("input", { type: "radio", name: "reason", id: "rr" + i, onchange: function () { reason = r; send.disabled = !backendOn(); } }), h("span", null, r)));
       });
       var txt = h("textarea", { id: "report-text", placeholder: "Cuéntanos qué está mal y, si puedes, el artículo correcto (opcional)", maxlength: "1000", "aria-label": "Detalle de la impugnación" });
       var send = h("button", { "class": "btn", type: "button", disabled: true, onclick: function () {
-        track("question_reported", { qid: q.id, reason: reason, text: txt.value.trim().slice(0, 1000) }, { submitted: true });
-        S.reported[q.id] = Date.now(); persist(); close(); render(); toast("Gracias. La revisaremos en menos de 72 horas.");
+        if (!track("question_reported", { qid: q.id, reason: reason, text: txt.value.trim().slice(0, 1000) }, { essential: true })) {
+          toast("No se ha enviado: el canal de impugnaciones no está configurado.");
+          return;
+        }
+        S.reported[q.id] = Date.now(); persist(); close(); render();
+        toast("Impugnación enviada. Objetivo de respuesta: " + (CFG.reportResponseHours || 72) + " horas.");
       } }, "Enviar impugnación");
       return [h("h2", null, "Impugnar pregunta"), h("p", { "class": "small muted", style: "margin:0" }, q.id + " · " + q.q), c, txt, previewNote(),
         h("div", { "class": "row" }, send, h("button", { "class": "btn quiet", type: "button", onclick: close }, "Cancelar"))];
@@ -1038,9 +1157,12 @@
       return [h("h2", null, "Tu opinión"), h("fieldset", null, h("legend", null, "¿Qué te parece Tesón hasta ahora? (1 = nada, 5 = mucho)"), c), txt, mail,
         h("p", { "class": "small muted", style: "margin:0" }, "Solo usaremos tu email para responderte."), previewNote(),
         h("div", { "class": "row" },
-          h("button", { "class": "btn", type: "button", onclick: function () {
+          h("button", { "class": "btn", type: "button", disabled: !backendOn(), onclick: function () {
             if (!rating && !txt.value.trim()) { toast("Escribe algo o elige una puntuación."); return; }
-            track("feedback_sent", { rating: rating, text: txt.value.trim().slice(0, 2000), email: mail.value.trim().slice(0, 120) || null, view: VIEW, tests: S.history.length }, { submitted: true });
+            if (!track("feedback_sent", { rating: rating, text: txt.value.trim().slice(0, 2000), email: mail.value.trim().slice(0, 120) || null, view: VIEW, tests: S.history.length }, { essential: true })) {
+              toast("No se ha enviado: el canal de opiniones no está configurado.");
+              return;
+            }
             close(); toast("¡Gracias! Lo leemos todo.");
           } }, "Enviar"),
           h("button", { "class": "btn quiet", type: "button", onclick: close }, "Cancelar"))];
@@ -1048,19 +1170,25 @@
   }
   function openNps() {
     sheet(function (close) {
-      var score = null, c = h("div", { "class": "chips" });
+      var score = null;
+      var c = h("div", { "class": "chips" });
+      var sendButton = h("button", { "class": "btn", type: "button", disabled: true, onclick: function () { done(true); } }, "Enviar");
       for (var i = 0; i <= 10; i++) (function (v) {
-        var b = h("button", { "class": "chip", type: "button", "aria-pressed": "false", onclick: function () { score = v; Array.prototype.forEach.call(c.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); } }, String(v));
+        var b = h("button", { "class": "chip", type: "button", "aria-pressed": "false", onclick: function () {
+          score = v;
+          sendButton.disabled = false;
+          Array.prototype.forEach.call(c.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        } }, String(v));
         c.appendChild(b);
       })(i);
       var why = h("textarea", { id: "nps-why", placeholder: "¿Por qué? (opcional)", maxlength: "1000", "aria-label": "Motivo" });
       function done(send) {
         S.npsDone = true; persist(); close();
-        if (send && score != null) { track("nps_submitted", { score: score, why: why.value.trim().slice(0, 1000), tests: S.history.length }, { submitted: true }); toast("¡Gracias!"); }
+        if (send && score != null) { track("nps_submitted", { score: score, why: why.value.trim().slice(0, 1000), tests: S.history.length }); toast("¡Gracias!"); }
       }
       return [h("h2", null, "Una pregunta rápida"), h("fieldset", null, h("legend", null, "Del 0 al 10, ¿recomendarías Tesón a otro opositor?"), c), why, previewNote(),
         h("div", { "class": "row" },
-          h("button", { "class": "btn", type: "button", onclick: function () { done(true); } }, "Enviar"),
+          sendButton,
           h("button", { "class": "btn quiet", type: "button", onclick: function () { done(false); } }, "Ahora no"))];
     });
   }

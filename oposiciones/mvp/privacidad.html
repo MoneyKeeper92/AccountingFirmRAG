@@ -1,25 +1,27 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
 <title>Privacidad · Tesón</title><link rel="stylesheet" href="legal.css"></head>
 <body><main>
 <p><a href="./">← Volver a Tesón</a></p>
 <h1>Política de privacidad</h1>
-<p class="muted">Última actualización: <mark>[FECHA]</mark></p>
+<div class="config-gate" data-legal-gate hidden role="alert"></div>
+<p class="muted">Última actualización: <span data-legal="updated"></span></p>
 
 <h2>Información básica</h2>
 <div class="wrap-table"><table>
-<tr><th>Responsable</th><td><mark>[NOMBRE o RAZÓN SOCIAL]</mark> · <mark>[NIF/NIE]</mark> · <mark>[EMAIL]</mark></td></tr>
-<tr><th>Qué datos</th><td>No pedimos nombre ni registro. Si aceptas compartir datos de uso: un identificador aleatorio, tus respuestas a las preguntas, tiempos, valoraciones y el origen de la visita. Si nos escribes: el contenido de tu impugnación u opinión y, si lo facilitas, tu email.</td></tr>
+<tr><th>Responsable</th><td><span data-legal="controllerName"></span> · <span data-legal="taxId"></span> · <a data-contact-email></a></td></tr>
+<tr><th>Qué datos</th><td>No pedimos nombre ni registro. Si aceptas compartir datos de uso: un identificador aleatorio, tus respuestas a las preguntas, tiempos, valoraciones, respuestas de onboarding y el origen de la visita. Si envías una impugnación u opinión: su contenido y, si lo facilitas, tu email.</td></tr>
 <tr><th>Para qué</th><td>Prestar el servicio, detectar preguntas erróneas o poco claras, mejorar la plataforma y responderte si lo pides. Si aceptas compartir datos de uso, podemos asignarte al azar una de dos formas de elegir las preguntas de práctica para comprobar cuál ayuda más a aprender; ambas son completas y gratuitas.</td></tr>
-<tr><th>Base jurídica</th><td>Tu consentimiento para los datos de uso (puedes retirarlo en «Progreso → Cambiar preferencia»). La ejecución del servicio que solicitas para tus impugnaciones y opiniones.</td></tr>
-<tr><th>Dónde</th><td>Tu progreso se guarda en tu propio navegador. Los datos enviados se alojan en Supabase, en la Unión Europea. <mark>[Revisar: lista de encargados del tratamiento]</mark></td></tr>
+<tr><th>Base jurídica</th><td>Tu consentimiento para los datos de uso (puedes retirarlo en «Progreso → Cambiar preferencia»). Tu solicitud expresa cuando envías una impugnación u opinión; estos envíos no incluyen tu identificador de uso si no has aceptado analítica.</td></tr>
+<tr><th>Dónde</th><td>Tu progreso se guarda en tu propio navegador. Los datos enviados se alojan en Supabase, en la Unión Europea. Encargados: <span data-legal="processors"></span>.</td></tr>
 <tr><th>Cuánto tiempo</th><td>Mientras dure la beta y, como máximo, 24 meses desde su recogida, salvo obligación legal.</td></tr>
-<tr><th>Tus derechos</th><td>Acceso, rectificación, supresión, oposición, limitación y portabilidad, escribiendo a <mark>[EMAIL]</mark>. Indica tu identificador (lo verás en «Progreso» en próximas versiones) o el email que usaste. Puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</td></tr>
+<tr><th>Tus derechos</th><td>Acceso, rectificación, supresión, oposición, limitación y portabilidad, escribiendo a <a data-contact-email></a>. Indica el identificador que aparece en «Progreso» o el email que usaste. Puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</td></tr>
 </table></div>
 
 <h2>Cookies y almacenamiento local</h2>
-<p>Tesón no usa cookies publicitarias ni de terceros. Usa el almacenamiento local de tu navegador para guardar tu progreso y tus preferencias; puedes borrarlo en «Progreso → Borrar mi progreso». Las fuentes tipográficas se cargan desde Google Fonts.</p>
+<p>Tesón no usa cookies publicitarias ni carga recursos de terceros. Usa el almacenamiento local de tu navegador para guardar tu progreso y tus preferencias; puedes borrarlo en «Progreso → Borrar mi progreso».</p>
 
 <h2>Menores</h2>
 <p>El servicio está dirigido a personas que preparan oposiciones, normalmente mayores de 16 años.</p>
-</main></body></html>
+</main><script src="config.js"></script><script src="legal.js"></script></body></html>

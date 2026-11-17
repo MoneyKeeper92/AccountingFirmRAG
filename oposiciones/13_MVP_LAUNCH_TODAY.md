@@ -1,14 +1,35 @@
 # 13 — MVP launch: today's session
 
-**Goal:** a free, working Tesón app online that real opositores can use, collecting how they
-use it and what they think, at minimum cost and effort. Tesón is a **backup revenue stream** with
-a **12-month learning horizon**. Nothing gets charged until the data says it's worth it.
+**Goal:** validate a free, working Tesón app with a **private, named cohort** before any
+public launch. This runbook is the source of truth for the current release. Documents 01–12
+describe the later full-product roadmap; they do not describe the current app.
+
+**Private-beta scope:** 82 Tesón-authored questions on Constitución Española (I), local-only
+progress, no registration, and optional pseudonymous analytics. No official-exam question is
+included. Nothing is charged.
+
+## Entry gates (all required)
+
+- [ ] The 82-question bank has completed a named human legal/content review and
+  `TESON_BANK.status` is updated from `pendiente_revision_humana`.
+- [ ] `npm test` and `npm run check:production` pass, including question-bank,
+  human-review and production-configuration checks.
+- [ ] The legal controller fields contain the real owner name/entity, NIF/NIE, address and
+  contact email; the privacy page matches the processors actually used.
+- [ ] The Supabase EU project has `mvp/schema.sql` applied and the deployed public URL/key
+  are configured. Reports are tested end to end.
+- [ ] Consent refusal and withdrawal have been tested: no behavioral analytics are sent and
+  queued analytics are removed.
+- [ ] The beta owner has named the person who will triage reports and the realistic response
+  target shown in the app.
+
+Do not share a deployed URL outside the named cohort until every gate is checked.
 
 ## What already exists (built 29 Oct 2026)
 
 | Piece | Where |
 |---|---|
-| Working app (static, no build step) | [`mvp/`](mvp/) |
+| Working app (static, no compilation; gated validation before deploy) | [`mvp/`](mvp/) |
 | Live preview to try on your phone | https://claude.ai/artifact/24oDYJCJGYtzYK7xQ9JSMk (private until you share it) |
 | Question bank: 82 questions on Constitución Española (I), each with the correct answer explained, why every wrong option is wrong, the typical trap, and a BOE link | [`mvp/questions.js`](mvp/questions.js) |
 | Database setup (one paste) | [`mvp/schema.sql`](mvp/schema.sql) |
@@ -31,12 +52,12 @@ a **12-month learning horizon**. Nothing gets charged until the data says it's w
 equal-weight buttons), pseudonymous usage events go to your Supabase database in the EU.
 Impugnaciones and feedback are sent when the user submits them.
 
-**Content caveat:** I wrote the questions from the constitutional text. This session couldn't
-reach boe.es to cross-check every quote, so the app shows them as "Beta: preguntas en revisión".
-Before a wide launch, ask one of your Spanish advisors (ideally someone who opposed or studied
-law) to do a 1-hour skim of the bank in Estudio mode, and impugnar anything off.
+**Content caveat:** the bank is Tesón-authored from the consolidated constitutional text and
+has automated structural checks. It remains `pendiente_revision_humana` until a named reviewer
+checks every item against the linked BOE source. Automated or AI review does not satisfy the
+human-review entry gate.
 
-## Your steps today (~90 minutes)
+## Private-beta setup
 
 Do these in a **new Chrome profile** called "Tesón" so nothing touches Maxwell.
 
@@ -62,22 +83,17 @@ personal one, not Maxwell's. This account owns everything below.
 Note: free projects pause after about a week with no activity. Once real users are sending
 events it stays awake. Upgrade to Pro ($25/month) only if it pauses or you want backups.
 
-### 4. Hosting: Cloudflare Pages (15 min)
-1. dash.cloudflare.com → sign up with the Tesón Gmail.
-2. **Workers & Pages → Create → Pages → Upload assets** (Cloudflare moves this button
-   around; look for "deploy static files / drag and drop").
-3. Project name `teson` → drag in the **`teson-mvp` folder** (unzip the file I sent) → **Deploy**.
-   It works without the Supabase keys, but sends no data until they're in. Once you send me the
-   keys, I'll give you an updated `config.js`: replace that one file and redeploy.
-4. You get `https://teson.pages.dev` (or similar). That's the live app.
-
-Later, connect Cloudflare Pages to a new Tesón GitHub repo, so every update I commit
-deploys automatically and you don't have to drag anything.
+### 4. Hosting: Netlify private-beta deploy (15 min)
+1. Connect the Tesón repository to Netlify under the Tesón account.
+2. Netlify reads the root `netlify.toml`; it validates, then publishes `oposiciones/mvp`.
+3. Before a production deploy, fill `mvp/config.js` and run `npm run check:production`. The production
+   configuration check intentionally fails if legal identity or backend fields are missing.
+4. Use the Netlify preview URL for the named cohort. Do not post it publicly during this phase.
 
 ### 5. Domain (10 min, optional today)
 Buy `tesonopos.es` (+ `.com` if cheap). Squarespace if it offers `.es`, otherwise DonDominio.
-Then in Cloudflare Pages → your project → **Custom domains** → add `tesonopos.es` and follow
-the DNS instructions. Running on `teson.pages.dev` for the first weeks is fine.
+Then in Netlify → **Domain management** → add `tesonopos.es` and follow the DNS instructions.
+The Netlify preview URL is sufficient for the private beta.
 
 ### 6. Legal pages (10 min)
 Spanish law requires the site owner's name, NIF/NIE, address and email in the aviso legal. Send me:
@@ -89,12 +105,32 @@ Spanish law requires the site owner's name, NIF/NIE, address and email in the av
 I'll fill both pages. A free beta is fine under your own name for now; switch to an SL later if
 you want your name off it (see 09).
 
-### 7. First users (20 min)
-Use links with a source tag so we know where people came from. For example:
-`https://teson.pages.dev/?utm_source=reddit&utm_campaign=beta`
-1. Send the link to the Spanish advisors, with the Consulta Tesón questionnaire.
-2. Post the r/oposiciones template from [07](07_LAUNCH_CHANNELS.md) §4.2. Read the subreddit rules first.
-3. DM one Telegram group admin with template §4.1.
+### 7. Private cohort (20 min)
+Recruit **10–25 named participants** from Spanish advisors and trusted C1/C2 candidates. Use
+individual links such as `?utm_source=advisor&utm_campaign=private_beta`; do not include names
+or other personal data in UTM values.
+
+1. Send the link directly with the scope and content-review caveat.
+2. Ask each participant to complete at least two tests and submit one piece of feedback.
+3. Do not use the public Reddit, Telegram-group or creator templates in [07](07_LAUNCH_CHANNELS.md)
+   until the exit decision below is made.
+
+## Private-beta decision criteria
+
+Review after at least **10 participants or 50 completed tests**, whichever takes longer:
+
+- **Release gate:** zero unresolved correctness reports rated severe; all upheld reports fixed.
+- **Reliability:** at least 95% of started tests complete without a reported blocker.
+- **Content signal:** median explanation rating is positive and fewer than 5% of attempted
+  questions receive a correctness/ambiguity report.
+- **Use signal:** at least 40% of participants complete a second test.
+- **Operations:** every report receives an acknowledgement or resolution within the response
+  target shown in the app.
+
+**Proceed to public-launch planning** only if all release/reliability/operations gates pass and
+the content/use signals are directionally positive. Otherwise revise the bank or UX and run
+another private cohort. These criteria govern this release; the month-6/12 metrics govern later
+business decisions.
 
 ## What I need from you to finish
 
@@ -102,7 +138,7 @@ Use links with a source tag so we know where people came from. For example:
 |---|---|
 | Supabase Project URL + anon key | Turns on data collection; I update `config.js` and send a new zip |
 | Owner name / NIF / address / email | Legal pages |
-| The Cloudflare URL (and the domain, once bought) | Links, UTMs, SEO later |
+| The Netlify preview URL (and the domain, once bought) | Private cohort links; SEO later |
 | Anything that felt off when you tried it | Fix before posting |
 
 ## After today (what I do next, with little of your time)
@@ -114,7 +150,8 @@ Use links with a source tag so we know where people came from. For example:
 | Within 72 h | Fix every impugnación and log it |
 | Late Dec 2026 | Convocatoria day: update the exam info and post in communities |
 | By the exam (≈ May–Jun 2027) | Full Bloque I + key Bloque II temas, and a full-length simulacro |
-| Month 12 (≈ Oct 2027) | Decision memo: users, retention, the recommendation score, willingness to pay, and whether to add a paid tier or license to academies |
+| After the private-beta threshold | Written go/revise/stop decision against the criteria above |
+| Month 6+ | Business decision memo using the fuller metrics in [08](08_METRICS.md) |
 
-**Running cost for this MVP:** €0 today (Supabase Free + Cloudflare Pages Free). Optional
+**Running cost for this MVP:** €0 today (Supabase Free + Netlify Free). Optional
 domain ≈ €10–35 a year. Supabase Pro ($25/month) only when needed.

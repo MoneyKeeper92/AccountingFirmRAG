@@ -2,21 +2,27 @@
 
 ## 1. Principle: the database is the analytics source of truth
 
-Under Spanish rules (AEPD), Mixpanel and GA4 may only track users who **accept cookies**, and
-many won't. But the learning data (every answer, attempt, time, report) is **core service
-data** stored in Supabase under the contract basis. So, as with Maxwell's 504k-attempt DB
-export:
+For the no-account private beta, **behavioral usage data is consent-only**. Answer events,
+timings, onboarding answers, explanation ratings, topic-interest votes and acquisition data
+are sent to Supabase only after the participant accepts analytics. Refusal does not reduce the
+quiz functionality. A participant's deliberately submitted impugnación or free-text feedback
+may be sent without analytics consent because sending it is the action requested; it carries no
+pseudonymous usage identifier unless analytics consent is active.
+
+The broader account-based product may adopt a different legal basis only after legal review and
+an updated privacy notice. The current MVP must not treat every answer as contract-basis service
+data.
 
 | Question | Source |
 |---|---|
-| Retention, questions/user, accuracy, question health, percentiles | **Supabase SQL** (100% of users) |
+| Retention, questions/user, accuracy, question health | **Supabase SQL** (consenting users only) |
 | Funnels on the website, acquisition channel, UX clicks, session replay | **Mixpanel** (consented users only, EU residency, opt-out by default) |
 | SEO traffic | **Google Search Console** (no consent needed; aggregate) + GA4 (consented) |
 | Cookieless site totals | **Cloudflare Web Analytics** (aggregate, no cookies) |
 | Qualitative | Tally surveys, interviews, impugnaciones, community listening |
 
-Acquisition channel is also stored server-side: the UTM params captured at sign-up are saved to
-`users_profile.signup_source`, so channel attribution survives cookie rejection.
+Acquisition channel is stored only for consenting users in the private beta. There is no
+sign-up or `users_profile` table in the current MVP.
 
 ## 2. Mixpanel event plan (names in English, snake_case)
 
