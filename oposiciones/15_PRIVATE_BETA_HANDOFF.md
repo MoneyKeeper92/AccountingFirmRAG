@@ -75,5 +75,8 @@ The research brief has been executed into:
 | [`research/syllabi.csv`](research/syllabi.csv) | Syllabus coverage and gaps |
 | [`research/unopened_urls.md`](research/unopened_urls.md) | URLs that could not be verified |
 | [`research/notes/`](research/notes/) | Working notes by exam family |
+| [`research/student_audit_addendum.md`](research/student_audit_addendum.md) | Maria/Laura constitutional-question counts |
+| [`research/student_exam_sources.md`](research/student_exam_sources.md) | Source audit for those existing banks |
+| [`research/student_question_map.csv`](research/student_question_map.csv) | IDs and provenance status, without question text |
 
 Those files are research conclusions. They are not authorization to import their referenced questions into `mvp/questions.js`.
