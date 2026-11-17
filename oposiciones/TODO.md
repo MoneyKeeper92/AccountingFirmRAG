@@ -60,6 +60,12 @@ The site is built and pushed. These steps put it online.
   - Once the legal details are in, Claude sets `launch.public: true` in `web/src/site.ts`. Until then every page is `noindex`, so Google ignores the site.
   - Then submit `https://tesonopos.es/sitemap-index.xml` in Google Search Console (Tesón Google account).
 
+## Official INAP questions in the app (added 17 Nov)
+- [ ] **Download the 12 missing INAP answer sheets** (plantillas definitivas). The links are in the `key_url` column of `research/constitution_question_map.csv`. Put them in `research/official_exams_pdfs/`, and Claude cross-checks the 91 answers Tesón set itself.
+  - Only the 2026 C2 and C1 papers have their sheets so far (15 questions).
+- [ ] **3 questions on hold** until then: OF-031, OF-084, OF-111. The reasons are in `content/oficiales_inap_ce.json`.
+- [ ] **Human review now covers 188 questions:** 82 Tesón + 106 official. The official wording is verbatim, so check the key and the explanation.
+
 ## Later
 - [ ] App on its own Netlify site at `app.tesonopos.es`. This uses the repo-root `netlify.toml`, which stays blocked until item 5 is done.
   - Once it's live, Claude sets `appUrl` in `web/src/site.ts` so the website buttons open the app.

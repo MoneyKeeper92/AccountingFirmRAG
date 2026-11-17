@@ -25,8 +25,8 @@ AREA_NAMES = {
 data = json.loads(SRC.read_text(encoding="utf-8"))
 questions = []
 for item in data["questions"]:
-    if item.get("outdated"):
-        continue  # the official answer no longer matches the current text; never shown
+    if item.get("outdated") or item.get("hold"):
+        continue  # outdated: the answer changed with a later reform; hold: key debatable until checked against INAP's plantilla
     ref = str(item["ref"])
     q = {
         "id": item["id"], "sub": item["area"], "art": item["art"],
@@ -63,4 +63,5 @@ js = f"""/*
 OUT.write_text(js, encoding="utf-8")
 print(f"Wrote {OUT.relative_to(ROOT)}: {len(questions)} official questions "
       f"({sum(1 for q in questions if q['keyBasis'] == 'official')} with the official key), "
-      f"{sum(1 for i in data['questions'] if i.get('outdated'))} outdated left out.")
+      f"{sum(1 for i in data['questions'] if i.get('outdated'))} outdated and "
+      f"{sum(1 for i in data['questions'] if i.get('hold') and not i.get('outdated'))} on hold left out.")

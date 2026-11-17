@@ -914,7 +914,8 @@
   // ── Explanation (+ esquema) ─────────────────────────────────
   function esquemaFor(q) { for (var i = 0; i < q.concepts.length; i++) { var e = BANK.esquemaFor[q.concepts[i]]; if (e && ESQ[e]) return e; } return null; }
   function sourceLabel(q) {
-    if (/^\d/.test(String(q.sourceRef || "")) && /^\d/.test(String(q.art || ""))) {
+    var ref = q.official ? q.ref : q.sourceRef;
+    if (/^\d/.test(String(ref || "")) && /^\d/.test(String(q.art || ""))) {
       return "Art. " + q.art + " de la Constitución en el BOE ↗";
     }
     if (q.sourceRef === "df") return "Disposición final de la Constitución en el BOE ↗";

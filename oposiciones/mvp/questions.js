@@ -619,7 +619,7 @@
   });
 
   window.TESON_BANK = {
-    version: "2026-11-17.1",
+    version: "2026-11-17.2",
     contentAsOf: CONTENT_AS_OF,
     status: "pendiente_revision_humana",
     source: {
