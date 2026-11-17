@@ -1,26 +1,28 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
 <title>Privacidad · Tesón</title><link rel="stylesheet" href="legal.css"></head>
 <body><main>
 <p><a href="./">← Volver a Tesón</a></p>
 <h1>Política de privacidad</h1>
-<p class="muted">Última actualización: <mark>[FECHA]</mark></p>
+<div class="config-gate" data-legal-gate hidden role="alert"></div>
+<p class="muted">Última actualización: <span data-legal="updated"></span></p>
 
 <h2>Información básica</h2>
 <div class="wrap-table"><table>
-<tr><th>Responsable</th><td><mark>[NOMBRE o RAZÓN SOCIAL]</mark> · <mark>[NIF/NIE]</mark> · <mark>[EMAIL]</mark></td></tr>
-<tr><th>Qué datos</th><td><b>Tu cuenta:</b> tu email (para enviarte el código de acceso) y tu progreso (respuestas, aciertos por tema, fallos, historial, respuestas al cuestionario inicial y tu plan de práctica). <b>Si aceptas compartir datos de uso:</b> cómo usas la app (respuestas, tiempos, valoraciones, origen de la visita), identificado por un código interno, nunca por tu email. <b>Si nos escribes:</b> el contenido de tu impugnación u opinión.</td></tr>
+<tr><th>Responsable</th><td><span data-legal="controllerName"></span> · <span data-legal="taxId"></span> · <a data-contact-email></a></td></tr>
+<tr><th>Qué datos</th><td><b>Tu cuenta:</b> tu email (para enviarte el código de acceso) y tu progreso (respuestas, aciertos por tema, fallos, historial, respuestas al cuestionario inicial y tu plan de práctica). <b>Si aceptas compartir datos de uso:</b> cómo usas la app (respuestas, tiempos, valoraciones, origen de la visita), identificado por un código interno, nunca por tu email. <b>Si envías una impugnación u opinión:</b> su contenido y, si lo facilitas, tu email.</td></tr>
 <tr><th>Para qué</th><td>Darte acceso y guardar tu progreso en todos tus dispositivos; personalizar tu práctica y preparar tu plan; detectar preguntas erróneas o poco claras; mejorar la plataforma; y, solo si lo marcas, enviarte tu resumen semanal y avisos de la convocatoria. Si aceptas compartir datos de uso, podemos asignarte al azar una de dos formas de elegir las preguntas de práctica para comprobar cuál ayuda más a aprender; ambas son completas y gratuitas.</td></tr>
 <tr><th>Plan con IA</th><td>Para preparar tu plan enviamos a un proveedor de inteligencia artificial (Anthropic) un resumen de tus resultados por concepto, sin tu email ni ningún dato que te identifique. La IA sugiere en qué conceptos centrarte; las preguntas las elige la app con sus propias reglas.</td></tr>
-<tr><th>Base jurídica</th><td>La ejecución del servicio que solicitas al crear tu cuenta (acceso, progreso, plan personalizado, impugnaciones y opiniones). Tu consentimiento para los datos de uso y para los emails de resumen y avisos; puedes retirarlo en «Progreso».</td></tr>
-<tr><th>Quién los trata por nuestra cuenta</th><td>Supabase (base de datos y acceso, servidores en la UE), Postmark (envío de los códigos de acceso), Anthropic (preparación del plan, sin datos identificativos) y Cloudflare (alojamiento web). Algunos de estos proveedores pueden tratar datos fuera de la UE con las garantías del Marco de Privacidad de Datos UE-EE. UU. o cláusulas contractuales tipo. <mark>[Revisar con asesor antes del lanzamiento]</mark></td></tr>
+<tr><th>Base jurídica</th><td>La ejecución del servicio que solicitas al crear tu cuenta (acceso, progreso, plan personalizado). Tu solicitud expresa cuando envías una impugnación u opinión. Tu consentimiento para los datos de uso y para los emails de resumen y avisos; puedes retirarlo en «Progreso».</td></tr>
+<tr><th>Quién los trata por nuestra cuenta</th><td><span data-legal="processors"></span>. Algunos proveedores pueden tratar datos fuera de la UE con las garantías del Marco de Privacidad de Datos UE-EE. UU. o cláusulas contractuales tipo.</td></tr>
 <tr><th>Cuánto tiempo</th><td>Mientras tengas la cuenta. Si no la usas durante 24 meses, la borraremos. Puedes borrarla tú en cualquier momento en «Progreso → Borrar mi cuenta».</td></tr>
-<tr><th>Tus derechos</th><td>Acceso, rectificación, supresión, oposición, limitación y portabilidad, escribiendo a <mark>[EMAIL]</mark>. Escríbenos desde el email de tu cuenta. Puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</td></tr>
+<tr><th>Tus derechos</th><td>Acceso, rectificación, supresión, oposición, limitación y portabilidad, escribiendo a <a data-contact-email></a> desde el email de tu cuenta. Puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</td></tr>
 </table></div>
 
 <h2>Cookies y almacenamiento local</h2>
-<p>Tesón no usa cookies publicitarias ni de terceros. Usa el almacenamiento local de tu navegador para mantener tu sesión abierta, guardar tu progreso y tus preferencias. Al cerrar sesión se borra de este dispositivo. Las fuentes tipográficas se cargan desde Google Fonts.</p>
+<p>Tesón no usa cookies publicitarias ni de terceros. Usa el almacenamiento local de tu navegador para mantener tu sesión abierta, guardar tu progreso y tus preferencias. Al cerrar sesión se borra de este dispositivo.</p>
 
 <h2>Menores</h2>
 <p>El servicio está dirigido a personas que preparan oposiciones, normalmente mayores de 16 años.</p>
-</main></body></html>
+</main><script src="config.js"></script><script src="legal.js"></script></body></html>

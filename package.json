@@ -1,0 +1,10 @@
+{
+  "name": "teson-private-beta",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "test": "node oposiciones/mvp/tests/validate-bank.js && node oposiciones/mvp/tests/validate-app.js",
+    "test:e2e": "node oposiciones/mvp/tests/e2e.js",
+    "check:production": "npm test && node oposiciones/mvp/tests/validate-production.js"
+  }
+}

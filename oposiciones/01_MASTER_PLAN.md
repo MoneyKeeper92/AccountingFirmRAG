@@ -1,5 +1,12 @@
 # 01 — Master plan: Tesón (oposiciones), Oct 2026 → Apr 2027
 
+> **Release baseline (17 Nov 2026): private beta first.** Documents 01–12 describe the
+> intended full product and remain the post-validation roadmap. The current release is the
+> 82-question, Constitución-only static app in [`mvp/`](mvp/), operated with a small named
+> cohort under the gates and criteria in [`13_MVP_LAUNCH_TODAY.md`](13_MVP_LAUNCH_TODAY.md).
+> No public community promotion starts until that private beta passes its content, legal,
+> privacy and reliability gates.
+
 ## Executive summary
 
 - **What:** *Tesón* (tesonopos.es), a free web app for Spanish opositores. It has tests by tema and
@@ -47,6 +54,10 @@
 | 09 | [09_LEGAL_AND_COMPANY.md](09_LEGAL_AND_COMPANY.md) | Autónomo vs SL, trademark, RGPD/cookies, content reuse |
 | 10 | [10_OPEN_QUESTIONS.md](10_OPEN_QUESTIONS.md) | What Kyle needs to decide or research |
 | 11 | [11_COMPETITORS.md](11_COMPETITORS.md) | Market facts, competitors, prices, name collisions |
+| 12 | [12_ADVISOR_FEEDBACK.md](12_ADVISOR_FEEDBACK.md) | Spanish-advisor questions and feedback app |
+| 13 | [13_MVP_LAUNCH_TODAY.md](13_MVP_LAUNCH_TODAY.md) | Canonical private-beta scope, gates and runbook |
+| 14 | [14_ADAPTIVE_PRACTICE.md](14_ADAPTIVE_PRACTICE.md) | Adaptive practice design, algorithm and experiment |
+| 15 | [15_PRIVATE_BETA_HANDOFF.md](15_PRIVATE_BETA_HANDOFF.md) | Current implementation status and instructions for later work |
 
 ## Strategy in one page
 

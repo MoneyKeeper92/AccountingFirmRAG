@@ -1,4 +1,4 @@
-# 15 — Accounts (email + code) and the AI focus plan
+# 16 — Accounts (email + code) and the AI focus plan
 
 *Built 17 Nov 2026 (app v0.3). Design notes, plus the setup Kyle does in Supabase, Postmark and
 Anthropic.*
