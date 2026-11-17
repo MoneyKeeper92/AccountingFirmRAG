@@ -8,11 +8,14 @@ const vm = require("node:vm");
 const root = path.resolve(__dirname, "..");
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, "questions.js"), "utf8"), context);
+vm.runInNewContext(fs.readFileSync(path.join(root, "oficiales.js"), "utf8"), context);
 
 const bank = context.window.TESON_BANK;
 const review = JSON.parse(fs.readFileSync(path.join(root, "review.json"), "utf8"));
 assert(bank, "TESON_BANK must be defined");
-assert.equal(bank.questions.length, 82, "Expected the reviewed beta scope of 82 questions");
+const own = bank.questions.filter((q) => !q.official);
+const official = bank.questions.filter((q) => q.official);
+assert.equal(own.length, 82, "Expected the beta scope of 82 Tesón questions");
 assert.match(bank.version, /^\d{4}-\d{2}-\d{2}\.\d+$/);
 assert.match(bank.contentAsOf, /^\d{4}-\d{2}-\d{2}$/);
 assert.equal(review.bankVersion, bank.version, "review.json must target the current bank version");
@@ -20,8 +23,12 @@ assert.equal(review.bankVersion, bank.version, "review.json must target the curr
 const ids = new Set();
 const stems = new Set();
 bank.questions.forEach((q, index) => {
-  const expectedId = `CE-${String(index + 1).padStart(3, "0")}`;
-  assert.equal(q.id, expectedId, `Question ${index + 1} must keep a contiguous ID`);
+  if (!q.official) {
+    const expectedId = `CE-${String(index + 1).padStart(3, "0")}`;
+    assert.equal(q.id, expectedId, `Question ${index + 1} must keep a contiguous ID`);
+  } else {
+    assert.match(q.id, /^OF-\d{3}$/, `${q.id}: official IDs are OF-nnn`);
+  }
   assert(!ids.has(q.id), `Duplicate ID: ${q.id}`);
   assert(!stems.has(q.q), `Duplicate stem: ${q.id}`);
   ids.add(q.id);
@@ -39,8 +46,18 @@ bank.questions.forEach((q, index) => {
   ["q", "ex", "art", "sourceType", "sourceId", "sourceUrl", "sourceRef", "contentAsOf", "reviewStatus", "url"].forEach((field) => {
     assert(String(q[field] || "").trim(), `${q.id}: missing ${field}`);
   });
-  assert.equal(q.sourceType, "teson_original_from_legislation", `${q.id}: source type`);
-  assert.equal(q.sourceId, "BOE-A-1978-31229", `${q.id}: source id`);
+  if (q.official) {
+    assert.equal(q.sourceType, "official_exam_inap", `${q.id}: source type`);
+    assert(bank.officialSources[q.sourceId], `${q.id}: unknown official paper ${q.sourceId}`);
+    assert.match(q.sourceUrl, /^https:\/\/sede\.inap\.gob\.es\//, `${q.id}: official paper URL`);
+    assert(["official", "teson"].includes(q.keyBasis), `${q.id}: keyBasis`);
+    assert.equal(q.attribution, "Origen de los datos: Instituto Nacional de Administración Pública (INAP)", `${q.id}: INAP attribution`);
+    assert(/^20\d\d$/.test(String(q.year)), `${q.id}: year`);
+    assert(Array.isArray(q.concepts) && q.concepts.length, `${q.id}: concepts`);
+  } else {
+    assert.equal(q.sourceType, "teson_original_from_legislation", `${q.id}: source type`);
+    assert.equal(q.sourceId, "BOE-A-1978-31229", `${q.id}: source id`);
+  }
   assert.equal(q.contentAsOf, bank.contentAsOf, `${q.id}: stale content date`);
   assert.match(q.url, /^https:\/\/www\.boe\.es\/buscar\/act\.php\?id=BOE-A-1978-31229(?:#(?:a\d+|df))?$/, `${q.id}: invalid BOE URL`);
   assert(["pending_human", "approved"].includes(q.reviewStatus), `${q.id}: invalid review status`);
@@ -48,4 +65,4 @@ bank.questions.forEach((q, index) => {
 });
 
 assert.deepEqual(Object.keys(review.items).sort(), [...ids].sort(), "Review ledger IDs must exactly match the bank");
-console.log(`Bank validation passed: ${bank.questions.length} questions, ${ids.size} unique IDs.`);
+console.log(`Bank validation passed: ${own.length} Tesón + ${official.length} official INAP questions, ${ids.size} unique IDs.`);

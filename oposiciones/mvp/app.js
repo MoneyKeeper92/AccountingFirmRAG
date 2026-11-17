@@ -639,6 +639,15 @@
       nf ? h("button", { "class": "btn ghost", type: "button", onclick: function () { startReview(dueFallos().length ? dueFallos() : fallos()); } }, "Repasar fallos (" + nf + ")") : null,
       h("button", { "class": "btn ghost", type: "button", onclick: function () { SETUP = { areas: AREAS.slice(), n: 20, mode: "estudio", pool: "todas" }; go("setup"); } }, "Crear test personalizado")));
 
+    // Official INAP questions
+    var nOf = BANK.questions.filter(function (q) { return q.official; }).length;
+    if (nOf) s.appendChild(h("div", { "class": "card stack" },
+      h("span", { "class": "eyebrow" }, "Exámenes oficiales"),
+      h("p", { style: "margin:0;font-weight:600" }, nOf + " preguntas de la Constitución de exámenes oficiales del INAP (Auxiliar y Administrativo del Estado, 2022–2026), con explicación de cada opción."),
+      h("div", { "class": "row" }, h("button", { "class": "btn ghost", type: "button", onclick: function () {
+        SETUP = { areas: AREAS.slice(), n: 20, mode: "examen", pool: "oficiales" }; go("setup");
+      } }, "Hacer un test de preguntas oficiales"))));
+
     // Other temas
     var others = h("div", { "class": "temas" });
     BANK.temas.filter(function (tm) { return !tm.activo; }).forEach(function (tm) {
@@ -666,11 +675,12 @@
       var x = S.stats[q.id];
       if (st.pool === "nuevas") return !x || !x.seen;
       if (st.pool === "falladas") return x && x.box > 0;
+      if (st.pool === "oficiales") return !!q.official;
       return true;
     });
     var n = st.n === "all" ? pool.length : Math.min(st.n, pool.length);
     var s = h("section", { "class": "view stack-lg" });
-    s.appendChild(h("div", { "class": "stack" }, h("span", { "class": "eyebrow" }, "Test personalizado"), h("h1", null, "Constitución Española (I)")));
+    s.appendChild(h("div", { "class": "stack" }, h("span", { "class": "eyebrow" }, "Test personalizado"), h("h1", null, BANK.temas[0].nombre)));
 
     var tbl = h("div", { "class": "areas" });
     AREAS.forEach(function (a) {
@@ -689,7 +699,7 @@
     s.appendChild(h("fieldset", null, h("legend", null, "Número de preguntas"), nChips));
 
     var pChips = h("div", { "class": "chips" });
-    [["todas", "Todas"], ["nuevas", "Solo las que no he visto"], ["falladas", "Solo las que he fallado"]].forEach(function (p) {
+    [["todas", "Todas"], ["oficiales", "Solo de exámenes oficiales"], ["nuevas", "Solo las que no he visto"], ["falladas", "Solo las que he fallado"]].forEach(function (p) {
       pChips.appendChild(h("button", { "class": "chip", type: "button", "aria-pressed": st.pool === p[0] ? "true" : "false", onclick: function () { st.pool = p[0]; render(); } }, p[1]));
     });
     s.appendChild(h("fieldset", null, h("legend", null, "Qué preguntas"), pChips));
@@ -791,6 +801,7 @@
     s.appendChild(h("div", { "class": "qmeta" },
       h("span", { "class": "qid" }, "ID " + q.id),
       h("span", null, "Pregunta " + (T.i + 1) + " de " + n),
+      q.official ? h("span", { "class": "pill oficial", title: q.paperLabel }, "Examen oficial " + q.year) : null,
       reason ? h("span", { "class": "pill " + (reason === "Refuerzo" || reason === "Tu confusión" ? "warn" : "on") }, reason) : null));
     s.appendChild(h("p", { "class": "stem" }, q.q));
 
@@ -931,6 +942,13 @@
       q.trap ? h("div", { "class": "trap" }, h("b", null, "Trampa típica: "), q.trap) : null,
       esq ? h("details", { "class": "esqbox", ontoggle: function (e) { if (e.target.open) track("esquema_viewed", { esquema: esq, qid: q.id, from: "explanation" }); } },
         h("summary", null, "Ver esquema: " + ESQ[esq].title), h("p", { "class": "swipehint" }, "Desliza la tabla → para ver todas las columnas"), h("div", { "class": "esqwrap", html: ESQ[esq].html })) : null,
+      q.official ? h("div", { "class": "official-src small" },
+        h("p", null, h("b", null, "Pregunta oficial: "), q.paperLabel + " (" + q.sourceRef + "). ",
+          h("a", { href: q.sourceUrl, target: "_blank", rel: "noopener", onclick: function () { track("official_paper_clicked", { qid: q.id }); } }, "Ver el cuestionario ↗")),
+        h("p", null, q.keyBasis === "official"
+          ? "Respuesta según la plantilla definitiva publicada por el INAP. La explicación es de Tesón."
+          : "Respuesta comprobada por Tesón con el texto de la Constitución (pendiente de cotejo con la plantilla oficial). La explicación es de Tesón."),
+        h("p", { "class": "muted" }, "Origen de los datos: Instituto Nacional de Administración Pública (INAP). Tesón no está vinculado al INAP.")) : null,
       h("div", { "class": "src" },
         h("a", { href: q.url, target: "_blank", rel: "noopener", onclick: function () { track("boe_link_clicked", { qid: q.id }); } }, sourceLabel(q)),
         h("button", { "class": "linkbtn", type: "button", onclick: function () { openReport(q); } }, S.reported[q.id] ? "Impugnada ✓" : "Impugnar esta pregunta")),
@@ -1056,7 +1074,7 @@
           h("span", { "class": "small muted" }, dd == null ? "Nuevo" : dd <= 0 ? "Hoy" : "En " + dd + " d")));
       });
     });
-    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Constitución Española (I), concepto a concepto"),
+    s.appendChild(h("div", { "class": "stack" }, h("h2", null, BANK.temas[0].nombre + ", concepto a concepto"),
       h("p", { "class": "small muted", style: "margin:0" }, "El dominio da más peso a tus respuestas recientes. Por debajo del 70 % lo tratamos como punto débil."), tbl));
 
     var mis = activeMis();

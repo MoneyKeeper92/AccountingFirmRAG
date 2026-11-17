@@ -118,6 +118,9 @@ section.view { padding-top: 28px; }
 .pill { font: 600 12px/1 var(--body); padding: 5px 8px; border-radius: 999px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
 .pill.on { background: var(--green-soft); color: var(--green); }
 .pill.warn { background: var(--amber-soft); color: var(--amber-ink); }
+.pill.oficial { background: var(--ink); color: var(--paper); }
+.official-src { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; }
+.official-src p { margin: 0 0 6px; }
 .meter { height: 6px; background: var(--sunk); border-radius: 3px; overflow: hidden; flex: 1; min-width: 80px; }
 .meter i { display: block; height: 100%; background: var(--green); }
 

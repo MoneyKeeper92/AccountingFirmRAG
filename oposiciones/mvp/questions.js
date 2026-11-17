@@ -633,8 +633,7 @@
       completedAt: null
     },
     temas: [
-      { id: "CE1", nombre: "Constitución Española (I)", detalle: "Título Preliminar, derechos y deberes, garantías, suspensión y reforma", activo: true },
-      { id: "CE2", nombre: "Constitución Española (II)", detalle: "Corona, Cortes Generales, Gobierno, Poder Judicial y Tribunal Constitucional", activo: false },
+      { id: "CE1", nombre: "Constitución Española", detalle: "Preguntas de Tesón (Título Preliminar, derechos y deberes, garantías y reforma) y preguntas oficiales del INAP de toda la Constitución", activo: true },
       { id: "L39", nombre: "Ley 39/2015", detalle: "Procedimiento Administrativo Común", activo: false },
       { id: "L40", nombre: "Ley 40/2015", detalle: "Régimen Jurídico del Sector Público", activo: false },
       { id: "TREBEP", nombre: "TREBEP", detalle: "Estatuto Básico del Empleado Público", activo: false }

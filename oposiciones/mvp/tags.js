@@ -14,6 +14,13 @@
     DF: "Derechos fundamentales",
     DC: "Derechos, deberes y principios rectores",
     GS: "Garantías y suspensión",
+    CO: "La Corona",
+    CG: "Cortes Generales",
+    GA: "Gobierno y Administración",
+    PJ: "Poder Judicial",
+    EH: "Economía y Hacienda",
+    OT: "Organización territorial",
+    TC: "Tribunal Constitucional",
     REF: "Reforma constitucional"
   };
 
@@ -53,7 +60,30 @@
     "ref.iniciativa": { imp: 2, area: "REF", name: "Iniciativa de reforma", arts: "166" },
     "ref.ordinaria": { imp: 3, area: "REF", name: "Procedimiento ordinario", arts: "167" },
     "ref.agravada": { imp: 3, area: "REF", name: "Procedimiento agravado", arts: "168" },
-    "ref.limites": { imp: 2, area: "REF", name: "Límites temporales a la reforma", arts: "169" }
+    "ref.limites": { imp: 2, area: "REF", name: "Límites temporales a la reforma", arts: "169" },
+    // Títulos II–IX: de momento solo con preguntas oficiales del INAP (oficiales.js).
+    "co.funciones": { imp: 3, area: "CO", name: "Funciones del Rey", arts: "56, 62–63" },
+    "co.sucesion": { imp: 2, area: "CO", name: "Sucesión a la Corona", arts: "57" },
+    "co.regencia": { imp: 2, area: "CO", name: "Consorte, Regencia y tutela", arts: "58–60" },
+    "co.refrendo": { imp: 2, area: "CO", name: "Refrendo y Casa del Rey", arts: "64–65" },
+    "cg.composicion": { imp: 3, area: "CG", name: "Congreso y Senado: composición y estatuto", arts: "66–71" },
+    "cg.funcionamiento": { imp: 3, area: "CG", name: "Funcionamiento de las Cámaras", arts: "72–80" },
+    "cg.leyes": { imp: 3, area: "CG", name: "Elaboración de las leyes", arts: "81–92" },
+    "cg.tratados": { imp: 2, area: "CG", name: "Tratados internacionales", arts: "93–96" },
+    "ga.gobierno": { imp: 3, area: "GA", name: "El Gobierno", arts: "97–102" },
+    "ga.relaciones": { imp: 2, area: "GA", name: "Relaciones entre el Gobierno y las Cortes", arts: "108–115" },
+    "ga.administracion": { imp: 2, area: "GA", name: "Administración y Consejo de Estado", arts: "103–107" },
+    "pj.principios": { imp: 3, area: "PJ", name: "Principios del Poder Judicial", arts: "117–121" },
+    "pj.cgpj": { imp: 3, area: "PJ", name: "Consejo General del Poder Judicial", arts: "122" },
+    "pj.ts_fiscal": { imp: 2, area: "PJ", name: "Tribunal Supremo y Ministerio Fiscal", arts: "123–127" },
+    "eh.hacienda": { imp: 2, area: "EH", name: "Hacienda, presupuestos y deuda", arts: "128–136" },
+    "ot.principios": { imp: 2, area: "OT", name: "Principios de la organización territorial", arts: "137–139" },
+    "ot.local": { imp: 2, area: "OT", name: "Administración local", arts: "140–142" },
+    "ot.estatutos": { imp: 3, area: "OT", name: "Comunidades Autónomas y Estatutos", arts: "143–148" },
+    "ot.competencias": { imp: 3, area: "OT", name: "Competencias del Estado y transferencias", arts: "149–151" },
+    "ot.control": { imp: 2, area: "OT", name: "Órganos y control de las Comunidades Autónomas", arts: "152–158" },
+    "tc.composicion": { imp: 3, area: "TC", name: "Composición del Tribunal Constitucional", arts: "159–160" },
+    "tc.competencias": { imp: 3, area: "TC", name: "Competencias y legitimación ante el Tribunal Constitucional", arts: "161–165" }
   };
 
   // Confusiones típicas (se detectan cuando el opositor elige ciertas opciones incorrectas).
@@ -69,7 +99,9 @@
     "mis.rango": { name: "Ley orgánica, ley ordinaria o reglamento", esquema: null },
     "mis.cifras": { name: "Plazos y cifras (72 horas, 15/30 días, 169 artículos…)", esquema: null },
     "mis.valores": { name: "Valores superiores (art. 1.1) frente a otros principios", esquema: null },
-    "mis.ubicacion": { name: "Dónde está cada precepto (capítulos y secciones)", esquema: "titulo1" }
+    "mis.ubicacion": { name: "Dónde está cada precepto (capítulos y secciones)", esquema: "titulo1" },
+    "mis.quien": { name: "Quién propone y quién nombra (Rey, Gobierno, Cortes, CGPJ…)", esquema: null },
+    "mis.mayorias": { name: "Mayorías: simple, absoluta, tres quintos y dos tercios", esquema: null }
   };
 
   // id: [conceptos], dificultad inicial (1–3), confusiones por índice de opción.
@@ -160,7 +192,9 @@
 
   B.questions.forEach(function (q) {
     var t = T[q.id];
+    if (!t && q.official && q.concepts) t = [q.concepts, q.diff, q.mis];
     if (!t) throw new Error("Pregunta sin etiquetas: " + q.id);
+    t[0].forEach(function (c) { if (!B.concepts[c]) throw new Error("Concepto desconocido " + c + " en " + q.id); });
     q.concepts = t[0];
     q.diff = t[1];
     q.mis = t[2];

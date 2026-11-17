@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, "..");
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, "config.js"), "utf8"), context);
 vm.runInNewContext(fs.readFileSync(path.join(root, "questions.js"), "utf8"), context);
+vm.runInNewContext(fs.readFileSync(path.join(root, "oficiales.js"), "utf8"), context);
 
 const cfg = context.window.TESON_CONFIG;
 const bank = context.window.TESON_BANK;
