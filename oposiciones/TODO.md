@@ -1,25 +1,20 @@
 # Tesón: to-do for tomorrow (Wed 18 Nov 2026)
 
-**Blocked until IONOS approves `tesonopos.es`:** anything that needs the `.es` domain to exist:
-- items 1, 6c and 6d
-- Supabase SMTP in item 2
-
-IONOS said approval can take up to 24 h (order of 17 Nov, customer ID 365386055).
-`tesonopos.com` is already registered.
+**✅ Unblocked:** `tesonopos.es` was registered on 17 Nov 2026 and the registrant email is verified. `tesonopos.com` is also registered. Nothing below waits on IONOS any more.
 
 Do these in the separate "Tesón" Chrome profile, with the Tesón accounts, not Maxwell's.
 
 ## Start of the day (5 min)
-- [ ] Check the IONOS email or panel: is `tesonopos.es` active? If yes, everything below is unblocked.
+- [x] `tesonopos.es` active (17 Nov) and IONOS contact email verified.
 
 ## Accounts and backend (about 45 min, steps in [16_ACCOUNTS_AND_AI_PLAN.md](16_ACCOUNTS_AND_AI_PLAN.md))
 
-1. [ ] **Postmark** ⏳ *needs .es*
+1. [ ] **Postmark**
    - Create a server.
    - Add and verify the sender domain `tesonopos.es`. Postmark gives you DKIM and Return-Path records; add them in IONOS → Dominios → tesonopos.es → DNS.
    - Copy the server token.
 2. [ ] **Supabase Auth**
-   - Connect Postmark as the email sender (custom SMTP) ⏳ *needs item 1*.
+   - Connect Postmark as the email sender (custom SMTP) *(needs item 1)*.
    - Paste the Spanish code email into the "Magic Link" and "Confirm signup" templates.
 3. [ ] **Database**
    - Re-run `mvp/schema.sql`.
@@ -45,7 +40,7 @@ The site is built and pushed. These steps put it online.
   6. Deploy. Project name: `teson-web`, giving the test address `teson-web.netlify.app`.
   7. Check the deploy log ends with `Site check passed: 13 pages. PRE-LAUNCH…`.
 - [ ] **6b. Look at the site** on your phone and laptop. Note anything to change.
-- [ ] **6c. Connect the domains** ⏳ *needs .es*
+- [ ] **6c. Connect the domains**
   1. Netlify → teson-web → **Domain management → Add a domain** → `tesonopos.es` and set it as primary.
   2. Add `tesonopos.com` as a domain alias. The netlify.toml already 301-redirects `.com` and `www` to `tesonopos.es`.
   3. Netlify then shows the DNS records to create. Use **exactly what Netlify shows**. It is normally:
@@ -56,7 +51,7 @@ The site is built and pushed. These steps put it online.
      - add Netlify's records.
   5. Repeat step 4 for `tesonopos.com`.
   6. Back in Netlify: **HTTPS → Verify DNS configuration**. It issues the free certificate automatically, usually within an hour.
-- [ ] **6d. Email `hola@tesonopos.es`** ⏳ *needs .es*
+- [ ] **6d. Email `hola@tesonopos.es`**
   - The website, app and legal pages all use this address.
   - In IONOS → **E-Mail**, check whether the domain includes a mailbox or forwarding. If yes, forward it to the Tesón Gmail.
   - If not, use a free forwarder.
