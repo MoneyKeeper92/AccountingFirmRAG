@@ -1,0 +1,329 @@
+{
+  "version": "2026-10-29",
+  "tema": "Constitución Española (I)",
+  "exam": "Auxiliar Administrativo del Estado (C2)",
+  "areas": {
+    "EST": "Estructura y elaboración",
+    "TP": "Título Preliminar",
+    "DF": "Derechos fundamentales",
+    "DC": "Derechos, deberes y principios rectores",
+    "GS": "Garantías y suspensión",
+    "REF": "Reforma constitucional"
+  },
+  "concepts": [
+    {
+      "id": "est.estructura",
+      "area": "EST",
+      "name": "Estructura de la Constitución",
+      "arts": "Títulos y artículos",
+      "importance": 2,
+      "questions": 2
+    },
+    {
+      "id": "est.fechas",
+      "area": "EST",
+      "name": "Aprobación, referéndum y entrada en vigor",
+      "arts": "Disp. final",
+      "importance": 2,
+      "questions": 1
+    },
+    {
+      "id": "est.reformas",
+      "area": "EST",
+      "name": "Reformas realizadas",
+      "arts": "13.2, 135, 49",
+      "importance": 2,
+      "questions": 2
+    },
+    {
+      "id": "tp.valores",
+      "area": "TP",
+      "name": "Estado social y valores superiores",
+      "arts": "1.1",
+      "importance": 3,
+      "questions": 1
+    },
+    {
+      "id": "tp.soberania",
+      "area": "TP",
+      "name": "Soberanía y forma política",
+      "arts": "1.2–1.3",
+      "importance": 3,
+      "questions": 2
+    },
+    {
+      "id": "tp.autonomia",
+      "area": "TP",
+      "name": "Unidad y autonomía",
+      "arts": "2",
+      "importance": 2,
+      "questions": 1
+    },
+    {
+      "id": "tp.lenguas",
+      "area": "TP",
+      "name": "Lenguas oficiales",
+      "arts": "3",
+      "importance": 2,
+      "questions": 2
+    },
+    {
+      "id": "tp.simbolos",
+      "area": "TP",
+      "name": "Bandera y capital",
+      "arts": "4–5",
+      "importance": 1,
+      "questions": 3
+    },
+    {
+      "id": "tp.partidos",
+      "area": "TP",
+      "name": "Partidos, sindicatos y asociaciones empresariales",
+      "arts": "6–7",
+      "importance": 2,
+      "questions": 3
+    },
+    {
+      "id": "tp.ffaa",
+      "area": "TP",
+      "name": "Fuerzas Armadas",
+      "arts": "8",
+      "importance": 1,
+      "questions": 2
+    },
+    {
+      "id": "tp.art9",
+      "area": "TP",
+      "name": "Sujeción a la Constitución y principios del art. 9",
+      "arts": "9",
+      "importance": 3,
+      "questions": 4
+    },
+    {
+      "id": "df.nacionalidad",
+      "area": "DF",
+      "name": "Interpretación, nacionalidad y mayoría de edad",
+      "arts": "10–12",
+      "importance": 2,
+      "questions": 3
+    },
+    {
+      "id": "df.extranjeros",
+      "area": "DF",
+      "name": "Extranjeros y extradición",
+      "arts": "13",
+      "importance": 2,
+      "questions": 2
+    },
+    {
+      "id": "df.igualdad",
+      "area": "DF",
+      "name": "Igualdad ante la ley",
+      "arts": "14",
+      "importance": 3,
+      "questions": 2
+    },
+    {
+      "id": "df.vida_religion",
+      "area": "DF",
+      "name": "Vida y libertad ideológica y religiosa",
+      "arts": "15–16",
+      "importance": 2,
+      "questions": 3
+    },
+    {
+      "id": "df.detencion",
+      "area": "DF",
+      "name": "Libertad y detención",
+      "arts": "17",
+      "importance": 3,
+      "questions": 3
+    },
+    {
+      "id": "df.intimidad",
+      "area": "DF",
+      "name": "Intimidad, domicilio y comunicaciones",
+      "arts": "18",
+      "importance": 2,
+      "questions": 3
+    },
+    {
+      "id": "df.expresion",
+      "area": "DF",
+      "name": "Libertades de expresión e información",
+      "arts": "20",
+      "importance": 2,
+      "questions": 3
+    },
+    {
+      "id": "df.reunion",
+      "area": "DF",
+      "name": "Reunión y asociación",
+      "arts": "21–22",
+      "importance": 2,
+      "questions": 5
+    },
+    {
+      "id": "df.participacion",
+      "area": "DF",
+      "name": "Participación y tutela judicial",
+      "arts": "23–24",
+      "importance": 3,
+      "questions": 2
+    },
+    {
+      "id": "df.legalidad",
+      "area": "DF",
+      "name": "Legalidad sancionadora y Tribunales de Honor",
+      "arts": "25–26",
+      "importance": 2,
+      "questions": 2
+    },
+    {
+      "id": "df.educacion",
+      "area": "DF",
+      "name": "Educación, sindicación, huelga y petición",
+      "arts": "27–29",
+      "importance": 2,
+      "questions": 4
+    },
+    {
+      "id": "df.titulo1",
+      "area": "DF",
+      "name": "Estructura del Título I",
+      "arts": "Caps. I–V",
+      "importance": 3,
+      "questions": 3
+    },
+    {
+      "id": "dc.deberes",
+      "area": "DC",
+      "name": "Derechos y deberes de los ciudadanos",
+      "arts": "30–38",
+      "importance": 2,
+      "questions": 6
+    },
+    {
+      "id": "dc.rectores",
+      "area": "DC",
+      "name": "Principios rectores",
+      "arts": "39–52",
+      "importance": 2,
+      "questions": 4
+    },
+    {
+      "id": "gs.tutela",
+      "area": "GS",
+      "name": "Tutela de los derechos y amparo",
+      "arts": "53",
+      "importance": 3,
+      "questions": 5
+    },
+    {
+      "id": "gs.defensor",
+      "area": "GS",
+      "name": "Defensor del Pueblo",
+      "arts": "54",
+      "importance": 2,
+      "questions": 2
+    },
+    {
+      "id": "gs.suspension",
+      "area": "GS",
+      "name": "Suspensión de derechos",
+      "arts": "55",
+      "importance": 3,
+      "questions": 3
+    },
+    {
+      "id": "gs.estados",
+      "area": "GS",
+      "name": "Estados de alarma, excepción y sitio",
+      "arts": "116",
+      "importance": 3,
+      "questions": 3
+    },
+    {
+      "id": "ref.iniciativa",
+      "area": "REF",
+      "name": "Iniciativa de reforma",
+      "arts": "166",
+      "importance": 2,
+      "questions": 1
+    },
+    {
+      "id": "ref.ordinaria",
+      "area": "REF",
+      "name": "Procedimiento ordinario",
+      "arts": "167",
+      "importance": 3,
+      "questions": 2
+    },
+    {
+      "id": "ref.agravada",
+      "area": "REF",
+      "name": "Procedimiento agravado",
+      "arts": "168",
+      "importance": 3,
+      "questions": 2
+    },
+    {
+      "id": "ref.limites",
+      "area": "REF",
+      "name": "Límites temporales a la reforma",
+      "arts": "169",
+      "importance": 2,
+      "questions": 1
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mis.estados",
+      "name": "Alarma, excepción y sitio"
+    },
+    {
+      "id": "mis.reforma",
+      "name": "Reforma ordinaria (art. 167) y agravada (art. 168)"
+    },
+    {
+      "id": "mis.art23_103",
+      "name": "Art. 23.2 (igualdad y requisitos legales) y art. 103.3 (mérito y capacidad)"
+    },
+    {
+      "id": "mis.amparo",
+      "name": "Qué derechos tienen amparo y procedimiento preferente"
+    },
+    {
+      "id": "mis.literal",
+      "name": "La literalidad exacta del texto (villa/ciudad, deber/derecho…)"
+    },
+    {
+      "id": "mis.partidos",
+      "name": "Partidos políticos (art. 6) y sindicatos (art. 7)"
+    },
+    {
+      "id": "mis.autoriza",
+      "name": "Quién puede autorizar: un juez o la Administración"
+    },
+    {
+      "id": "mis.suspension",
+      "name": "Qué derechos pueden suspenderse (art. 55)"
+    },
+    {
+      "id": "mis.rango",
+      "name": "Ley orgánica, ley ordinaria o reglamento"
+    },
+    {
+      "id": "mis.cifras",
+      "name": "Plazos y cifras (72 horas, 15/30 días, 169 artículos…)"
+    },
+    {
+      "id": "mis.valores",
+      "name": "Valores superiores (art. 1.1) frente a otros principios"
+    },
+    {
+      "id": "mis.ubicacion",
+      "name": "Dónde está cada precepto (capítulos y secciones)"
+    }
+  ]
+}

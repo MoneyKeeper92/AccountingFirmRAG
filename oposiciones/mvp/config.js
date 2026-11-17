@@ -7,5 +7,7 @@
 window.TESON_CONFIG = {
   supabaseUrl: "",
   supabaseAnonKey: "",
-  contactEmail: "hola@tesonopos.es"
+  contactEmail: "hola@tesonopos.es",
+  // Only for the claude.ai preview: fake sign-in (code 123456), no emails sent. Keep false in production.
+  demoAuth: false
 };

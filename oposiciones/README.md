@@ -30,6 +30,8 @@ Tesón GitHub organisation, so nothing stays linked to other businesses.
 | 12 | [Questions for Spanish advisors + feedback app](12_ADVISOR_FEEDBACK.md) |
 | 13 | [**MVP launch: today's session**](13_MVP_LAUNCH_TODAY.md) · app in [mvp/](mvp/) |
 | 14 | [Adaptive practice: design, algorithm, experiment](14_ADAPTIVE_PRACTICE.md) |
+| 15 | [Accounts (email + code) and the AI focus plan: design and setup](15_ACCOUNTS_AND_AI_PLAN.md) |
+| — | [Every name option considered, ranked](NAME_OPTIONS.md) |
 | — | [Research brief: find existing practice questions](research/BRIEF_existing_questions.md) (paste into another AI) |
 
 *Research snapshot: 28 Sept 2026. Figures marked [U] or "verify" come from search summaries

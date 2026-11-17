@@ -13,7 +13,7 @@ out.mkdir(parents=True, exist_ok=True)
 css = (mvp / "styles.css").read_text()
 questions = (mvp / "questions.js").read_text() + "\n" + (mvp / "tags.js").read_text() + "\n" + (mvp / "esquemas.js").read_text()
 app = (mvp / "app.js").read_text()
-config = 'window.TESON_CONFIG = { supabaseUrl: "", supabaseAnonKey: "", contactEmail: "hola@tesonopos.es" };'
+config = 'window.TESON_CONFIG = { supabaseUrl: "", supabaseAnonKey: "", contactEmail: "hola@tesonopos.es", demoAuth: true };'
 
 page = f"""<title>Tesón MVP</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Inter:wght@400;500;600&display=swap">

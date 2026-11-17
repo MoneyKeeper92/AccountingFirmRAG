@@ -43,7 +43,7 @@
   function fresh() {
     return { v: 1, uid: rid(), consent: null, profile: null, src: null, stats: {}, history: [], days: [], queue: [],
       interest: {}, rated: {}, reported: {}, npsDone: false, created: Date.now(),
-      cs: {}, mis: {}, snap: {}, exp: null, practiceSincePre: 0 };
+      cs: {}, mis: {}, snap: {}, exp: null, practiceSincePre: 0, studied: null, plan: null, answersSincePlan: 0 };
   }
   var S = (function () {
     var s = null;
@@ -53,7 +53,7 @@
     for (var k in f) if (!(k in s)) s[k] = f[k];
     return s;
   })();
-  function persist() { try { window.localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+  function persist() { try { window.localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} if (typeof scheduleSync === "function") scheduleSync(); }
 
   (function captureSource() {
     if (S.src) return;
@@ -107,7 +107,7 @@
     if (!submitted && S.consent !== "yes") return;
     payload = payload || {};
     if (S.consent === "yes" && S.exp && S.exp.participant) { payload.exp = EXP_ID; payload.arm = S.exp.arm; }
-    S.queue.push({ uid: S.consent === "yes" ? S.uid : null, session_id: S.consent === "yes" ? SID : null, type: type,
+    S.queue.push({ uid: S.consent === "yes" ? (USER ? USER.id : S.uid) : null, session_id: S.consent === "yes" ? SID : null, type: type,
       payload: payload, client_ts: new Date().toISOString(), app_version: APP_VERSION });
     if (S.queue.length > 500) S.queue = S.queue.slice(-500);
     persist();
@@ -124,7 +124,7 @@
         headers: { "apikey": CFG.supabaseAnonKey, "Authorization": "Bearer " + CFG.supabaseAnonKey, "Content-Type": "application/json", "Prefer": "return=minimal" },
         body: JSON.stringify(batch)
       }).then(function (r) {
-        if (r.ok) { S.queue = S.queue.slice(batch.length); persist(); if (S.queue.length) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 1000); } }
+        if (r.ok) { S.queue = S.queue.slice(batch.length); persistLocal(); if (S.queue.length) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 1000); } }
       }).catch(function () {}).then(function () { flushing = false; });
     } catch (e) { flushing = false; }
   }
@@ -225,6 +225,7 @@
 
     var d = dayKey(now); if (S.days.indexOf(d) === -1) S.days.push(d);
     if (!isCheck && S.exp && S.exp.pre) S.practiceSincePre++;
+    if (!isCheck) S.answersSincePlan = (S.answersSincePlan || 0) + 1;
     persist();
     track("question_answered", { qid: q.id, sub: q.sub, concepts: q.concepts, diff: q.diff, result: res, choice: choice,
       mis: misHit, time_ms: ms, changed: changed || 0, mode: ctx.mode, session: ctx.session, reason: ctx.reason || null });
@@ -285,20 +286,24 @@
   }
 
   // ── Question selection ──────────────────────────────────────
-  function practicePool(area) {
+  function studiedAreas() { return S.studied && S.studied.length ? S.studied : AREAS; }
+  function practicePool(area, onlyStudied) {
+    var st = studiedAreas();
     return BANK.questions.filter(function (q) {
       if (area && q.area !== area) return false;
+      if (!area && onlyStudied && st.indexOf(q.area) === -1) return false;
       if (controlHeld() && CONTROL.indexOf(q.id) !== -1) return false;
       return true;
     });
   }
   function buildStandard(n, area) {
-    return shuffle(practicePool(area)).slice(0, n).map(function (q) { return { id: q.id, reason: "Práctica" }; });
+    return easiestFirst(shuffle(practicePool(area, true)).slice(0, n).map(function (q) { return { id: q.id, reason: "Práctica" }; }));
   }
   function buildAdaptive(n, opts) {
     opts = opts || {};
-    var pool = practicePool(opts.area);
+    var pool = practicePool(opts.area, true);
     var now = Date.now();
+    var plan = !opts.area && !opts.mis && planFresh() ? S.plan : null;
     var mis = activeMis().map(function (m) { return m.id; });
     var concepts = {};
     pool.forEach(function (q) { q.concepts.forEach(function (c) { (concepts[c] = concepts[c] || []).push(q); }); });
@@ -316,7 +321,7 @@
     var order = Object.keys(BANK.concepts);
     fresh.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
 
-    var picked = [], used = {}, perConcept = {}, perArea = {};
+    var picked = [], used = {}, perConcept = {}, perArea = {}, capFor = {};
     var areaCap = opts.area ? n : Math.ceil(n * 0.4);
     function score(q) {
       var s = S.stats[q.id], sc = 0;
@@ -332,7 +337,7 @@
         var progress = false;
         for (var i = 0; i < cList.length && got < quota; i++) {
           var c = cList[i];
-          if ((perConcept[c] || 0) >= 3) continue;
+          if ((perConcept[c] || 0) >= (capFor[c] || 3)) continue;
           var cand = concepts[c].filter(function (q) { return !used[q.id] && (perArea[q.area] || 0) < areaCap; }).sort(function (a, b) { return score(a) - score(b); })[0];
           if (!cand) continue;
           used[cand.id] = 1; perConcept[c] = (perConcept[c] || 0) + 1; perArea[cand.area] = (perArea[cand.area] || 0) + 1;
@@ -350,8 +355,22 @@
       misQs.forEach(function (q) { used[q.id] = 1; picked.push({ id: q.id, reason: "Tu confusión" }); });
     } else {
       var qWeak = Math.round(n * 0.5), qDue = Math.round(n * 0.3), qNew = n - qWeak - qDue;
-      take(weak, qWeak, "Refuerzo");
-      take(due, qWeak + qDue - picked.length, "Repaso");
+      if (plan) {
+        // Focus concepts get slots in proportion to their weight (3:2:1), largest remainder first.
+        var focus = plan.focus.filter(function (f) { return concepts[f.concept]; });
+        var W = focus.reduce(function (a, f) { return a + f.weight; }, 0) || 1;
+        var raw = focus.map(function (f) { return qWeak * f.weight / W; });
+        var slots = raw.map(Math.floor), left = qWeak - slots.reduce(function (a, b) { return a + b; }, 0);
+        raw.map(function (r, i) { return [r - Math.floor(r), i]; }).sort(function (a, b) { return b[0] - a[0]; })
+          .slice(0, left).forEach(function (x) { slots[x[1]]++; });
+        focus.forEach(function (f, i) { capFor[f.concept] = f.weight === 3 ? 4 : 3; take([f.concept], slots[i], "Tu plan"); });
+        var rev = (plan.review || []).filter(function (c) { return concepts[c]; });
+        take(rev.concat(due.filter(function (c) { return rev.indexOf(c) === -1; })), qWeak + qDue - picked.length, "Repaso");
+        take(weak, qWeak + qDue - picked.length, "Refuerzo");
+      } else {
+        take(weak, qWeak, "Refuerzo");
+        take(due, qWeak + qDue - picked.length, "Repaso");
+      }
       take(fresh, n - picked.length, "Nuevo");
     }
     // Fill any shortfall with the concepts seen least recently (broad syllabus coverage).
@@ -367,7 +386,11 @@
         picked.push({ id: rest[i].id, reason: "Cobertura" });
       }
     }
-    return shuffle(picked);
+    return easiestFirst(picked);
+  }
+  function easiestFirst(items) {
+    return shuffle(items).map(function (x, i) { return { x: x, d: QMAP[x.id].diff, i: i }; })
+      .sort(function (a, b) { return a.d - b.d || a.i - b.i; }).map(function (o) { return o.x; });
   }
   function weakestArea() {
     var best = null;
@@ -383,6 +406,11 @@
   function render() {
     clearInterval(timerInt);
     root.innerHTML = "";
+    if (needSignIn()) {
+      root.appendChild(h("header", { "class": "top" }, h("div", { "class": "top-inner" }, h("span", { "class": "brand" }, "tesón"), h("span", { "class": "beta" }, "Beta"))));
+      var mainS = h("main", { "class": "wrap" }); mainS.appendChild(viewSignIn()); mainS.appendChild(footer()); root.appendChild(mainS);
+      return;
+    }
     if (VIEW === "quiz") { root.appendChild(viewQuiz()); return; }
     root.appendChild(topbar());
     var main = h("main", { "class": "wrap" });
@@ -426,7 +454,7 @@
         wordmark(),
         h("h1", null, "Practica lo que más necesitas mejorar."),
         h("p", { "class": "lede" }, "Tests de Auxiliar Administrativo del Estado con cada respuesta explicada. Tesón aprende qué te cuesta y te propone las preguntas que más te ayudan."),
-        h("p", { "class": "small muted" }, "Gratis durante la beta. Sin registro.")));
+        h("p", { "class": "small muted" }, "Gratis durante la beta. Solo necesitas tu email.")));
     }
 
     if (!S.exp.pre && !S.exp.preSkipped) {
@@ -466,9 +494,12 @@
     });
     s.appendChild(list);
 
+    // Personal plan (adaptive arm): AI-prepared when available, otherwise rules.
+    if (ad) { maybeRequestPlan(totalAns); if (planFresh()) s.appendChild(planCard()); }
+
     // Recommended practice: build the real session now so the description matches it.
     var wk = weakestArea(), recText;
-    PLAN = ad ? buildAdaptive(20, {}) : null;
+    PLAN = ad ? buildAdaptive(planFresh() ? S.plan.session_size : 20, {}) : null;
     if (!ad) recText = "20 preguntas variadas de todo el tema.";
     else if (!totalAns) recText = "20 preguntas para conocer tu nivel en todo el tema.";
     else {
@@ -480,7 +511,7 @@
       if (cnt["Cobertura"]) parts.push(cnt["Cobertura"] + " para cubrir todo el tema");
       recText = PLAN.length + " preguntas adaptadas a tu progreso: " + parts.join(", ").replace(/, ([^,]*)$/, " y $1") + ".";
     }
-    s.appendChild(h("div", { "class": "card rec stack" },
+    if (!(ad && planFresh())) s.appendChild(h("div", { "class": "card rec stack" },
       h("span", { "class": "eyebrow" }, ad ? "Práctica recomendada" : "Práctica del tema"),
       h("p", { style: "margin:0;font-weight:600" }, recText),
       h("div", { "class": "row" }, h("button", { "class": "btn", type: "button", onclick: function () { startPractice(20, null, null, PLAN); } }, "Practicar ahora"))));
@@ -603,7 +634,7 @@
     TEST = { ids: items.map(function (x) { return x.id; }), reasons: {}, mode: mode, session: session, title: title, i: 0, maxI: 0,
       ans: {}, checked: {}, times: {}, changed: {}, start: Date.now(), qstart: Date.now(), paused: false, pausedAt: 0 };
     items.forEach(function (x) { TEST.reasons[x.id] = x.reason; });
-    track("test_started", { mode: mode, session: session, n: TEST.ids.length, reasons: items.map(function (x) { return x.reason; }) });
+    track("test_started", { mode: mode, session: session, n: TEST.ids.length, reasons: items.map(function (x) { return x.reason; }), plan_source: planFresh() && session === "recommended" ? S.plan.source : null });
     go("quiz");
   }
 
@@ -941,8 +972,25 @@
       s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Últimos tests"), hist));
     }
 
-    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Tus datos"),
-      h("p", { "class": "small muted", style: "margin:0" }, "Tu progreso se guarda en este navegador. Compartir datos de uso anónimos: " + (S.consent === "yes" ? "activado." : "desactivado.")),
+    var stChips = h("div", { "class": "chips" });
+    AREAS.forEach(function (a) {
+      var on = studiedAreas().indexOf(a) !== -1;
+      stChips.appendChild(h("button", { "class": "chip", type: "button", "aria-pressed": on ? "true" : "false", onclick: function () {
+        var cur = studiedAreas().slice();
+        cur = on ? cur.filter(function (x) { return x !== a; }) : cur.concat(a);
+        if (!cur.length) { toast("Deja al menos un área marcada."); return; }
+        S.studied = cur.length === AREAS.length ? null : cur; persist();
+        track("studied_areas_set", { areas: studiedAreas() });
+        render();
+      } }, BANK.areas[a]));
+    });
+    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Lo que ya has estudiado"),
+      h("p", { "class": "small muted", style: "margin:0" }, "Tu práctica recomendada y tu plan solo usan las partes que marques. Las demás siguen disponibles en el test personalizado y al tocar cada área."),
+      stChips));
+
+    s.appendChild(accountSection());
+    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Privacidad"),
+      h("p", { "class": "small muted", style: "margin:0" }, "Compartir datos de uso para mejorar Tesón: " + (S.consent === "yes" ? "activado." : "desactivado.")),
       h("div", { "class": "row" },
         h("button", { "class": "btn quiet", type: "button", onclick: function () { openConsent(true); } }, "Cambiar preferencia"),
         h("button", { "class": "btn quiet", type: "button", onclick: confirmWipe }, "Borrar mi progreso"))));
@@ -950,12 +998,12 @@
   }
   function confirmWipe() {
     sheet(function (close) {
-      return [h("h2", null, "¿Borrar tu progreso?"), h("p", { "class": "muted" }, "Se borrarán tus respuestas, fallos e historial de este navegador. No se puede deshacer."),
+      return [h("h2", null, "¿Borrar tu progreso?"), h("p", { "class": "muted" }, "Se borrarán tus respuestas, fallos e historial" + (USER ? " de tu cuenta" : " de este navegador") + ". No se puede deshacer."),
         h("div", { "class": "row" },
           h("button", { "class": "btn", type: "button", onclick: function () {
             track("progress_wiped", {});
             var keep = { consent: S.consent, uid: S.uid, exp: S.exp };
-            S = fresh(); S.consent = keep.consent; S.uid = keep.uid; S.exp = keep.exp; persist(); close(); go("home"); toast("Progreso borrado.");
+            S = fresh(); S.consent = keep.consent; S.uid = keep.uid; S.exp = keep.exp; persist(); syncNow(); close(); go("home"); toast("Progreso borrado.");
           } }, "Sí, borrar"),
           h("button", { "class": "btn quiet", type: "button", onclick: close }, "Cancelar"))];
     });
@@ -970,8 +1018,8 @@
         ensureExperiment(); render();
       }
       return [h("h2", null, "Tesón está en beta"),
-        h("p", { style: "margin:0" }, "Es gratis y no necesitas registrarte. Para mejorar las preguntas nos ayuda mucho saber cómo se usa la app: qué respondes, cuánto tardas y qué explicaciones te sirven."),
-        h("p", { "class": "small muted", style: "margin:0" }, "Se guarda con un identificador aleatorio, sin tu nombre ni tu email, en servidores de la UE. Si aceptas, también podemos mostrarte una de dos formas de elegir las preguntas, para comprobar cuál ayuda más a aprender. Puedes cambiarlo cuando quieras en «Progreso». ",
+        h("p", { style: "margin:0" }, "Para mejorar las preguntas nos ayuda mucho saber cómo se usa la app: qué respondes, cuánto tardas y qué explicaciones te sirven."),
+        h("p", { "class": "small muted", style: "margin:0" }, "Lo analizamos sin tu email, en servidores de la UE. Si aceptas, también podemos mostrarte una de dos formas de elegir las preguntas, para comprobar cuál ayuda más a aprender. Puedes cambiarlo cuando quieras en «Progreso». ",
           h("a", { href: "privacidad.html", target: "_blank", rel: "noopener" }, "Más información")),
         h("div", { "class": "row" },
           h("button", { "class": "btn", type: "button", onclick: function () { pick("yes"); } }, "Sí, compartir datos de uso"),
@@ -979,7 +1027,7 @@
     });
   }
   function openOnboarding(then) {
-    var P = { exam: null, cuando: null, academia: null, academiaNombre: "", fuente: null };
+    var P = { exam: null, cuando: null, horas: null, academia: null, academiaNombre: "", fuente: null };
     sheet(function (close) {
       function group(key, legend, options) {
         var c = h("div", { "class": "chips" });
@@ -996,13 +1044,14 @@
       acad.hidden = true;
       function done(skip) {
         S.profile = skip ? { skipped: true } : P; persist(); close();
-        if (!skip) track("onboarding_completed", { exam: P.exam, cuando: P.cuando, academia: P.academia, academia_nombre: P.academiaNombre || null, fuente: P.fuente, src: S.src }, { submitted: true });
+        if (!skip) track("onboarding_completed", { exam: P.exam, cuando: P.cuando, horas: P.horas, academia: P.academia, academia_nombre: P.academiaNombre || null, fuente: P.fuente, src: S.src }, { submitted: true });
         then();
       }
-      return [h("h2", null, "Cuatro preguntas rápidas"),
-        h("p", { "class": "small muted", style: "margin:0" }, "Nos ayudan a priorizar qué temas preparar. Todo es opcional."),
+      return [h("h2", null, "Cinco preguntas rápidas"),
+        h("p", { "class": "small muted", style: "margin:0" }, "Nos ayudan a preparar tu plan. Todo es opcional."),
         group("exam", "¿Qué oposición preparas?", ["Auxiliar Administrativo del Estado", "Administrativo del Estado", "Justicia", "Policía o Guardia Civil", "Otra"]),
         group("cuando", "¿Cuándo crees que te examinarás?", ["Primera mitad de 2027", "Segunda mitad de 2027", "2028 o más tarde", "No lo sé"]),
+        group("horas", "¿Cuántas horas a la semana estudias?", ["Menos de 5", "5–10", "10–20", "Más de 20"]),
         h("div", { "class": "stack", style: "gap:8px" }, group("academia", "¿Preparas con academia o preparador?", ["No", "Sí"]), acad),
         group("fuente", "¿Cómo has conocido Tesón?", ["Telegram", "Reddit", "Instagram o TikTok", "Un foro", "Google", "Me lo recomendaron", "Otro"]),
         h("div", { "class": "row" },
@@ -1065,9 +1114,301 @@
     });
   }
 
+
+  // ── Account: email + one-time code (Supabase Auth), progress synced to profiles ──
+  // Sessions persist in this browser and renew themselves; the student stays signed in until they
+  // sign out (or until the inactivity timeout set in Supabase, e.g. 90 days).
+  var SB = null, USER = null, DEMO = false, syncTimer = null, syncing = false, syncDirty = false, planInflight = false;
+  var SIGNIN = { step: "email", email: "", marketing: false, busy: false, err: "", resendAt: 0 };
+  var SYNC_KEYS = ["stats", "cs", "mis", "history", "days", "snap", "exp", "practiceSincePre", "profile", "interest",
+    "rated", "reported", "npsDone", "studied", "created", "answersSincePlan"];
+
+  function initAuth() {
+    if (backendOn() && window.supabase && window.supabase.createClient) {
+      SB = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: "teson.auth" }
+      });
+    } else if (CFG.demoAuth) { DEMO = true; }
+  }
+  function authOn() { return !!SB || DEMO; }
+  function needSignIn() { return authOn() && !USER; }
+  function persistLocal() { try { window.localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+  function noop() {}
+  function demoId(email) { var x = 0; for (var i = 0; i < email.length; i++) x = (x * 31 + email.charCodeAt(i)) >>> 0; return x.toString(16); }
+
+  function syncable() { var o = {}; SYNC_KEYS.forEach(function (k) { o[k] = S[k]; }); return o; }
+  function scheduleSync() {
+    // Throttle, not debounce: the account is updated at most 3 s after the first unsaved change.
+    if (!SB || !USER || syncTimer) return;
+    syncTimer = setTimeout(syncNow, 3000);
+  }
+  function syncNow() {
+    if (!SB || !USER) return Promise.resolve();
+    if (syncing) { syncDirty = true; return Promise.resolve(); }
+    syncing = true; clearTimeout(syncTimer); syncTimer = null;
+    return SB.from("profiles").update({ state: syncable(), updated_at: new Date().toISOString() }).eq("id", USER.id)
+      .then(noop, noop).then(function () { syncing = false; if (syncDirty) { syncDirty = false; scheduleSync(); } });
+  }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") syncNow(); });
+
+  // Merge two learner states (this device + account). Per item, keep the record with more answers.
+  function mergeState(local, remote) {
+    var a = local, b = remote || {}, out = Object.assign({}, a);
+    var hasA = Object.keys(a.stats || {}).length, hasB = Object.keys(b.stats || {}).length;
+    if (!hasA && hasB) { SYNC_KEYS.forEach(function (k) { if (b[k] !== undefined) out[k] = b[k]; }); return out; }
+    if (!hasB) return out;
+    function byCount(x, y, key) { var o = Object.assign({}, x); for (var id in y) { if (!o[id] || (y[id][key] || 0) > (o[id][key] || 0)) o[id] = y[id]; } return o; }
+    out.stats = byCount(a.stats || {}, b.stats || {}, "seen");
+    out.cs = byCount(a.cs || {}, b.cs || {}, "n");
+    out.mis = Object.assign({}, a.mis || {});
+    for (var m in b.mis || {}) {
+      var x = out.mis[m] || { hits: [], fixes: [] }, y = b.mis[m];
+      out.mis[m] = { hits: uniqSorted(x.hits.concat(y.hits || [])).slice(-30), fixes: uniqSorted(x.fixes.concat(y.fixes || [])).slice(-30) };
+    }
+    var seenTs = {}; out.history = (a.history || []).concat(b.history || []).filter(function (r) { if (seenTs[r.ts]) return false; seenTs[r.ts] = 1; return true; })
+      .sort(function (p, q) { return p.ts - q.ts; }).slice(-200);
+    out.days = uniqSorted((a.days || []).concat(b.days || []));
+    out.snap = Object.assign({}, b.snap || {}, a.snap || {});
+    out.exp = b.exp || a.exp;                       // the experiment arm follows the account
+    out.practiceSincePre = Math.max(a.practiceSincePre || 0, b.practiceSincePre || 0);
+    out.profile = b.profile || a.profile;
+    out.studied = b.studied !== undefined ? b.studied : a.studied;
+    out.interest = Object.assign({}, b.interest || {}, a.interest || {});
+    out.rated = Object.assign({}, b.rated || {}, a.rated || {});
+    out.reported = Object.assign({}, b.reported || {}, a.reported || {});
+    out.npsDone = !!(a.npsDone || b.npsDone);
+    out.created = Math.min(a.created || Date.now(), b.created || Date.now());
+    return out;
+  }
+  function uniqSorted(arr) { return arr.filter(function (v, i, s2) { return s2.indexOf(v) === i; }).sort(); }
+
+  function loadRemote(marketing) {
+    var now = new Date().toISOString();
+    var opt = marketing ? { marketing_opt_in: true, marketing_opt_in_at: now } : {};
+    if (marketing) S.marketing = true;
+    if (!SB) { persistLocal(); return Promise.resolve(); }
+    return SB.from("profiles").select("state, plan, plan_at, marketing_opt_in").eq("id", USER.id).maybeSingle().then(function (res) {
+      if (res.error) { toast("No hemos podido cargar tu progreso. Lo intentaremos de nuevo."); return; }
+      var row = res.data;
+      if (row && row.state) S = mergeState(S, row.state);
+      if (row && row.plan && (!S.plan || Date.parse(row.plan.created_at) >= Date.parse(S.plan.created_at || 0))) S.plan = row.plan;
+      if (row) S.marketing = !!row.marketing_opt_in || !!marketing;
+      S.owner = USER.id;
+      persistLocal();
+      if (!row) return SB.from("profiles").insert(Object.assign({ id: USER.id, state: syncable(), updated_at: now }, opt)).then(noop, noop);
+      return SB.from("profiles").update(Object.assign({ state: syncable(), updated_at: now }, opt)).eq("id", USER.id).then(noop, noop);
+    }, function () { toast("Sin conexión: seguimos con tu progreso en este dispositivo."); });
+  }
+  function afterSignIn(user, marketing) {
+    if (S.owner && S.owner !== user.id) { var c = S.consent; S = fresh(); S.consent = c; }   // another account used this device
+    USER = { id: user.id, email: user.email || "" };
+    S.owner = user.id;
+    if (DEMO) { try { window.localStorage.setItem("teson.demoUser", JSON.stringify(USER)); } catch (e) {} }
+    return loadRemote(marketing).then(function () {
+      ensureExperiment(); go("home");
+      if (S.consent === null) openConsent(false);
+      else if (S.consent === "yes") track("session_start", { returning: S.history.length > 0, tests: S.history.length, src: S.src });
+    });
+  }
+  function signOut() {
+    var done = function () {
+      USER = null;
+      try { window.localStorage.removeItem(LS_KEY); window.localStorage.removeItem("teson.demoUser"); } catch (e) {}
+      var c = S.consent; S = fresh(); S.consent = c; persistLocal();
+      VIEW = "home"; render();
+    };
+    if (SB) syncNow().then(function () { return SB.auth.signOut(); }).then(done, done); else done();
+  }
+  function setMarketing(on) {
+    S.marketing = !!on; persistLocal();
+    track("marketing_pref", { on: !!on });
+    if (SB && USER) SB.from("profiles").update({ marketing_opt_in: !!on, marketing_opt_in_at: on ? new Date().toISOString() : null }).eq("id", USER.id).then(noop, noop);
+  }
+  function confirmDeleteAccount() {
+    sheet(function (close) {
+      return [h("h2", null, "¿Borrar tu cuenta?"),
+        h("p", { "class": "muted" }, "Borraremos tu email, tu progreso, tu plan y tus datos de uso. No se puede deshacer."),
+        h("div", { "class": "row" },
+          h("button", { "class": "btn", type: "button", onclick: function () { close(); deleteAccount(); } }, "Sí, borrar mi cuenta"),
+          h("button", { "class": "btn quiet", type: "button", onclick: close }, "Cancelar"))];
+    });
+  }
+  function deleteAccount() {
+    if (!SB) { signOut(); toast("Cuenta borrada."); return; }
+    SB.auth.getSession().then(function (r) {
+      var token = r.data && r.data.session && r.data.session.access_token;
+      return fetch(CFG.supabaseUrl.replace(/\/$/, "") + "/functions/v1/delete-account", {
+        method: "POST", headers: { "Authorization": "Bearer " + token, "apikey": CFG.supabaseAnonKey, "Content-Type": "application/json" }, body: "{}" });
+    }).then(function (res) {
+      if (!res.ok) throw new Error("http_" + res.status);
+      USER = null; try { window.localStorage.removeItem(LS_KEY); } catch (e) {}
+      S = fresh(); persistLocal(); SB.auth.signOut().then(noop, noop); VIEW = "home"; render(); toast("Cuenta borrada.");
+    }).catch(function () { toast("No hemos podido borrar la cuenta. Escríbenos a " + (CFG.contactEmail || "soporte") + "."); });
+  }
+
+  function accountSection() {
+    if (!USER) return h("div", { "class": "stack" }, h("h2", null, "Tu cuenta"),
+      h("p", { "class": "small muted", style: "margin:0" }, "Modo local: tu progreso se guarda solo en este navegador."));
+    return h("div", { "class": "stack" }, h("h2", null, "Tu cuenta"),
+      h("p", { style: "margin:0;font-weight:600" }, USER.email),
+      h("p", { "class": "small muted", style: "margin:0" }, "Tu progreso se guarda en tu cuenta: entra con este email desde cualquier dispositivo."),
+      h("label", { "class": "inline" }, h("input", { type: "checkbox", id: "acct-mk", checked: !!S.marketing, onchange: function (e) { setMarketing(e.target.checked); } }),
+        " Recibir mi resumen semanal y avisos de la convocatoria por email"),
+      h("div", { "class": "row" },
+        h("button", { "class": "btn quiet", type: "button", onclick: signOut }, "Cerrar sesión"),
+        h("button", { "class": "btn quiet", type: "button", onclick: confirmDeleteAccount }, "Borrar mi cuenta")));
+  }
+
+  function viewSignIn() {
+    var s = h("section", { "class": "view stack-lg" });
+    s.appendChild(h("div", { "class": "hero" }, wordmark(),
+      h("h1", null, "Practica lo que más necesitas mejorar."),
+      h("p", { "class": "lede" }, "Tests de Auxiliar Administrativo del Estado con cada respuesta explicada. Tesón aprende qué te cuesta y prepara tu plan de práctica."),
+      h("p", { "class": "small muted" }, "Gratis durante la beta.")));
+    var card = h("div", { "class": "card stack signin" });
+    if (SIGNIN.step === "email") {
+      var em = h("input", { type: "email", id: "signin-email", autocomplete: "email", inputmode: "email", placeholder: "tu@email.com", value: SIGNIN.email, "aria-label": "Tu email" });
+      var mk = h("input", { type: "checkbox", id: "signin-mk", checked: SIGNIN.marketing });
+      card.appendChild(h("form", { "class": "stack", novalidate: true, onsubmit: function (e) { e.preventDefault(); submitEmail(em.value, mk.checked); } },
+        h("label", { "for": "signin-email", "class": "flabel" }, "Empieza con tu email"),
+        em,
+        h("label", { "class": "inline small" }, mk, " Quiero recibir mi resumen semanal y avisos de la convocatoria (opcional)"),
+        h("button", { "class": "btn block", type: "submit", disabled: SIGNIN.busy }, SIGNIN.busy ? "Enviando…" : "Enviarme el código")));
+      card.appendChild(h("p", { "class": "small muted", style: "margin:0" },
+        "Sin contraseña: te enviamos un código de un solo uso y no tendrás que volver a entrar en este dispositivo. Tu progreso se guarda en tu cuenta para que sigas desde cualquier sitio. Para preparar tu plan usamos un asistente de IA con tus resultados, nunca con tu email. ",
+        h("a", { href: "privacidad.html", target: "_blank", rel: "noopener" }, "Privacidad")));
+    } else {
+      var code = h("input", { type: "text", id: "signin-code", inputmode: "numeric", autocomplete: "one-time-code", maxlength: "10", placeholder: "123456", "aria-label": "Código" });
+      var left = Math.max(0, Math.ceil((SIGNIN.resendAt - Date.now()) / 1000));
+      card.appendChild(h("form", { "class": "stack", novalidate: true, onsubmit: function (e) { e.preventDefault(); submitCode(code.value); } },
+        h("label", { "for": "signin-code", "class": "flabel" }, "Escribe el código que te hemos enviado a " + SIGNIN.email),
+        code,
+        h("button", { "class": "btn block", type: "submit", disabled: SIGNIN.busy }, SIGNIN.busy ? "Comprobando…" : "Entrar")));
+      card.appendChild(h("div", { "class": "row small" },
+        h("button", { "class": "linkbtn", type: "button", id: "resend", disabled: left > 0, onclick: function () { submitEmail(SIGNIN.email, SIGNIN.marketing); } },
+          left > 0 ? "Reenviar código (" + left + " s)" : "Reenviar código"),
+        h("button", { "class": "linkbtn", type: "button", onclick: function () { SIGNIN.step = "email"; SIGNIN.err = ""; render(); } }, "Usar otro email")));
+      card.appendChild(h("p", { "class": "small muted", style: "margin:0" }, "¿No te llega? Mira en spam o en promociones."));
+      if (DEMO) card.appendChild(h("p", { "class": "small", style: "margin:0;color:var(--amber-ink)" }, "Vista previa: no se envía ningún email. Escribe 123456."));
+      if (left > 0) timerInt = setInterval(function () {
+        var b = document.getElementById("resend"), l = Math.max(0, Math.ceil((SIGNIN.resendAt - Date.now()) / 1000));
+        if (b) { b.textContent = l ? "Reenviar código (" + l + " s)" : "Reenviar código"; b.disabled = l > 0; }
+      }, 1000);
+    }
+    if (SIGNIN.err) card.appendChild(h("p", { "class": "small", role: "alert", style: "margin:0;color:var(--bad)" }, SIGNIN.err));
+    s.appendChild(card);
+    return s;
+  }
+  function focusField(id) { var f = document.getElementById(id); if (f) f.focus(); }
+  function submitEmail(email, marketing) {
+    email = String(email || "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { SIGNIN.err = "Escribe un email válido."; render(); focusField("signin-email"); return; }
+    SIGNIN.busy = true; SIGNIN.err = ""; SIGNIN.email = email; SIGNIN.marketing = !!marketing; render();
+    var p = SB ? SB.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } }) : Promise.resolve({ error: null });
+    p.then(function (r) {
+      SIGNIN.busy = false;
+      if (r.error) SIGNIN.err = r.error.status === 429 ? "Has pedido varios códigos seguidos. Espera un minuto y vuelve a intentarlo." : "No hemos podido enviar el código. Revisa el email e inténtalo de nuevo.";
+      else { SIGNIN.step = "code"; SIGNIN.resendAt = Date.now() + 60000; }
+      render(); focusField(SIGNIN.step === "code" ? "signin-code" : "signin-email");
+    }, function () { SIGNIN.busy = false; SIGNIN.err = "Sin conexión. Inténtalo de nuevo."; render(); });
+  }
+  function submitCode(code) {
+    code = String(code || "").replace(/\D/g, "");
+    if (code.length < 6) { SIGNIN.err = "Escribe el código completo (6 cifras)."; render(); focusField("signin-code"); return; }
+    SIGNIN.busy = true; SIGNIN.err = ""; render();
+    var p = SB ? SB.auth.verifyOtp({ email: SIGNIN.email, token: code, type: "email" })
+      : Promise.resolve(code === "123456" ? { data: { user: { id: "demo-" + demoId(SIGNIN.email), email: SIGNIN.email } }, error: null } : { data: {}, error: { status: 403 } });
+    p.then(function (r) {
+      SIGNIN.busy = false;
+      var user = r.data && r.data.user;
+      if (r.error || !user) {
+        SIGNIN.err = r.error && r.error.status === 429 ? "Demasiados intentos. Espera un minuto." : "El código no es correcto o ha caducado. Pide uno nuevo.";
+        render(); focusField("signin-code"); return;
+      }
+      var mk = SIGNIN.marketing;
+      SIGNIN = { step: "email", email: "", marketing: false, busy: false, err: "", resendAt: 0 };
+      afterSignIn(user, mk);
+    }, function () { SIGNIN.busy = false; SIGNIN.err = "Sin conexión. Inténtalo de nuevo."; render(); });
+  }
+
+  // ── Personal focus plan ─────────────────────────────────────
+  function planFresh() { return !!(S.plan && S.plan.focus && S.plan.focus.length && Date.now() - Date.parse(S.plan.created_at) < 3 * DAY); }
+  function planStale() { return !S.plan || Date.now() - Date.parse(S.plan.created_at) > 20 * 3600000 || (S.answersSincePlan || 0) >= 40; }
+  function maybeRequestPlan(totalAns) {
+    if (planInflight || (authOn() && !USER) || totalAns < 10 || !planStale()) return;
+    if (SB && USER) requestPlan();
+    else { S.plan = localPlan(); S.answersSincePlan = 0; persistLocal(); }
+  }
+  function requestPlan() {
+    planInflight = true;
+    syncNow().then(function () { return SB.auth.getSession(); }).then(function (r) {
+      var token = r.data && r.data.session && r.data.session.access_token;
+      if (!token) throw new Error("no_session");
+      return fetch(CFG.supabaseUrl.replace(/\/$/, "") + "/functions/v1/focus-plan", {
+        method: "POST", headers: { "Authorization": "Bearer " + token, "apikey": CFG.supabaseAnonKey, "Content-Type": "application/json" }, body: "{}" });
+    }).then(function (res) { if (!res.ok) throw new Error("http_" + res.status); return res.json(); })
+      .then(function (j) {
+        if (!j || !j.plan || !j.plan.focus) throw new Error("bad_plan");
+        S.plan = j.plan; S.answersSincePlan = 0; persistLocal();
+        track("plan_received", { source: j.plan.source, cached: !!j.cached, focus: j.plan.focus.map(function (f) { return f.concept; }) });
+        if (VIEW === "home") render();
+      })
+      .catch(function () { if (!planFresh()) { S.plan = localPlan(); persistLocal(); if (VIEW === "home") render(); } })
+      .then(function () { planInflight = false; });
+  }
+  // Same rules as the server fallback: importance × weakness × evidence, studied areas only.
+  function localPlan() {
+    var st = studiedAreas(), scored = [];
+    Object.keys(BANK.concepts).forEach(function (c) {
+      var x = S.cs[c], m = mastery(c), C = BANK.concepts[c];
+      if (m == null || st.indexOf(C.area) === -1 || m >= WEAK) return;
+      scored.push({ c: c, m: m, n: x.n, s: C.imp * (1 - m) * Math.min(1, x.n / 3) });
+    });
+    scored.sort(function (a, b) { return b.s - a.s; });
+    var focus = scored.slice(0, 4).map(function (o, i) {
+      var r = S.cs[o.c].r.slice(-5), w = r.filter(function (v) { return !v; }).length;
+      var why = r.length === 1 ? (w ? "Fallaste la única pregunta que has hecho sobre esto." : "Solo has hecho una pregunta sobre esto.") : "Has fallado " + w + " de tus últimas " + r.length + " respuestas sobre esto.";
+      return { concept: o.c, weight: i === 0 ? 3 : i === 1 ? 2 : 1, reason_es: why };
+    });
+    if (!focus.length) return null;
+    var review = Object.keys(S.cs).filter(function (c) { var m = mastery(c); return m != null && m >= WEAK && S.cs[c].due <= Date.now(); }).slice(0, 6);
+    return { focus: focus, review: review, session_size: S.profile && S.profile.horas === "Menos de 5" ? 10 : 20,
+      coach_message_es: "Hoy toca reforzar lo que más te está costando.", source: "rules", created_at: new Date().toISOString() };
+  }
+  function planCard() {
+    var P = S.plan, mins = Math.round((Date.now() - Date.parse(P.created_at)) / 60000);
+    var ago = mins < 60 ? "hace " + Math.max(1, mins) + " min" : mins < 1440 ? "hace " + Math.round(mins / 60) + " h" : "hace " + Math.round(mins / 1440) + " días";
+    return h("div", { "class": "card plan stack" },
+      h("span", { "class": "eyebrow" }, "Tu plan para hoy"),
+      P.coach_message_es ? h("p", { style: "margin:0;font-weight:600" }, P.coach_message_es) : null,
+      h("ol", { "class": "planlist" }, P.focus.map(function (f) {
+        var C = BANK.concepts[f.concept]; if (!C) return null;
+        return h("li", null, h("b", null, C.name), h("span", { "class": "small muted" }, " · art. " + C.arts), f.reason_es ? h("div", { "class": "small" }, f.reason_es) : null);
+      })),
+      h("div", { "class": "row" }, h("button", { "class": "btn", type: "button", onclick: function () {
+        track("plan_started", { source: P.source });
+        startPractice(P.session_size || 20, null, null, PLAN);
+      } }, "Practicar mi plan · " + (P.session_size || 20) + " preguntas")),
+      h("p", { "class": "small muted", style: "margin:0" }, (P.source === "ai" ? "Preparado por un asistente de IA a partir de tus resultados" : "Preparado a partir de tus resultados") + " · " + ago + "."));
+  }
+
   // ── Boot ────────────────────────────────────────────────────
-  render();
-  if (S.consent === null) openConsent(false);
-  else { ensureExperiment(); if (S.consent === "yes") track("session_start", { returning: S.history.length > 0, tests: S.history.length, src: S.src }); }
+  initAuth();
+  if (SB) {
+    root.appendChild(h("p", { "class": "wrap muted", style: "padding-top:40px" }, "Cargando…"));
+    SB.auth.onAuthStateChange(function (event) { if (event === "SIGNED_OUT" && USER) { USER = null; render(); } });
+    SB.auth.getSession().then(function (r) {
+      var sess = r.data && r.data.session;
+      if (sess && sess.user) return afterSignIn(sess.user, false);
+      render();
+    }, function () { render(); });
+  } else if (DEMO) {
+    var du = null; try { du = JSON.parse(window.localStorage.getItem("teson.demoUser")); } catch (e) {}
+    if (du) { USER = du; ensureExperiment(); render(); if (S.consent === null) openConsent(false); } else render();
+  } else {
+    render();
+    if (S.consent === null) openConsent(false);
+    else { ensureExperiment(); if (S.consent === "yes") track("session_start", { returning: S.history.length > 0, tests: S.history.length, src: S.src }); }
+  }
   flush();
 })();

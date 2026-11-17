@@ -126,8 +126,72 @@ select arm,
        round(avg(practice_answers), 0) as avg_practice
 from public.v_experiment group by arm;
 
+-- ── v0.3: student profiles (email sign-in with a one-time code) and AI focus plans ──
+-- Emails live only in Supabase Auth (auth.users). profiles holds the synced learning state.
+
+create table if not exists public.profiles (
+  id                   uuid primary key references auth.users(id) on delete cascade,
+  created_at           timestamptz not null default now(),
+  updated_at           timestamptz not null default now(),
+  state                jsonb not null default '{}'::jsonb,   -- answers, concept stats, history (no email)
+  marketing_opt_in     boolean not null default false,       -- weekly summary / convocatoria emails
+  marketing_opt_in_at  timestamptz,
+  plan                 jsonb,                                -- latest focus plan (written by the focus-plan function)
+  plan_at              timestamptz
+);
+alter table public.profiles enable row level security;
+
+drop policy if exists "own profile: read"   on public.profiles;
+drop policy if exists "own profile: insert" on public.profiles;
+drop policy if exists "own profile: update" on public.profiles;
+drop policy if exists "own profile: delete" on public.profiles;
+create policy "own profile: read"   on public.profiles for select to authenticated using (auth.uid() = id);
+create policy "own profile: insert" on public.profiles for insert to authenticated with check (auth.uid() = id);
+create policy "own profile: update" on public.profiles for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
+create policy "own profile: delete" on public.profiles for delete to authenticated using (auth.uid() = id);
+
+-- Students may write their own state and email preference, never the plan (only the function writes it).
+revoke all on public.profiles from anon, authenticated;
+grant select, delete on public.profiles to authenticated;
+grant insert (id, state, updated_at, marketing_opt_in, marketing_opt_in_at) on public.profiles to authenticated;
+grant update (state, updated_at, marketing_opt_in, marketing_opt_in_at) on public.profiles to authenticated;
+
+-- Every plan request, for cost tracking and for comparing AI plans with the rules fallback.
+create table if not exists public.plans (
+  id             bigint generated always as identity primary key,
+  created_at     timestamptz not null default now(),
+  user_id        uuid references auth.users(id) on delete cascade,
+  source         text not null,            -- 'ai' | 'rules'
+  model          text,
+  plan           jsonb not null,
+  summary        jsonb,                    -- the anonymised learning summary sent to the model
+  input_tokens   integer,
+  output_tokens  integer,
+  latency_ms     integer,
+  error          text                      -- why the rules fallback was used, if it was
+);
+create index if not exists plans_user_idx on public.plans (user_id, created_at desc);
+create index if not exists plans_day_idx  on public.plans (created_at desc, source);
+alter table public.plans enable row level security;   -- no policies: only the service role reads or writes
+revoke all on public.plans from anon, authenticated;
+
+-- Weekly email list (run as the project owner in the SQL editor; never exposed to the app).
+create or replace view public.v_marketing_list as
+select u.email, p.marketing_opt_in_at, p.updated_at as last_active
+from public.profiles p join auth.users u on u.id = p.id
+where p.marketing_opt_in;
+
+-- AI plan cost and fallback rate per day.
+create or replace view public.v_plan_costs as
+select date_trunc('day', created_at)::date as day, source, count(*) as plans,
+       sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens,
+       round(avg(latency_ms)) as avg_latency_ms,
+       count(*) filter (where error is not null) as with_error
+from public.plans group by 1, 2 order by 1 desc, 2;
+
 -- Views are not exposed to anon: revoke to be explicit.
 revoke all on public.v_reports, public.v_feedback, public.v_nps, public.v_onboarding,
               public.v_question_health, public.v_daily, public.v_tema_interest,
-              public.v_concept_accuracy, public.v_misconceptions, public.v_experiment, public.v_experiment_summary
+              public.v_concept_accuracy, public.v_misconceptions, public.v_experiment, public.v_experiment_summary,
+              public.v_marketing_list, public.v_plan_costs
          from anon, authenticated;
