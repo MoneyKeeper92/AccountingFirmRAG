@@ -1,0 +1,58 @@
+# Condiciones de reutilización por fuente
+
+Comprobación: **2026-11-17**. Acceso público no equivale a permiso de republicación; cada PDF debe revisarse por avisos específicos.
+
+| Fuente | Reutilización | Atribución | Comercial | Cláusula/estado | URL |
+|---|---|---|---|---|---|
+| INAP | Sí con condiciones para documentos sometidos a ellas | “Origen de los datos: Instituto Nacional de Administración Pública” | Sí | “permiten la reutilización de los documentos sometidos a ellas para fines comerciales y no comerciales” | https://www.inap.es/es/aviso-legal |
+| Justicia | Uso privado por defecto; abierto solo para documentos sometidos a Datos Abiertos | “Origen de los datos: Ministerio de Justicia” en material abierto | No por defecto | “Su uso, reproducción, distribución, comunicación pública, transformación o cualquier otra actividad similar o análoga, queda totalmente prohibida salvo que medie expresa autorización” | https://www.mjusticia.gob.es/es/aviso-legal |
+| Interior | Sí con condiciones | “Origen de los datos: Ministerio del Interior” | Sí | Incluye “copia, difusión, modificación, adaptación, extracción, reordenación y combinación” | https://www.interior.gob.es/opencms/gl/aviso-legal/ |
+| Policía | Uso privado salvo autorización | No aplica sin autorización | No establecido | Reproducción y transformación prohibidas salvo autorización de la Dirección General de la Policía | https://www.policia.es/portalaspirantes/aviso-legal |
+| Guardia Civil | Privado por defecto; solo documentos designados reutilizables | Fuente y última publicación | No establecido | “Excepto los documentos reutilizables publicados en determinadas secciones” | https://web.guardiacivil.es/es/informacion-general/aviso-legal/ |
+| Seguridad Social | Sí con condiciones | “Origen de los datos: Seguridad Social” | Sí | Copia, difusión, modificación, adaptación, extracción, reordenación y combinación | https://www.seg-social.es/wps/portal/wss/internet/InformacionUtil/596/?changeLanguage=es |
+| AEAT | Sí salvo indicación contraria | Fuente y fecha | Sí | “autorizada su reproducción total o parcial, modificación, distribución y comunicación, para usos comerciales y no comerciales” | https://sede.agenciatributaria.gob.es/Sede/condiciones-uso-sede-electronica/aviso-legal/utilizacion-informacion-contenida-web-aeat.html |
+| Generalitat de Catalunya | Sí salvo licencia específica | “Generalitat de Catalunya. Departamento de [nombre]…” | Sí | Reutilización, distribución, comunicación pública y transformación | https://web.gencat.cat/es/generalitat/dades-indicadors/dades-obertes/llicencies |
+| Junta de Andalucía | CC BY 3.0 para textos propios del portal | “Información obtenida del Portal de la Junta de Andalucía” | Sí | “Copiar, redistribuir y comunicar públicamente”; “Hacer un uso comercial”; “Generar obras derivadas” | https://www.juntadeandalucia.es/informacion/legal.html |
+| Comunidad de Madrid | Amplia, con exclusión IP y otros derechos | Fuente y fecha | Cuando esté cubierta | Excluye contenido sujeto a propiedad intelectual/industrial | https://www.comunidad.madrid/atencion-ciudadano/aviso-legal-privacidad |
+| Castilla y León | Sí con condiciones | “Origen de los datos: Junta de Castilla y León” | Sí | Copia, difusión, modificación, adaptación, extracción, reordenación y combinación | https://www.jcyl.es/web/jcyl/Portada/es/Plantilla100Detalle/1246890364336/Texto%20Generico/1246989714819/Texto |
+| GVA Dades Obertes | CC BY 4.0 para conjuntos del portal; alcance sobre exámenes no acreditado | Atribución, fecha y metadatos | Sí para conjuntos cubiertos | No es licencia específica del PDF de examen | https://portaldadesobertes.gva.es/es/contacte |
+| Xunta Abertos | Sí para contenido cubierto; alcance sobre Función Pública no acreditado | Fuente | Sí | Reproducción, modificación, distribución y comunicación | https://abertos.xunta.gal/aviso-legal |
+| Canarias sede | Reproducción con condiciones | Fuente y fecha | No directo | “sin uso directamente comercial” | https://sede.gobiernodecanarias.org/sede/aviso_legal |
+| Madrid datos abiertos | Sí para información cubierta; alcance sobre oposiciones no acreditado | Fuente y autor | Sí | Excluye multimedia y terceros | https://datos.madrid.es/pages/aviso-legal |
+| Barcelona | Sí salvo indicación contraria; obras protegidas según licencia | Fuente y fecha | No determinado para obras protegidas | Obras con reserva de derechos no reutilizables | https://ajuntament.barcelona.cat/dretsidiversitat/es/aviso-legal |
+| València | Sí salvo reserva; obras protegidas según licencia | Fuente | No determinado | “No alterar”; “No desnaturalizar”; “Mencionar la fuente” | https://www.valencia.es/cas/aviso-legal |
+| Zaragoza | Sí con condiciones | “Origen de los datos: Ayuntamiento de Zaragoza (o… organismo…)” | Sí | Copia, difusión, modificación, adaptación, extracción, reordenación y combinación | https://zaragoza.es/sede/portal/aviso-legal |
+
+## INAP
+
+La concesión dice que las condiciones “**permiten la reutilización de los documentos sometidos a ellas para fines comerciales y no comerciales**” e incluye “**la copia, difusión, modificación, adaptación, extracción, reordenación y combinación de la información**”. Exige: “**Está prohibido desnaturalizar el sentido de la información**” y “**Debe citarse la fuente… ‘Origen de los datos: Instituto Nacional de Administración Pública’**”. También dispone: “**Se prohíbe la reproducción total o parcial de los contenidos del Portal sin citar su origen o solicitar autorización.**” Falta una licencia específica dentro de cada examen. ([Aviso](https://www.inap.es/es/aviso-legal); [datos abiertos](https://www.inap.es/es/datos-abiertos))
+
+## Ministerio de Justicia
+
+La regla general es: “**Su uso, reproducción, distribución, comunicación pública, transformación o cualquier otra actividad similar o análoga, queda totalmente prohibida salvo que medie expresa autorización**”. Datos Abiertos autoriza comercial y no comercialmente documentos sometidos a sus condiciones y exige “**Origen de los datos: Ministerio de Justicia**”. El cuestionario Gestión 24-04-2024 añade: “**No se permite la reproducción total o parcial de este cuestionario incluso citando la procedencia.**” Resultado: metadatos y enlaces salvo permiso específico. ([Aviso](https://www.mjusticia.gob.es/es/aviso-legal); [datos abiertos](https://sede.mjusticia.gob.es/informacion-ayuda/datos-abiertos-ministerio); [cuestionario](https://www.mjusticia.gob.es/es/Ciudadano/EmpleoPublico/Documents/Examen%20Primer%20Ejercicio%20-%20Incidencias.pdf))
+
+## Interior, Policía y Guardia Civil
+
+Interior permite reutilización comercial y no comercial, incluida “**copia, difusión, modificación, adaptación, extracción, reordenación y combinación**”, con “**Origen de los datos: Ministerio del Interior**”. Policía es más específica y prohíbe “**uso, reproducción, distribución, comunicación pública, transformación o cualquier otra actividad similar o análoga**” salvo autorización. Guardia Civil limita el uso ordinario a privado: “**Excepto los documentos reutilizables publicados en determinadas secciones**”; para estos exige “**No desnaturalizar**”, “**Citar la fuente**” y “**Mencionar la fecha de la última publicación**”. No se halló esa designación en los cuestionarios; contacto: `sugerencias@guardiacivil.org`. ([Interior](https://www.interior.gob.es/opencms/gl/aviso-legal/); [Policía](https://www.policia.es/portalaspirantes/aviso-legal); [Guardia Civil](https://web.guardiacivil.es/es/informacion-general/aviso-legal/))
+
+## Seguridad Social y AEAT
+
+Seguridad Social autoriza reutilización comercial y no comercial, incluidas copia, modificación y combinación, con “**Origen de los datos: Seguridad Social**”. AEAT dispone: “**salvo indicación expresa en contrario… autorizada su reproducción total o parcial, modificación, distribución y comunicación, para usos comerciales y no comerciales**”. Ambas exigen fuente, fecha cuando exista, integridad de sentido y metadatos. Son candidatas de ingestión tras comprobar cada PDF. ([Seguridad Social](https://www.seg-social.es/wps/portal/wss/internet/InformacionUtil/596/?changeLanguage=es); [AEAT](https://sede.agenciatributaria.gob.es/Sede/gobierno-abierto/reutilizacion-informacion/condiciones-reutilizacion.html))
+
+## Generalitat de Catalunya
+
+La licencia permite “**la reutilización**”, “**la distribución y la comunicación pública**” y “**la transformación… para todo el mundo y sin ninguna limitación temporal**”, salvo aviso específico. Exige “**Generalitat de Catalunya. Departamento de [nombre]…**”, fecha, protección de datos, no sublicenciar y no usar marcas. Es la cadena de licencia oficial más clara hallada. ([Licencia](https://web.gencat.cat/es/generalitat/dades-indicadors/dades-obertes/llicencies); [dataset](https://datos.gob.es/es/catalogo/a09002970-enunciados-de-los-examenes-de-las-convocatorias-para-el-acceso-a-la-funcion-publica-de-la-generalitat-de-catalunya))
+
+## Junta de Andalucía
+
+Autoriza “**Copiar, redistribuir y comunicar públicamente**”, “**Hacer un uso comercial**” y “**Generar obras derivadas**”, con “**Información obtenida del Portal de la Junta de Andalucía**”, sin desnaturalizar ni sugerir apoyo. Aplica a texto titularidad de la Junta sin excepción específica. ([Aviso](https://www.juntadeandalucia.es/informacion/legal.html))
+
+## Administraciones territoriales restantes
+
+Castilla y León autoriza comercial y no comercialmente “**copia, difusión, modificación, adaptación, extracción, reordenación y combinación**”. Madrid región excluye material sujeto a propiedad intelectual y su examen C2 2018 contiene prohibición expresa. GVA, Xunta y Madrid ciudad solo quedaron vinculadas a licencias de portales de datos, no inequívocamente a PDFs de oposiciones. Canarias excluye uso “**directamente comercial**”. Barcelona remite las obras protegidas a su licencia específica. ([Castilla y León](https://www.jcyl.es/web/jcyl/Portada/es/Plantilla100Detalle/1246890364336/Texto%20Generico/1246989714819/Texto); [Madrid](https://www.comunidad.madrid/atencion-ciudadano/aviso-legal-privacidad); [GVA](https://portaldadesobertes.gva.es/es/contacte); [Xunta](https://abertos.xunta.gal/aviso-legal); [Canarias](https://sede.gobiernodecanarias.org/sede/aviso_legal); [Barcelona](https://ajuntament.barcelona.cat/dretsidiversitat/es/aviso-legal))
+
+## Artículo 13 LPI y preguntas de tribunal
+
+El artículo 13 LPI dice: “**No son objeto de propiedad intelectual las disposiciones legales o reglamentarias y sus correspondientes proyectos, las resoluciones de los órganos jurisdiccionales y los actos, acuerdos, deliberaciones y dictámenes de los organismos públicos, así como las traducciones oficiales de todos los textos anteriores.**” No nombra preguntas de examen. ([TRLPI](https://boe.es/buscar/doc.php?id=BOE-A-1996-8930))
+
+En CTBG R/0691/2019 la Administración sostuvo que elaborar cuestionarios “**cristaliza en un conjunto de ítems**” sujeto a propiedad intelectual; no es una sentencia. CTBG 273/2020 razonó, en sentido contrario, que enunciados y plantillas son información pública y, “**con carácter general**”, pertenecen a la Administración. No se localizó una sentencia final de apelación que resolviera directamente la reutilización comercial. ([R/0691/2019](https://consejodetransparencia.es/content/dam/ctransparencia/portal-ctbg/actividad/resoluciones/resolucionesage/age2019/12diciembre/descomprimidas/R-0691-2019.pdf); [R/0273/2020](https://consejodetransparencia.es/content/dam/ctransparencia/portal-ctbg/actividad/resoluciones/resolucionesage/age-2020/07julio/descomprimidas/desestimadas/R-0273-2020.pdf))
