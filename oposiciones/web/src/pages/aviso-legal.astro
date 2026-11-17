@@ -14,7 +14,7 @@ const v = (x: string) => x.trim() || "pendiente";
       <h2>Titular del sitio web</h2>
       <p>En cumplimiento del artículo 10 de la Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico (LSSI-CE), se informa:</p>
       <ul>
-        <li>Titular: {v(L.ownerName)}</li>
+        <li>Titular: {v(L.ownerName)} (persona física, actividad como autónomo)</li>
         <li>NIF/NIE: {v(L.taxId)}</li>
         <li>Domicilio: {v(L.address)}</li>
         <li>Correo electrónico: <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>

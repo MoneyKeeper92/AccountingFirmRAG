@@ -10,19 +10,19 @@ export const site = {
   name: "Tesón",
   tagline: "Oposiciones, pregunta a pregunta",
   url: "https://tesonopos.es",
-  contactEmail: "hola@tesonopos.es",
+  contactEmail: "kylea5336@gmail.com",
   // Public address of the practice app. Empty = the app is still in private beta,
   // so the CTAs lead to /beta/ (request a place by email) instead of the app.
   appUrl: "",
   reportResponseHours: 72,
   launch: {
-    public: false,
+    public: true,
   },
   legal: {
-    updated: "",          // e.g. "17 de noviembre de 2026"
-    ownerName: "",        // natural person (autónomo) or company name
-    taxId: "",            // NIF / NIE / CIF
-    address: "",          // full postal address
+    updated: "17 de noviembre de 2026",
+    ownerName: "Kyle Ashcraft",
+    taxId: "Y4867205M",
+    address: "Calle de Marcelo Usera 2, 28026 Madrid",
     registryDetails: "",  // only for a company: Registro Mercantil data
   },
 } as const;

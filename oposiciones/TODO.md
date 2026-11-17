@@ -23,7 +23,7 @@ Do these in the separate "Tesón" Chrome profile, with the Tesón accounts, not 
    - Set `ANTHROPIC_API_KEY` as a Supabase secret.
    - Put a monthly spend limit on the Tesón organisation.
 5. [ ] **Release gates** (see [15_PRIVATE_BETA_HANDOFF.md](15_PRIVATE_BETA_HANDOFF.md))
-   - Legal details (owner name, NIF/NIE, address, date) in `mvp/config.js` **and** `web/src/site.ts`. Send them to Claude, who will fill in both.
+   - [x] Legal details filled in `mvp/config.js` and `web/src/site.ts` (17 Nov). The website is now public/indexable.
    - Named human approval of all 82 questions.
    - The 10–25 private-beta participants.
 
