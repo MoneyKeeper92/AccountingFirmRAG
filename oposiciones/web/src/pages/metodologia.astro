@@ -1,0 +1,29 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../site";
+---
+<Base
+  title="Metodología: cómo hacemos las preguntas · Tesón"
+  description="Cómo redactamos, revisamos y corregimos las preguntas de Tesón: texto consolidado del BOE, revisión humana, impugnaciones y control de cambios en la ley."
+>
+  <div class="prose">
+    <div class="narrow">
+      <h1>Cómo hacemos las preguntas</h1>
+      <ol>
+        <li><strong>La fuente manda.</strong> Partimos del texto consolidado de la ley publicado en el BOE. Cada pregunta guarda el artículo exacto en que se basa y la fecha del texto que usamos.</li>
+        <li><strong>Cada opción, explicada.</strong> No basta con la letra correcta: explicamos por qué cada opción incorrecta es falsa y qué trampa suele esconder la pregunta.</li>
+        <li><strong>La IA ayuda, una persona revisa.</strong> Usamos inteligencia artificial para proponer preguntas y explicaciones. Antes de que una pregunta llegue a la beta, una persona la comprueba contra el artículo enlazado.</li>
+        <li><strong>Tú impugnas.</strong> Cualquier usuario puede impugnar una pregunta desde la app. Respondemos en un máximo de {site.reportResponseHours} horas y lo anotamos en el <a href="/impugnaciones/">registro de impugnaciones</a>.</li>
+        <li><strong>Los datos vigilan.</strong> Si una pregunta la falla casi todo el mundo, o una opción incorrecta atrae tanto como la correcta, la revisamos.</li>
+        <li><strong>La ley cambia, nosotros también.</strong> Cuando un artículo cambia, revisamos las preguntas que dependen de él antes de volver a mostrarlas.</li>
+      </ol>
+
+      <h2>Cómo elige Tesón tus preguntas</h2>
+      <p>La app calcula tu dominio de cada concepto a partir de tus respuestas recientes. Cada sesión mezcla preguntas de los conceptos que más te cuestan, repasos de lo que toca recordar y algo nuevo. Un modelo de inteligencia artificial puede sugerir en qué conceptos centrarte a partir de un resumen de tus resultados (sin tu email ni datos que te identifiquen); las preguntas concretas las elige siempre la app con reglas propias.</p>
+
+      <h2>Fuentes</h2>
+      <p>Legislación: fuente Agencia Estatal Boletín Oficial del Estado. Los textos consolidados tienen carácter informativo; solo la publicación oficial en el BOE tiene validez jurídica.</p>
+      <p>Exámenes oficiales: fuente Instituto Nacional de Administración Pública (INAP). Tesón no está vinculado al INAP ni a ninguna Administración Pública.</p>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,139 @@
+---
+import Base from "../layouts/Base.astro";
+import { site, ctaHref, ctaLabel } from "../site";
+
+const faqs = [
+  {
+    q: "¿Es gratis?",
+    a: "Sí. La beta es gratuita, sin tarjeta y sin periodo de prueba que caduque. Si algún día hay planes de pago, quienes entren ahora lo sabrán con antelación y conservarán condiciones especiales.",
+  },
+  {
+    q: "¿Quién hace las preguntas?",
+    a: "Tesón las redacta a partir del texto consolidado de la ley publicado en el BOE. Usamos inteligencia artificial para ayudarnos a redactar, y cada pregunta pasa por una revisión humana antes de llegar a la beta. Lo contamos en Metodología.",
+  },
+  {
+    q: "¿Qué temas hay ahora mismo?",
+    a: "La beta privada empieza con la Constitución Española (I): Título Preliminar, derechos y deberes, garantías y reforma. Iremos añadiendo temas del Bloque I según lo que más pidáis.",
+  },
+  {
+    q: "¿Estáis relacionados con el INAP o con alguna academia?",
+    a: "No. Tesón es un proyecto independiente. Cuando citamos exámenes oficiales, indicamos su fuente.",
+  },
+  {
+    q: "¿Funciona en el móvil?",
+    a: "Sí. Está pensada para el móvil y puedes instalarla como app desde el navegador.",
+  },
+  {
+    q: "¿Qué hacéis con mis datos?",
+    a: "Solo lo necesario para que la plataforma funcione: tu email para entrar y tu progreso. Servidores en la UE. Los detalles están en Privacidad.",
+  },
+];
+---
+<Base
+  title="Tesón · Tests de Auxiliar Administrativo del Estado con cada respuesta explicada"
+  description="Practica tests de oposiciones con la explicación de cada opción y el artículo exacto del BOE. La app aprende de tus fallos y te propone lo que más necesitas mejorar. Beta gratuita."
+>
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Beta privada · gratis</span>
+        <h1>Tu plaza, pregunta a pregunta.</h1>
+        <p class="lead">
+          Tests de <strong>Auxiliar Administrativo del Estado</strong> con cada opción explicada (la correcta y las
+          incorrectas) y el artículo exacto del BOE a un clic. Tesón aprende de tus fallos y te propone lo que más
+          necesitas mejorar.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a>
+          <a class="btn btn-ghost" href="/metodologia/">Cómo hacemos las preguntas</a>
+        </div>
+        <p class="muted small" style="margin-top:14px">Sin tarjeta. Sin contraseña: entras con un código que te llega al email.</p>
+      </div>
+
+      <figure class="qmock" aria-label="Ejemplo de pregunta corregida en Tesón">
+        <div class="qmeta"><span>Constitución · art. 1.3</span><span>Pregunta 7 de 20</span></div>
+        <p class="qtext">La forma política del Estado español es:</p>
+        <div class="opt bad"><b>A</b><span>El Estado social y democrático de Derecho</span></div>
+        <div class="opt ok"><b>B</b><span>La Monarquía parlamentaria</span></div>
+        <div class="opt"><b>C</b><span>La Monarquía constitucional</span></div>
+        <div class="opt"><b>D</b><span>El Estado autonómico</span></div>
+        <div class="explain">
+          <p><strong>Art. 1.3:</strong> «La forma política del Estado español es la Monarquía parlamentaria».</p>
+          <p><strong>Por qué no la A:</strong> es cómo «se constituye» España según el art. 1.1, no su forma política.</p>
+          <p><a href="https://www.boe.es/buscar/act.php?id=BOE-A-1978-31229#a1" rel="noopener">Ver el artículo en el BOE</a></p>
+        </div>
+      </figure>
+    </div>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <h2>Por qué Tesón</h2>
+      <div class="grid-3" style="margin-top:24px">
+        <div class="card">
+          <span class="num">1</span>
+          <h3>Entiende por qué fallas</h3>
+          <p>No te damos solo la letra correcta. Te explicamos por qué las otras tres son falsas y qué trampa te han puesto, con el artículo enlazado.</p>
+        </div>
+        <div class="card">
+          <span class="num">2</span>
+          <h3>Practica lo que más necesitas</h3>
+          <p>Tesón detecta los conceptos que más te cuestan y prepara cada sesión con más preguntas de ahí, sin olvidar lo que ya dominas.</p>
+        </div>
+        <div class="card">
+          <span class="num">3</span>
+          <h3>Repasa lo que se te olvida</h3>
+          <p>Tus fallos vuelven a ti al cabo de 1, 3, 7 y 21 días. Cinco minutos en el metro también cuentan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap grid-2" style="align-items:start">
+      <div>
+        <h2>Preguntas que no te van a mentir</h2>
+        <p>La ley cambia, y una pregunta mal hecha te enseña algo falso. En Tesón cada pregunta indica el artículo y la fecha del texto legal en que se basa.</p>
+        <p>Si ves un error, pulsa <strong>Impugnar</strong>. Lo revisamos en un máximo de {site.reportResponseHours} horas y lo anotamos en nuestro <a href="/impugnaciones/">registro de impugnaciones</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Qué hay en la beta</h3>
+        <ul class="ticks">
+          <li>Constitución Española (I): Título Preliminar, derechos y deberes, garantías y reforma, con cada opción explicada</li>
+          <li>Modo estudio (corrige al momento) y modo examen (con tiempo y penalización de −1/3)</li>
+          <li>Práctica personalizada según tus conceptos débiles</li>
+          <li>Repaso de tus fallos a 1, 3, 7 y 21 días</li>
+          <li>Tu progreso guardado en todos tus dispositivos</li>
+          <li class="soon">Resto del Bloque I <span class="tag">en camino</span></li>
+          <li class="soon">Simulacros completos y exámenes oficiales explicados <span class="tag">en camino</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="narrow">
+      <h2>¿Por qué gratis?</h2>
+      <p>Estamos construyendo Tesón contigo. Durante la beta todo es gratis. A cambio te pedimos lo que más valor tiene para nosotros: que lo uses y nos digas qué mejorar.</p>
+      <div class="cta-row"><a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="narrow">
+      <h2>Preguntas frecuentes</h2>
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  })} />
+</Base>

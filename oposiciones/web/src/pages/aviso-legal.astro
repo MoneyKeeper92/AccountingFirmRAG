@@ -1,0 +1,36 @@
+---
+import Base from "../layouts/Base.astro";
+import LegalGate from "../components/LegalGate.astro";
+import { site } from "../site";
+const L = site.legal;
+const v = (x: string) => x.trim() || "pendiente";
+---
+<Base title="Aviso legal · Tesón" description="Datos del titular de tesonopos.es y condiciones de uso del sitio web." noindex>
+  <div class="prose">
+    <div class="narrow">
+      <h1>Aviso legal</h1>
+      <LegalGate />
+      <p class="muted">Última actualización: {v(L.updated)}</p>
+      <h2>Titular del sitio web</h2>
+      <p>En cumplimiento del artículo 10 de la Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico (LSSI-CE), se informa:</p>
+      <ul>
+        <li>Titular: {v(L.ownerName)}</li>
+        <li>NIF/NIE: {v(L.taxId)}</li>
+        <li>Domicilio: {v(L.address)}</li>
+        <li>Correo electrónico: <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>
+        {L.registryDetails.trim() && <li>Datos registrales: {L.registryDetails}</li>}
+      </ul>
+      <h2>Objeto</h2>
+      <p>Este sitio web presenta Tesón, una plataforma gratuita, en fase beta, de preguntas tipo test para la preparación de oposiciones. Su contenido tiene carácter formativo y no constituye asesoramiento jurídico.</p>
+      <h2>Contenidos y fuentes</h2>
+      <p>Las preguntas y explicaciones se elaboran a partir de la legislación publicada en el Boletín Oficial del Estado. Fuente de la legislación: Agencia Estatal Boletín Oficial del Estado. Los textos consolidados tienen carácter meramente informativo; solo la publicación oficial en el BOE tiene validez jurídica. Tesón no está vinculado al Instituto Nacional de Administración Pública (INAP) ni a ninguna Administración Pública.</p>
+      <p>Aunque revisamos el contenido, puede contener errores o no reflejar cambios normativos recientes. Puedes avisarnos con el botón «Impugnar» de cada pregunta o escribiendo a {site.contactEmail}.</p>
+      <h2>Propiedad intelectual</h2>
+      <p>Las preguntas, explicaciones, diseño y código de Tesón pertenecen a su titular, salvo los textos legales, que no están sujetos a propiedad intelectual. No está permitida su reproducción o extracción sistemática sin autorización.</p>
+      <h2>Enlaces</h2>
+      <p>Este sitio enlaza a fuentes oficiales como el BOE o el INAP. Tesón no es responsable del contenido de sitios web de terceros.</p>
+      <h2>Legislación aplicable</h2>
+      <p>Este aviso se rige por la legislación española.</p>
+    </div>
+  </div>
+</Base>

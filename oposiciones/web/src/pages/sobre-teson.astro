@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+import { site, ctaHref, ctaLabel } from "../site";
+---
+<Base
+  title="Sobre Tesón"
+  description="Tesón nace para que el esfuerzo de opositar rinda más: que cada test te enseñe algo y sepas en todo momento qué practicar hoy."
+>
+  <div class="prose">
+    <div class="narrow">
+      <h1>Sobre Tesón</h1>
+      <p class="lead">Opositar es una carrera de fondo: meses, a veces años, de temario, tests y dudas.</p>
+      <p>Tesón nace para que ese esfuerzo rinda más: para que cada test te enseñe algo y sepas en todo momento qué practicar hoy. <em>Tesón</em> es la palabra que mejor describe a quien oposita, y es lo que queremos acompañar, pregunta a pregunta.</p>
+      <p>Detrás de Tesón hay experiencia en plataformas de preparación de exámenes profesionales exigentes, que ahora trae ese método a las oposiciones. Y detrás de cada pregunta, una revisión humana.</p>
+      <h2>¿Quieres ayudarnos?</h2>
+      <p>Entra en la beta, impugna todo lo que veas raro y cuéntanos qué echas de menos en <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.</p>
+      <div class="cta-row"><a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a></div>
+    </div>
+  </div>
+</Base>

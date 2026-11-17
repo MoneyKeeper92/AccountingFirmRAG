@@ -1,0 +1,8 @@
+---
+import { legalMissing } from "../site";
+---
+{legalMissing.length > 0 && (
+  <p class="notice alert" role="note">
+    Página en preparación: faltan los datos del titular ({legalMissing.join(", ")}). Mientras tanto, esta web no se indexa en buscadores.
+  </p>
+)}

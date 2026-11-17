@@ -1,0 +1,98 @@
+---
+import Base from "../../../layouts/Base.astro";
+import { ctaHref, ctaLabel } from "../../../site";
+const parts = [
+  { id: "p1", name: "Primera parte", total: 60, max: 50 },
+  { id: "p2", name: "Segunda parte", total: 50, max: 50 },
+];
+---
+<Base
+  title="Calculadora de nota de oposiciones con penalización (−1/3) · Tesón"
+  description="Calcula tu nota de un test de oposiciones: aciertos, fallos y blancos con la penalización de un tercio por fallo. Preparada para Auxiliar Administrativo del Estado y cualquier test con −1/3."
+>
+  <div class="prose">
+    <div class="wrap">
+      <div class="narrow" style="padding:0">
+        <h1>Calculadora de nota de oposiciones</h1>
+        <p class="lead">
+          Introduce tus aciertos y fallos en cada parte. Aplicamos la penalización habitual: cada fallo resta un tercio
+          de acierto y las preguntas en blanco no cuentan.
+        </p>
+      </div>
+
+      <form id="calc" class="calc" novalidate style="margin-top:28px">
+        {parts.map((p) => (
+          <fieldset data-part={p.id}>
+            <legend>{p.name}</legend>
+            <div class="field"><label for={`${p.id}-total`}>Preguntas que puntúan</label><input id={`${p.id}-total`} name="total" type="number" inputmode="numeric" min="1" value={p.total} /></div>
+            <div class="field"><label for={`${p.id}-ok`}>Aciertos</label><input id={`${p.id}-ok`} name="ok" type="number" inputmode="numeric" min="0" placeholder="0" /></div>
+            <div class="field"><label for={`${p.id}-bad`}>Fallos</label><input id={`${p.id}-bad`} name="bad" type="number" inputmode="numeric" min="0" placeholder="0" /></div>
+            <div class="field"><label for={`${p.id}-max`}>Puntos máximos de la parte</label><input id={`${p.id}-max`} name="max" type="number" inputmode="decimal" min="0" step="any" value={p.max} /></div>
+            <p class="part-score" data-out aria-live="polite"></p>
+            <p class="calc-error" data-err role="alert"></p>
+          </fieldset>
+        ))}
+      </form>
+
+      <div class="result" aria-live="polite">
+        <div class="big" id="total">–</div>
+        <p id="detail">Rellena tus aciertos y fallos.</p>
+      </div>
+
+      <div class="narrow" style="padding:0;margin-top:40px">
+        <h2>Cómo se calcula</h2>
+        <p>Para cada parte: <strong>aciertos netos = aciertos − fallos ÷ 3</strong>. Si el resultado es negativo cuenta como cero. La nota de la parte es la proporción de aciertos netos sobre las preguntas que puntúan, multiplicada por los puntos máximos de esa parte.</p>
+        <p>Los valores iniciales siguen el formato del último examen de Auxiliar Administrativo del Estado (primera parte de 60 preguntas y segunda de 50, sin contar las de reserva). Los puntos máximos por parte y la nota mínima los fijan las bases de cada convocatoria, así que cámbialos si tu convocatoria es distinta. Sirve para cualquier test con penalización de un tercio.</p>
+        <p class="muted small">El resultado es orientativo. Las preguntas anuladas en la plantilla definitiva se sustituyen por las de reserva, y el tribunal puede fijar criterios propios de corrección.</p>
+        <h2>¿Quieres saber tu nota antes del examen?</h2>
+        <p>En Tesón practicas con la misma penalización y ves qué temas te restan más puntos.</p>
+        <div class="cta-row"><a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a></div>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const fmt = (n: number, d = 2) => n.toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const form = document.getElementById("calc") as HTMLFormElement;
+  const totalEl = document.getElementById("total")!;
+  const detailEl = document.getElementById("detail")!;
+
+  function readPart(fs: HTMLFieldSetElement) {
+    const val = (name: string) => {
+      const raw = (fs.querySelector(`[name="${name}"]`) as HTMLInputElement).value.replace(",", ".");
+      return raw === "" ? 0 : Number(raw);
+    };
+    const total = val("total"), ok = val("ok"), bad = val("bad"), max = val("max");
+    const err = fs.querySelector("[data-err]")!;
+    const out = fs.querySelector("[data-out]")!;
+    let msg = "";
+    if (![total, ok, bad, max].every(Number.isFinite) || total < 1 || ok < 0 || bad < 0 || max < 0) msg = "Revisa los números: no pueden ser negativos.";
+    else if (!Number.isInteger(ok) || !Number.isInteger(bad) || !Number.isInteger(total)) msg = "Aciertos, fallos y preguntas deben ser números enteros.";
+    else if (ok + bad > total) msg = `Aciertos más fallos (${ok + bad}) superan las preguntas que puntúan (${total}).`;
+    err.textContent = msg;
+    if (msg) { out.textContent = ""; return null; }
+    const blank = total - ok - bad;
+    const net = Math.max(0, ok - bad / 3);
+    const score = (net / total) * max;
+    out.textContent = `${blank} en blanco · ${fmt(net)} aciertos netos · ${fmt(score)} de ${fmt(max, 0)} puntos`;
+    return { score, max, net, total };
+  }
+
+  function update() {
+    const results = Array.from(form.querySelectorAll("fieldset")).map((fs) => readPart(fs as HTMLFieldSetElement));
+    if (results.some((r) => r === null)) {
+      totalEl.textContent = "–";
+      detailEl.textContent = "Corrige los datos marcados en rojo.";
+      return;
+    }
+    const valid = results as { score: number; max: number }[];
+    const score = valid.reduce((s, r) => s + r.score, 0);
+    const max = valid.reduce((s, r) => s + r.max, 0);
+    totalEl.textContent = `${fmt(score)} / ${fmt(max, 0)}`;
+    detailEl.textContent = max > 0 ? `Equivale a un ${fmt((score / max) * 10)} sobre 10.` : "";
+  }
+
+  form.addEventListener("input", update);
+  update();
+</script>

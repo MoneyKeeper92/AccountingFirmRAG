@@ -39,6 +39,7 @@ Tesón GitHub organisation, so nothing stays linked to other businesses.
 | 15 | [**Current handoff and release gates**](15_PRIVATE_BETA_HANDOFF.md) |
 | 16 | [Accounts (email + code) and the AI focus plan: design and setup](16_ACCOUNTS_AND_AI_PLAN.md) |
 | — | [Every name option considered, ranked](NAME_OPTIONS.md) |
+| — | [**To-do for tomorrow**](TODO.md) · website in [web/](web/) (Astro on Netlify) |
 | — | [Research brief](research/BRIEF_existing_questions.md) and its completed outputs, indexed by [15](15_PRIVATE_BETA_HANDOFF.md) |
 
 *Research snapshot: 28 Sept 2026. Figures marked [U] or "verify" come from search summaries

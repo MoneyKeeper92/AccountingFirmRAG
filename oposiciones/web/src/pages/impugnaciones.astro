@@ -1,0 +1,30 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../site";
+// Add one entry per resolved report: { fecha, pregunta, motivo, resolucion }
+const registro: { fecha: string; pregunta: string; motivo: string; resolucion: string }[] = [];
+---
+<Base
+  title="Registro de impugnaciones · Tesón"
+  description="Todas las impugnaciones de preguntas de Tesón y cómo las hemos resuelto. Si una pregunta tiene un error, lo corregimos y lo publicamos aquí."
+>
+  <div class="prose">
+    <div class="narrow">
+      <h1>Registro de impugnaciones</h1>
+      <p class="lead">Si una pregunta tiene un error, queremos saberlo y queremos que se sepa. Aquí publicamos cada impugnación resuelta.</p>
+      <h2>Cómo impugnar</h2>
+      <p>En la app, pulsa <strong>Impugnar esta pregunta</strong> debajo de la explicación, elige el motivo y, si quieres, añade un comentario. Respondemos en un máximo de {site.reportResponseHours} horas.</p>
+      <h2>Impugnaciones resueltas</h2>
+      {registro.length === 0 ? (
+        <p class="muted">Todavía no hay impugnaciones resueltas. La beta acaba de empezar.</p>
+      ) : (
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Pregunta</th><th>Motivo</th><th>Resolución</th></tr></thead>
+            <tbody>{registro.map((r) => <tr><td>{r.fecha}</td><td>{r.pregunta}</td><td>{r.motivo}</td><td>{r.resolucion}</td></tr>)}</tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </div>
+</Base>

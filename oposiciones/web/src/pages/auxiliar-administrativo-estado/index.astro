@@ -1,0 +1,51 @@
+---
+import Base from "../../layouts/Base.astro";
+import { ctaHref, ctaLabel } from "../../site";
+const temas = [
+  { nombre: "Constitución Española (I)", detalle: "Título Preliminar, derechos y deberes, garantías, suspensión y reforma", estado: "En la beta" },
+  { nombre: "Constitución Española (II)", detalle: "Corona, Cortes Generales, Gobierno, Poder Judicial y Tribunal Constitucional", estado: "Próximamente" },
+  { nombre: "Ley 39/2015", detalle: "Procedimiento Administrativo Común", estado: "Próximamente" },
+  { nombre: "Ley 40/2015", detalle: "Régimen Jurídico del Sector Público", estado: "Próximamente" },
+  { nombre: "TREBEP", detalle: "Estatuto Básico del Empleado Público", estado: "Próximamente" },
+];
+---
+<Base
+  title="Auxiliar Administrativo del Estado: tests, temario y convocatoria · Tesón"
+  description="Todo para preparar Auxiliar Administrativo del Estado (C2): tests por tema con explicaciones, estado de la convocatoria y calculadora de nota con penalización."
+>
+  <div class="prose">
+    <div class="narrow">
+      <span class="eyebrow">Cuerpo General Auxiliar · C2</span>
+      <h1>Auxiliar Administrativo del Estado</h1>
+      <p class="lead">Tests por tema con cada opción explicada, el estado de la convocatoria y herramientas para calcular tu nota.</p>
+
+      <div class="grid-2" style="margin:28px 0">
+        <a class="card" href="/auxiliar-administrativo-estado/convocatoria-2026/" style="text-decoration:none;color:inherit">
+          <h3>Convocatoria 2026</h3>
+          <p class="muted">Qué sabemos, qué falta por publicar y cuándo podría ser el examen.</p>
+        </a>
+        <a class="card" href="/herramientas/calculadora-nota-oposiciones/" style="text-decoration:none;color:inherit">
+          <h3>Calculadora de nota</h3>
+          <p class="muted">Aciertos, fallos y blancos, con la penalización de un tercio por fallo.</p>
+        </a>
+      </div>
+
+      <h2>Cómo es el examen</h2>
+      <p>En la última convocatoria (examen del 23 de mayo de 2026) hubo un ejercicio único tipo test en dos partes: la primera con 60 preguntas más 5 de reserva y la segunda con 50 preguntas más 5 de reserva. Cada fallo resta un tercio del valor de un acierto; las preguntas en blanco no puntúan ni restan.</p>
+      <p class="muted small">Fuente: cuestionarios publicados por el INAP. Las bases de cada convocatoria pueden cambiar el formato: compruébalo siempre en la convocatoria publicada en el BOE.</p>
+
+      <h2>Temas en Tesón</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tema</th><th>Qué incluye</th><th>Estado</th></tr></thead>
+          <tbody>
+            {temas.map((t) => <tr><td><strong>{t.nombre}</strong></td><td>{t.detalle}</td><td>{t.estado}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small" style="margin-top:10px">Añadimos temas según lo que más pedís dentro de la app.</p>
+
+      <div class="cta-row"><a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a></div>
+    </div>
+  </div>
+</Base>

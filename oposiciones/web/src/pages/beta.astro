@@ -1,0 +1,45 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../site";
+const subject = encodeURIComponent("Quiero entrar en la beta de Tesón");
+const body = encodeURIComponent("Hola:\n\nMe gustaría probar Tesón.\n\n¿Qué oposición preparas?: \n¿Para qué convocatoria?: \n\nGracias.");
+---
+<Base
+  title="Beta gratuita de Tesón · Auxiliar Administrativo del Estado"
+  description="Prueba gratis Tesón: tests de la Constitución con cada opción explicada, práctica personalizada y repaso de tus fallos. Plazas limitadas en la beta privada."
+>
+  <div class="hero">
+    <div class="narrow">
+      {site.appUrl ? (
+        <>
+          <span class="eyebrow">Beta gratuita</span>
+          <h1>Prueba Tesón gratis</h1>
+          <p class="lead">Entra con tu email, sin contraseña. Solo te pedimos feedback sincero.</p>
+          <div class="cta-row"><a class="btn btn-primary" href={site.appUrl}>Abrir la app</a></div>
+        </>
+      ) : (
+        <>
+          <span class="eyebrow">Beta privada · plazas limitadas</span>
+          <h1>Beta gratuita de Tesón</h1>
+          <p class="lead">
+            Estamos probando Tesón con un grupo pequeño de opositores de Auxiliar Administrativo del Estado. Todo es
+            gratis. Solo te pedimos que lo uses y nos digas qué mejorar.
+          </p>
+          <ul class="ticks">
+            <li>Tests de la Constitución Española (I) con cada opción explicada y el artículo del BOE</li>
+            <li>Práctica que se adapta a los conceptos que más te cuestan</li>
+            <li>Tus fallos, en repaso automático</li>
+            <li>Tu progreso en el móvil y en el ordenador</li>
+          </ul>
+          <div class="cta-row">
+            <a class="btn btn-primary" href={`mailto:${site.contactEmail}?subject=${subject}&body=${body}`}>Pedir plaza por email</a>
+          </div>
+          <p class="muted small" style="margin-top:14px">
+            Escríbenos a <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>. Usaremos tu email solo para
+            responderte y enviarte el acceso. Más información en <a href="/privacidad/">Privacidad</a>.
+          </p>
+        </>
+      )}
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,43 @@
+---
+import Base from "../../../layouts/Base.astro";
+// Update this block on BOE day. Keep the same URL so the page keeps its ranking.
+const estado = {
+  actualizado: "17 de noviembre de 2026",
+  publicada: false,
+};
+---
+<Base
+  title="Convocatoria Auxiliar Administrativo del Estado 2026: estado y fechas · Tesón"
+  description="Estado de la convocatoria de Auxiliar Administrativo del Estado 2026: qué se sabe, qué falta por publicar en el BOE y cuándo podría ser el examen."
+>
+  <div class="prose">
+    <div class="narrow">
+      <h1>Convocatoria Auxiliar Administrativo del Estado 2026</h1>
+      <p class="notice">
+        <strong>Estado: {estado.publicada ? "publicada en el BOE" : "pendiente de publicación en el BOE"}.</strong>
+        Última actualización: {estado.actualizado}.
+      </p>
+
+      <h2>Qué sabemos</h2>
+      <ul>
+        <li>El último examen de Auxiliar Administrativo del Estado (acceso libre) se celebró el <strong>23 de mayo de 2026</strong>, con un ejercicio único tipo test en dos partes.</li>
+        <li>El INAP publica los cuestionarios y las plantillas de respuestas de cada convocatoria en su <a href="https://sede.inap.gob.es/es/procedimientos-y-servicios/seleccion/procesos-selectivos-de-cuerpos-y-escalas-generales/cuerpo-general-auxiliar-de-la-administracion-del-estado" rel="noopener">sede electrónica</a>.</li>
+      </ul>
+
+      <h2>Qué falta por saber</h2>
+      <ul>
+        <li>Número de plazas y su reparto (acceso general y cupo de discapacidad).</li>
+        <li>Plazo de inscripción y tasa.</li>
+        <li>Fecha del examen.</li>
+      </ul>
+      <p>Actualizaremos esta página el mismo día en que la convocatoria se publique en el BOE, con las plazas, los plazos, los requisitos y el enlace oficial.</p>
+
+      <h2>Mientras tanto</h2>
+      <p>El temario legal cambia poco de una convocatoria a otra. Empezar ahora con la Constitución es tiempo bien invertido.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/auxiliar-administrativo-estado/">Ver temas y herramientas</a>
+      </div>
+      <p class="muted small" style="margin-top:20px">Esta página es informativa. La única fuente oficial es la convocatoria publicada en el BOE.</p>
+    </div>
+  </div>
+</Base>
