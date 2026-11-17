@@ -31,7 +31,7 @@ Do these in the separate "Tesón" Chrome profile, with the Tesón accounts, not 
 
 The site is built and pushed. These steps put it online.
 
-- [ ] **6a. Create the Netlify site** (10 min, can be done today; no domain needed)
+- [x] **6a. Create the Netlify site** (done 17 Nov: project `tesonopos`, live at tesonopos.netlify.app) (10 min, can be done today; no domain needed)
   1. Netlify → **Add new project → Import an existing project → GitHub**.
   2. Authorise Netlify on GitHub if asked. Pick the repo `MoneyKeeper92/AccountingFirmRAG`.
   3. Branch to deploy: `claude/oposiciones-platform-plan-z1bf01`.
@@ -40,7 +40,7 @@ The site is built and pushed. These steps put it online.
   6. Deploy. Project name: `teson-web`, giving the test address `teson-web.netlify.app`.
   7. Check the deploy log ends with `Site check passed: 13 pages. PRE-LAUNCH…`.
 - [ ] **6b. Look at the site** on your phone and laptop. Note anything to change.
-- [ ] **6c. Connect the domains**
+- [x] **6c. Connect the domains** (DNS done 17 Nov: IONOS `A @` and `A www` → 75.2.60.5 on both .es and .com. IONOS drops a `www` CNAME when `@` changes, so use A records. Remaining: add the `tesonopos.com` alias in Netlify, then HTTPS → Verify DNS configuration)
   1. Netlify → teson-web → **Domain management → Add a domain** → `tesonopos.es` and set it as primary.
   2. Add `tesonopos.com` as a domain alias. The netlify.toml already 301-redirects `.com` and `www` to `tesonopos.es`.
   3. Netlify then shows the DNS records to create. Use **exactly what Netlify shows**. It is normally:
