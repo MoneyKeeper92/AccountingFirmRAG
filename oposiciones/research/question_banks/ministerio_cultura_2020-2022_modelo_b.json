@@ -1,0 +1,1102 @@
+[
+    {
+      "id": 1,
+      "question": "¿A qué temperatura pondría el termostato de un depósito de documentos con soportes magnéticos para garantizar una adecuada conservación de sus fondos?",
+      "options": {
+        "A": "Entre 10 y 15°C.",
+        "B": "Entre 5 y 10°C.",
+        "C": "Entre 15 y 20°C.",
+        "D": "Entre 20 y 25°C"
+      },
+      "answer": "A"
+    },
+    {
+      "id": 2,
+      "question": "¿Cuáles son las clases de subencabezamiento que especifican los encabezamientos de materia para las bibliotecas públicas?",
+      "options": {
+        "A": "Materia, topográficos, cronológicos y formales.",
+        "B": "Topográficos, síntesis, cronológicos y formales.",
+        "C": "Uso, topográficos, cronológicos y formales.",
+        "D": "Especificidad, topográficos, cronológicos y formales."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 3,
+      "question": "De acuerdo con la Ley 1/2015, de 24 de marzo, reguladora de la Biblioteca Nacional de España, la persona que ocupe la Dirección será nombrada y separada por Real Decreto de:",
+      "options": {
+        "A": "La Presidencia.",
+        "B": "El Real Patronato.",
+        "C": "El Comité Científico.",
+        "D": "El Consejo de Ministros."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 4,
+      "question": "¿Qué son los makerspaces?",
+      "options": {
+        "A": "Espacio donde se realiza algún tipo de actividad para niños utilizando juegos y juguetes el fin de estimular el desarrollo físico y mental.",
+        "B": "Espacio compartido -físico o virtual- donde profesionales individuales como autónomos, empresarios o empleados que cuentan con la modalidad parcial o total de teletrabajo.",
+        "C": "Espacios que las bibliotecas ponen a disposición de sus usuarios donde pueden participar y hacer uso de las herramientas y elementos puestos a su disposición para la creación de música, vídeos, realización de talleres formativos...",
+        "D": "Espacio o dependencias donde se conservan grabaciones de video para su consulta."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 5,
+      "question": "¿Cuál es el repositorio institucional de la producción científica del Consejo Superior de Investigaciones Científicas?",
+      "options": {
+        "A": "Simurg.",
+        "B": "Digital.CSIC.",
+        "C": "Biblioteca Virtual del CSIC.",
+        "D": "Archivos CSIC."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 6,
+      "question": "¿Qué documento puede ser consultado para identificar un lugar de la tierra?",
+      "options": {
+        "A": "Directorio.",
+        "B": "Tratado geográfico.",
+        "C": "Itinerario.",
+        "D": "Atlas."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 7,
+      "question": "El proyecto VIAF tiene como objetivo:",
+      "options": {
+        "A": "Compartir registros bibliográficos.",
+        "B": "Difundir colecciones.",
+        "C": "El control de autoridades.",
+        "D": "Identificar unívocamente objetos digitales."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 8,
+      "question": "¿Qué medidas emplearemos cuando un documento sea expurgado?",
+      "options": {
+        "A": "Contrasello.",
+        "B": "Sello en los cortes.",
+        "C": "Destrucción de las páginas selladas.",
+        "D": "Técnicas láser de borrado de sellos."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 9,
+      "question": "Las patentes se engloban dentro de las:",
+      "options": {
+        "A": "Fuentes de información biográficas.",
+        "B": "Fuentes de información geográficas.",
+        "C": "Fuentes de información estadísticas.",
+        "D": "Fuentes de información tecnológica."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 10,
+      "question": "¿Cuál es el principal objetivo de World Wide Web Consortium (W3C)?",
+      "options": {
+        "A": "Debatir sobre de cuestiones de política pública relacionadas con Internet.",
+        "B": "Asignar sistemas de nombres de dominio (DNS) y direcciones IP.",
+        "C": "Desarrollar estándares y pautas para ayudar a construir una web basada en los principios de accesibilidad, internacionalización, privacidad y seguridad.",
+        "D": "Debatir sobre las medidas de seguridad necesarias para una IA segura y responsable."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 11,
+      "question": "¿Cuál de las siguientes afirmaciones sobre la Biblioteca Digital Hispánica es correcta?",
+      "options": {
+        "A": "Todos sus contenidos están disponibles a texto completo desde cualquier ordenador.",
+        "B": "Hoy en día incorpora unos 150.000 títulos.",
+        "C": "Está basado en las descripciones en Absysnet de la BNE.",
+        "D": "Entre sus materiales se encuentran dibujos y grabaciones sonoras."
+      },
+      "answer": "D (MODIFICADA)"
+    },
+    {
+      "id": 12,
+      "question": "Dentro de la cartografía, se incluyen:",
+      "options": {
+        "A": "Mapas celestes.",
+        "B": "Toponimias.",
+        "C": "Who's who.",
+        "D": "Tipobibliografías."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 13,
+      "question": "Un encabezamiento de género/forma, ¿a qué campo del formato MARC21 iría?",
+      "options": {
+        "A": "630",
+        "B": "650",
+        "C": "651",
+        "D": "655"
+      },
+      "answer": "D"
+    },
+    {
+      "id": 14,
+      "question": "El Formato MARC establece como campos de datos del título uniforme los siguientes:",
+      "options": {
+        "A": "X10",
+        "B": "X11",
+        "C": "X30",
+        "D": "X50"
+      },
+      "answer": "C"
+    },
+    {
+      "id": 15,
+      "question": "Los derechos y deberes fundamentales están regulados por la Constitución española de 1978 en el:",
+      "options": {
+        "A": "Título Preliminar.",
+        "B": "Título I.",
+        "C": "Título II.",
+        "D": "Título IV."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 16,
+      "question": "En 2007, en las Pautas para edificios de bibliotecas, se revisaron los diez mandamientos de Harry Faulkner Brown, que incluía entre otras cualidades:",
+      "options": {
+        "A": "Estético.",
+        "B": "Adaptado al medio ambiente.",
+        "C": "Diseño para todos.",
+        "D": "Estructurado."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 17,
+      "question": "¿Cuál es uno de los inconvenientes del libre acceso a los fondos?",
+      "options": {
+        "A": "El personal de la biblioteca dispone de más tiempo para dedicarse a otras tareas bibliotecarias.",
+        "B": "Exige una ordenación sistemática de los fondos y una revisión y reordenación constante de los mismos.",
+        "C": "Se reduce el número de obras que el usuario puede consultar.",
+        "D": "Es necesario disponer de un bibliotecario de referencia de apoyo permanente."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 18,
+      "question": "¿Qué elemento designa el lugar que ocupa un documento dentro de la biblioteca?",
+      "options": {
+        "A": "El tejuelo.",
+        "B": "El título.",
+        "C": "La signatura topográfica.",
+        "D": "La editorial."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 19,
+      "question": "¿Qué símbolo de la CDU introduce desarrollo tomado de notaciones ajenas a ella?",
+      "options": {
+        "A": "(=)",
+        "B": "",
+        "C": "::",
+        "D": ""
+      },
+      "answer": "D"
+    },
+    {
+      "id": 20,
+      "question": "Son funcionarios de carrera:",
+      "options": {
+        "A": "Los funcionarios que están vinculados a una Administración Pública por una relación laboral.",
+        "B": "Los funcionarios de carrera están vinculados por medio de una relación contractual.",
+        "C": "Los funcionarios que están vinculados a una Administración Pública por una relación estatutaria.",
+        "D": "Ninguna de las anteriores es correcta."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 21,
+      "question": "Según la Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público, podrán crearse por Real Decreto Subdelegaciones del Gobierno, en las Comunidades Autónomas uniprovinciales, cuando circunstancias tales como:",
+      "options": {
+        "A": "La población del territorio.",
+        "B": "El volumen de gestión o sus singularidades geográficas.",
+        "C": "Circunstancias sociales o económicas.",
+        "D": "Todas son correctas."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 22,
+      "question": "La Clasificación Decimal de Dewey (CDD) se subdivide en 10 clases. El número 400, ¿de qué disciplina trata?",
+      "options": {
+        "A": "Está vacante.",
+        "B": "Lenguas.",
+        "C": "Informática.",
+        "D": "Ciencias sociales."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 23,
+      "question": "¿Cuál de los siguientes documentos es un documento audiovisual?",
+      "options": {
+        "A": "VHS 2000.",
+        "B": "Beta.",
+        "C": "Cinta abierta.",
+        "D": "Herophon."
+      },
+      "answer": "ANULADA"
+    },
+    {
+      "id": 24,
+      "question": "¿Qué tipos de bibliotecas establece la IFLA?",
+      "options": {
+        "A": "Nacionales, regionales, de enseñanza superior y públicas.",
+        "B": "Nacionales, académicas, públicas, comunitarias y escolares.",
+        "C": "Nacionales, de enseñanza, públicas y especializadas.",
+        "D": "Nacionales, académicas, escolares, públicas y especializadas."
+      },
+      "answer": "ANULADA"
+    },
+    {
+      "id": 25,
+      "question": "¿Qué es un catálogo colectivo?",
+      "options": {
+        "A": "Catálogo que reúne en un solo orden los asientos bibliográficos de más de una biblioteca.",
+        "B": "Catálogo ordenado jerárquicamente de acuerdo con un código de clasificación.",
+        "C": "Catálogo que reúne en una única secuencia alfabética los catálogos alfabéticos de autores, de materias y de títulos.",
+        "D": "Catálogo que se ordena tomando como base las letras que forman el encabezamiento de autor personal, de entidad o de título adoptado, como punto de acceso."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 26,
+      "question": "¿Qué registros de fondos de revistas nos indica que la biblioteca no dispone de ningún ejemplar del año 2007 en su colección?",
+      "options": {
+        "A": "2000-2009,2011-2022",
+        "B": "(1998-2008)2009-2022",
+        "C": "1999-2006(2007-2010)-2022",
+        "D": "(1997-2005)2006,2008-2022"
+      },
+      "answer": "D"
+    },
+    {
+      "id": 27,
+      "question": "Según el artículo 59.2 de la Ley 16/1985, de 25 de junio, del Patrimonio Histórico Español la definición correcta de Biblioteca como institución cultural:",
+      "options": {
+        "A": "Es donde se conservan, reúnen, seleccionan, inventarían, catalogan, clasifican y difunden conjuntos o colecciones de libros, manuscritos y otros materiales bibliográficos o reproducidos por cualquier medio.",
+        "B": "Es donde se conservan, reúnen, catalogan y clasifican, pero no pueden difundirse los conjuntos o colecciones de libros, manuscritos y otros materiales bibliográficos o reproducidos por cualquier medio.",
+        "C": "Es donde se conservan, reúnen, seleccionan, inventarían, catalogan, clasifican y difunden conjuntos o colecciones de libros, manuscritos y otros materiales bibliográficos o reproducidos solamente en medios físicos.",
+        "D": "Es donde se conservan, reúnen, seleccionan, inventarían, catalogan, clasifican y difunden conjuntos o colecciones de libros, manuscritos y otros materiales bibliográficos o reproducidos solamente en soporte digital."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 28,
+      "question": "Según la Ley 16/1985 del Patrimonio Histórico Español, ¿qué organismo es el encargado de elaborar el Catálogo Colectivo de Patrimonio Bibliográfico Español?",
+      "options": {
+        "A": "La Biblioteca Nacional de España.",
+        "B": "La Dirección General del Libro y Fomento de la Lectura.",
+        "C": "El Ministerio de Cultura y Deporte en colaboración con las Comunidades Autónomas.",
+        "D": "La Subdirección General de Coordinación Bibliotecaria."
+      },
+      "answer": "ANULADA"
+    },
+    {
+      "id": 29,
+      "question": "¿Qué estándar utiliza REBECA para la interconexión entre los diferentes sistemas informáticos?",
+      "options": {
+        "A": "OAI-PMH",
+        "B": "HTTP",
+        "C": "FTP",
+        "D": "Z39.50"
+      },
+      "answer": "D"
+    },
+    {
+      "id": 30,
+      "question": "Los documentos editados por orden y a expensas de cualquier autoridad pública se denominan:",
+      "options": {
+        "A": "Publicaciones oficiales.",
+        "B": "Boletines bibliográficos.",
+        "C": "Directrices.",
+        "D": "Catálogos de publicaciones."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 31,
+      "question": "Los cilindros de cera son un tipo de:",
+      "options": {
+        "A": "Grabaciones fonográficas.",
+        "B": "Material gráfico.",
+        "C": "Documentos de archivo.",
+        "D": "Ephemera."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 32,
+      "question": "Un usuario está interesado en revisar una web ya desaparecida y le han hablado del Archivo de la Web Española. ¿En qué lugares podría consultarlo?",
+      "options": {
+        "A": "En cualquiera de las Bibliotecas Públicas del Estado.",
+        "B": "En la Biblioteca Nacional de España y en los centros de conservación de las diferentes Comunidades Autónomas.",
+        "C": "Desde cualquier ordenador, previo permiso de la Biblioteca Nacional de España.",
+        "D": "En cualquiera de las Bibliotecas Públicas del Estado y en las bibliotecas universitarias pertenecientes a REBIUN."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 33,
+      "question": "De acuerdo con la Ley 1/2015, de 24 de marzo, reguladora de la Biblioteca Nacional de España, sus órganos gestores son:",
+      "options": {
+        "A": "La Presidencia, el Comité Científico y la Dirección.",
+        "B": "La Presidencia, la Subsecretaría de Cultura y la Dirección.",
+        "C": "La Subsecretaría de Cultura, el Real Patronato y la Dirección.",
+        "D": "La Presidencia, el Real Patronato y la Dirección."
+      },
+      "answer": "ANULADA"
+    },
+    {
+      "id": 34,
+      "question": "¿Cuál es el porcentaje de IVA para libros electrónicos?",
+      "options": {
+        "A": "4%.",
+        "B": "10%.",
+        "C": "21%.",
+        "D": "Los libros electrónicos están exentos de IVA."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 35,
+      "question": "Según Las pautas para bibliotecas públicas (MCU, 1988), ¿qué tiempo y número de préstamos debe establecerse para las personas con minusvalías y discapacidades confinadas en su hogar?",
+      "options": {
+        "A": "El mismo plazo y número que a los otros usuarios.",
+        "B": "10 libros y 5 audiovisuales por 45 días.",
+        "C": "Préstamos generosos, sin número fijo limitado de libros u otros materiales.",
+        "D": "5 libros, 2 audiovisuales y 2 revistas por 30 días."
+      },
+      "answer": "ANULADA"
+    },
+    {
+      "id": 36,
+      "question": "¿Para qué se utiliza el signo / (barra oblicua) en la Clasificación Decimal Universal?",
+      "options": {
+        "A": "Es un signo de relación que se usa para conectar dos o más números de la CDU (restringen en vez de extender).",
+        "B": "Es un signo de aplicación concreta que sirve para indicar que el concepto que le sigue es una relación subordinada con respecto al que lo precede.",
+        "C": "Es un signo de extensión consecutiva que conecta el primero y el último número de una serie de números consecutivos de la CDU.",
+        "D": "Es un signo de coordinación que conecta dos o más números de la CDU no consecutivos."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 37,
+      "question": "¿Cuál de las siguientes es una línea estratégica de la Estrategia Nacional de Digitalización 2022-2026 del Consejo de Cooperación Bibliotecaria?",
+      "options": {
+        "A": "Intensificar la colaboración con EUROPEANA.",
+        "B": "Definir y difundir nuevas prácticas de digitalización.",
+        "C": "Impulsar la visibilidad y reutilización de las colecciones.",
+        "D": "Aumentar el número de proyectos de digitalización en España."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 38,
+      "question": "¿Qué norma internacional proporciona directrices para la preparación de referencias bibliográficas y citas a todo tipo de recursos?",
+      "options": {
+        "A": "ISO 2709.",
+        "B": "ISO 690.",
+        "C": "ISO 3297.",
+        "D": "ISO 11620."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 39,
+      "question": "¿Cuál de los siguientes NO es un requisito para que los registros de una colección sean accesibles desde Hispana?",
+      "options": {
+        "A": "Poseer un repositorio OAI, que funcione y se valide correctamente.",
+        "B": "Ofrecer los metadatos, al menos, en formato Dublin Core.",
+        "C": "Sean accesibles a través de un enlace web y no sean únicamente referencias bibliográficas.",
+        "D": "Los objetos sean nacidos digitales."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 40,
+      "question": "¿De dónde provienen los fondos digitalizados incluidos en la Biblioteca Virtual del Patrimonio Bibliográfico?",
+      "options": {
+        "A": "Bibliotecas, museos, archivos y museos de carácter público de todas las comunidades autónomas.",
+        "B": "Bibliotecas, museos, archivos y museos de comunidades autónomas, ministerios, ayuntamientos, ateneos, fundaciones, universidades, instituciones privadas, reales academias, particulares, etc.",
+        "C": "Bibliotecas Públicas del Estado.",
+        "D": "Biblioteca Nacional de España."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 41,
+      "question": "El formato IBERMARC de Autoridades se publicó por primera vez en:",
+      "options": {
+        "A": "1986.",
+        "B": "1992.",
+        "C": "1997.",
+        "D": "1999."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 42,
+      "question": "Indique cuál de las siguientes opciones incluye tres bibliotecas digitales:",
+      "options": {
+        "A": "Gallica, Liburuklik y y BDC.",
+        "B": "Hispana, CCBIP y BDCYL.",
+        "C": "Biblioteca Digital Hispánica, DPLA y TRAVESÍA.",
+        "D": "BVPH, Biblioteca Virtual Miguel de Cervantes y LCC."
+      },
+      "answer": "ANULADA"
+    },
+    {
+      "id": 43,
+      "question": "Cuando hablamos de \"una vista de la colección de una biblioteca, con sus correspondientes servicios, dirigida a usuarios que utilizan dispositivos móviles\", ¿a qué nos estamos refiriendo?",
+      "options": {
+        "A": "Mopac.",
+        "B": "Opac social.",
+        "C": "Catalogación social.",
+        "D": "Opac 2.0."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 44,
+      "question": "¿Cuál de las siguientes NO es una característica de las herramientas de descubrimiento?",
+      "options": {
+        "A": "Punto de entrada único a todos los recursos disponibles en redes sociales.",
+        "B": "Navegación por facetas que favorece la acotación de la búsqueda.",
+        "C": "Resultados ordenados por relevancia.",
+        "D": "Permitir contribuciones del usuario: reseñas, comentarios, etiquetas, etc."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 45,
+      "question": "Según la última modificación de la Ley de depósito legal, ¿cuántos ejemplares de libros de bibliófilo al menos debe conservar la Biblioteca Nacional de España?",
+      "options": {
+        "A": "Al menos un ejemplar.",
+        "B": "Al menos dos ejemplares.",
+        "C": "Al menos tres ejemplares.",
+        "D": "Los libros de bibliófilo no son objeto de depósito legal."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 46,
+      "question": "El Catálogo Colectivo de la Red de Bibliotecas Universitarias (Catálogo REBIUN) reúne los registros bibliográficos de:",
+      "options": {
+        "A": "Bibliotecas universitarias españolas de ámbito público.",
+        "B": "Bibliotecas universitarias españolas de ámbito público y el CSIC.",
+        "C": "Bibliotecas universitarias españolas tanto de ámbito público como privado.",
+        "D": "Bibliotecas universitarias españolas de ámbito público y privado y del CSIC."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 47,
+      "question": "¿A qué materia remite el número de la CDU 159.9?",
+      "options": {
+        "A": "Psicología.",
+        "B": "Educación social.",
+        "C": "Budismo.",
+        "D": "Humanismo."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 48,
+      "question": "¿En qué campo del registro bibliográfico aparecerá la materia \"España-Historia-1931-1939 (II República)\"?",
+      "options": {
+        "A": "600",
+        "B": "650",
+        "C": "651",
+        "D": "655"
+      },
+      "answer": "C"
+    },
+    {
+      "id": 49,
+      "question": "Indique el orden correcto de los apellidos de estos autores:\n1. Miguel de Unamuno\n2. Vicente de la Fuente\n3. Miguel de Cervantes Saavedra\n4. Angel del Río\n5. Eugenio d'Ors",
+      "options": {
+        "A": "3, 5, 2, 1, 4",
+        "B": "4, 3, 5, 1, 2",
+        "C": "4, 1, 3, 2, 5",
+        "D": "3, 2, 5, 4, 1"
+      },
+      "answer": "D"
+    },
+    {
+      "id": 50,
+      "question": "¿A qué documento se refiere un usuario si nos pide el María Moliner?",
+      "options": {
+        "A": "Diccionario breve francés-español y español- francés / Fernando María Moliner",
+        "B": "Catálogo del cine iberoamericano / directora, María Moliner",
+        "C": "Diccionario de uso del español / María Moliner",
+        "D": "María Moliner [Grabado] / Durero"
+      },
+      "answer": "C"
+    },
+    {
+      "id": 51,
+      "question": "¿Cómo se llama la hemeroteca digital gestionada por el Ministerio de Cultura y Deporte?",
+      "options": {
+        "A": "Revistas de la Edad de Plata.",
+        "B": "Memoria de Madrid.",
+        "C": "ARCE: revistas culturales.",
+        "D": "Biblioteca Virtual de Prensa Histórica."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 52,
+      "question": "¿Qué es el IBIC?",
+      "options": {
+        "A": "Un esquema de metadatos utilizado en bibliotecas públicas para describir e intercambiar información bibliográfica.",
+        "B": "Un código internacional que identifica de forma única tanto recursos físicos como digitales.",
+        "C": "Un sistema de clasificación de materias utilizado por el sector del libro en España.",
+        "D": "Un modelo de metadatos que facilita el intercambio de información entre todos los agentes de la cadena comercial del libro."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 53,
+      "question": "¿Qué material proporcionaremos a un usuario para mantener abierto un libro sin forzarlo?",
+      "options": {
+        "A": "Una regla.",
+        "B": "Otro libro para poner encima.",
+        "C": "Ninguno.",
+        "D": "Unas pesas acolchadas y suaves."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 54,
+      "question": "¿Quién fue el impresor de la Biblia políglota complutense?",
+      "options": {
+        "A": "Cardenal Cisneros.",
+        "B": "Antonio Sancha.",
+        "C": "Antonio de Nebrija.",
+        "D": "Arnao Guillén de Brocar."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 55,
+      "question": "¿Cuál es el principal organismo internacional que representa los intereses de los servicios bibliotecarios y de documentación y de sus usuarios?",
+      "options": {
+        "A": "ALA.",
+        "B": "IFLA.",
+        "C": "OCDL.",
+        "D": "NAPLE."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 56,
+      "question": "¿Cuál de las siguientes NO es una herramienta de descubrimiento?",
+      "options": {
+        "A": "Summon.",
+        "B": "Ebsco Discovery Service.",
+        "C": "Koha.",
+        "D": "Primo."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 57,
+      "question": "La Comisión General de Coordinación de Bibliotecas de la Administración General del Estado está adscrita al Ministerio de:",
+      "options": {
+        "A": "Presidencia, Relaciones con las Cortes y Memoria Democrática.",
+        "B": "Educación y Formación Profesional.",
+        "C": "Cultura y Deporte.",
+        "D": "Universidades."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 58,
+      "question": "¿Qué sistema de gestión bibliotecaria utiliza el catálogo colectivo de la Red de Bibliotecas de Defensa (RBD)?",
+      "options": {
+        "A": "Absysnet.",
+        "B": "Alma.",
+        "C": "Primo.",
+        "D": "Koha-Kobli."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 59,
+      "question": "El usuario nos pregunta sobre las siguientes referencias bibliográficas, colocadas alfabéticamente, ¿a qué tipo de documento hacen referencia?\nALLOA, Emmanuel; THOMA, Dieter (eds.) (2018). Transparency, society and subjectivity: Critical perspectives. London: Palgrave Macmillan. ISBN: 978 3 0300 8385 4\nCARMENA-ESCRIBANO, M. A., 1993. Tomar decisiones en una biblioteca. Algunas sugerencias sobre las posibles pautas a seguir en la elaboración de memorias - informes. Boletín de la Asociación Andaluza de Bibliotecarios, 33, 25-40. ISSN 2253-6108.\nGARCÍA-MAZA, J., 2003. Exigencia de transparencia vs. vocación de opacidad. [en línea] En: Los sistemas de información en las organizaciones: eficacia y transparencia. 8 Jornadas Españolas de Documentación. Barcelona: FESABID, pp. 109-118.",
+      "options": {
+        "A": "Artículo de revista, libro y comunicación de un congreso.",
+        "B": "Libro, artículo de revista y comunicación de un congreso.",
+        "C": "Comunicación de un congreso, libro y artículo de revista.",
+        "D": "Libro, comunicación de un congreso y artículo de revista."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 60,
+      "question": "¿Cuál es el significado de la siguiente notación de la CDU 78(460)\"19\"(038)?",
+      "options": {
+        "A": "Anuario de música española del siglo XX.",
+        "B": "Tesis de música española del siglo XIX.",
+        "C": "Enciclopedia de música española del siglo XIX.",
+        "D": "Diccionario de música española del siglo XX."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 61,
+      "question": "¿En qué área de las Reglas de catalogación pondríamos el número normalizado y condiciones de adquisición?",
+      "options": {
+        "A": "Área 2.",
+        "B": "Área 4.",
+        "C": "Área 6.",
+        "D": "Área 8."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 62,
+      "question": "¿Qué identifica el código ISNI?",
+      "options": {
+        "A": "Identifica sin ambigüedades y de forma unívoca las publicaciones seriadas.",
+        "B": "Identifica autores personales y corporativos que intervienen en la creación y distribución de obras intelectuales de cualquier tipo.",
+        "C": "Identifica de forma unívoca las publicaciones de música notada.",
+        "D": "Identifica registros audiovisuales: películas, cortometrajes, episodios de televisión, series, documentales, etc."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 63,
+      "question": "Los Diputados que componen el Congreso:",
+      "options": {
+        "A": "Podrán ser miembros del Congreso y el Senado y, además, de las Asambleas de las Comunidades Autónomas.",
+        "B": "Podrán ser miembros del Congreso y Senado.",
+        "C": "No podrán ser miembros de las dos Cámaras simultáneamente, ni acumular el acta de una Asamblea de Comunidad Autónoma con la de Diputado del Congreso.",
+        "D": "Ninguna de las anteriores es verdadera."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 64,
+      "question": "Según la Ley 10/2007, NO se considera un servicio básico de toda biblioteca pública:",
+      "options": {
+        "A": "La consulta en sala de las publicaciones que integren su fondo.",
+        "B": "Ofrecer colecciones orientadas al público infantil y juvenil.",
+        "C": "Proporcionar información y orientación para el uso de la biblioteca y la satisfacción de las necesidades informativas de los ciudadanos.",
+        "D": "Facilitar el acceso a la información digital a través de Internet o las redes análogas que se pueden desarrollar, así como la formación para su mejor manejo."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 65,
+      "question": "¿Cuál de estos encabezamientos sería el correcto, según las Reglas de catalogación, si el nombre de la autoridad incluye siempre un título nobiliario en sus publicaciones?",
+      "options": {
+        "A": "Duque de Rivas",
+        "B": "Ángel de Saavedra, Duque de Rivas",
+        "C": "Saavedra, Ángel de",
+        "D": "Rivas, Ángel de Saavedra, Duque de"
+      },
+      "answer": "D"
+    },
+    {
+      "id": 66,
+      "question": "¿Cuál es el identificador para partes de libros: capítulos, tablas, figuras, etc.?",
+      "options": {
+        "A": "ISNI.",
+        "B": "BICI.",
+        "C": "SICI.",
+        "D": "ISTC."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 67,
+      "question": "¿Qué tipo de signatura sería más adecuada para un documento en un depósito cerrado?",
+      "options": {
+        "A": "Numeración de Clasificación Decimal Universal.",
+        "B": "Alfabético de materias.",
+        "C": "Número currens.",
+        "D": "Alfabético de autores."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 68,
+      "question": "¿Quién gestiona la Agencia Española del ISBN en España?",
+      "options": {
+        "A": "El Ministerio de Cultura y Deporte.",
+        "B": "La Biblioteca Nacional de España.",
+        "C": "Federación de Gremios de Editores de España.",
+        "D": "Confederación Española de Gremios y Asociaciones de Libreros (CEGAL)."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 69,
+      "question": "¿Cuál de estos sistemas de gestión bibliotecaria es de código abierto?",
+      "options": {
+        "A": "Alma.",
+        "B": "Absysnet.",
+        "C": "Vega.",
+        "D": "Koha-Kobli."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 70,
+      "question": "¿A qué tipo de documento corresponde esta referencia bibliográfica según la norma UNE-ISO 690:2013? RIVERA VEGAS, Mª J. Comprensión vasculonerviosa cubital por un músculo abductor del meñique supernumerario. Avances en traumatología, cirugía, rehabilitación, medicina preventiva y deportiva. 1995, vol. 25 nº 2, p. 137-139. ISSN 0214-4077",
+      "options": {
+        "A": "Una tesis doctoral.",
+        "B": "Una norma.",
+        "C": "Un capítulo de una monografía.",
+        "D": "Un artículo de una revista."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 71,
+      "question": "¿Cuál es el actual plan estratégico de la Red de Bibliotecas Universitarias REBIUN?",
+      "options": {
+        "A": "III Plan estratégico de REBIUN 2020-2023.",
+        "B": "IV Plan estratégico de REBIUN 2020-2023.",
+        "C": "V Plan estratégico de REBIUN 2020-2023.",
+        "D": "VI Plan estratégico de REBIUN 2020-2023."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 72,
+      "question": "Indique el orden correcto de los siguientes encabezamientos de materia: 1. ESPAÑA-Historia-Felipe II, 1556-1598 2. ESPAÑA-Historia-Reyes Católicos, 1474-1517 3. ESPAÑA-Historia- S. VIII 4. ESPAÑA-Historia-Felipe III, 1598-1621 5. ESPAÑA-Historia- S. XV",
+      "options": {
+        "A": "3, 5, 2, 1, 4",
+        "B": "4, 3, 5, 1, 2",
+        "C": "4, 1, 3, 2, 5",
+        "D": "3, 2, 5, 4, 1"
+      },
+      "answer": "A"
+    },
+    {
+      "id": 73,
+      "question": "¿Cuál fue la denominación del Boletín Oficial del Estado entre 1697 y 1936?",
+      "options": {
+        "A": "Gaceta de Madrid.",
+        "B": "Boletín del Reino.",
+        "C": "Revista de las publicaciones oficiales del Reino de España.",
+        "D": "Diario Oficial del Estado."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 74,
+      "question": "¿Sobre qué lugar trataría un libro que en su CDU lleva el auxiliar común de lugar (430)?",
+      "options": {
+        "A": "Sobre Alemania.",
+        "B": "Sobre España.",
+        "C": "Sobre Suecia.",
+        "D": "Sobre Francia."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 75,
+      "question": "¿Cuál suele ser el sistema de ordenación en los depósitos de las bibliotecas?",
+      "options": {
+        "A": "El de las llamadas marcas de Cutter.",
+        "B": "La ordenación sistemática.",
+        "C": "La ordenación por número currens.",
+        "D": "Se colocan por orden según su ISBN."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 76,
+      "question": "¿Qué es una imagen obtenida por estampación de la plancha o matriz grabada a tal efecto?",
+      "options": {
+        "A": "Fotografía.",
+        "B": "Diapositiva.",
+        "C": "Cartel.",
+        "D": "Grabado."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 77,
+      "question": "En una imprenta, ¿qué es un chibalete?",
+      "options": {
+        "A": "Molde que se pone en la prensa para imprimir una cara entera del pliego.",
+        "B": "Armazón de madera donde se colocan las cajas para componer.",
+        "C": "Cajón con varias separaciones o cajetines.",
+        "D": "Cada uno de los compartimentos de la caja."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 78,
+      "question": "Según el Real Decreto Legislativo 5/2015, de 30 de octubre, por el que se aprueba el texto refundido de la Ley del Estatuto Básico del Empleado Público, quienes se encuentren en situación de servicios especiales percibirán:",
+      "options": {
+        "A": "Las retribuciones del puesto o cargo que desempeñan y no las que les correspondan como funcionarios de carrera.",
+        "B": "Las retribuciones que les correspondan como funcionarios de carrera y las retribuciones del puesto o cargo que desempeñan.",
+        "C": "Las retribuciones del puesto o cargo que desempeñan y el cincuenta por ciento del complemento de destino del puesto de origen como funcionario de carrera.",
+        "D": "Podrá elegir entre recibir las retribuciones del puesto o cargo que desempeña o las que le correspondan como funcionario de carrera."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 79,
+      "question": "En la edición de la CDU de 2015 se introdujeron dos nuevas materias, ¿cuáles fueron y en que números de la CDU se encuentran?",
+      "options": {
+        "A": "Inteligencia Artificial (004.1) y Física de partículas (620).",
+        "B": "Biotecnología (57) y Gestión (659).",
+        "C": "Física de partículas (539) e Inteligencia Artificial (68).",
+        "D": "Gestión (005) y Biotecnología (60)."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 80,
+      "question": "El servicio que consiste en ofrecer al usuario el acceso a los fondos de otras bibliotecas se denomina:",
+      "options": {
+        "A": "Extensión bibliotecaria.",
+        "B": "Alfabetización informacional.",
+        "C": "Préstamo interbibliotecario.",
+        "D": "Referencia bibliográfica."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 81,
+      "question": "¿En qué campo encontraremos el ISSN de una revista en un registro bibliográfico?",
+      "options": {
+        "A": "020",
+        "B": "022",
+        "C": "025",
+        "D": "028"
+      },
+      "answer": "B"
+    },
+    {
+      "id": 82,
+      "question": "De acuerdo con el artículo 57, de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, contra el acuerdo de acumulación dispuesto por el mismo órgano que deba tramitar y resolver el procedimiento, podrá interponerse:",
+      "options": {
+        "A": "Recurso potestativo de reposición.",
+        "B": "Recurso de alzada.",
+        "C": "Solicitud de inderogabilidad singular.",
+        "D": "No procederá recurso alguno."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 83,
+      "question": "¿Cuál de estos encabezamientos de materias es correcto?",
+      "options": {
+        "A": "Historia del Imperio bizantino-1025-1081",
+        "B": "Imperio bizantino-1025-1081-Historia",
+        "C": "Imperio bizantino-Historia-1025-1081",
+        "D": "Historia-Imperio bizantino-1025-1081"
+      },
+      "answer": "C"
+    },
+    {
+      "id": 84,
+      "question": "La Agencia Danesa de Cultura impulsó en 2013 el \"Programa Modelo para las bibliotecas públicas\", para rediseñar el servicio de biblioteca pública y los espacios que deben apoyar este nuevo modelo, que incluía cuatro espacios:",
+      "options": {
+        "A": "Espacio para la inspiración; espacio de aprendizaje y descubrimiento; espacio de reunión y encuentro; y espacios de creatividad y creación.",
+        "B": "Espacio para la consulta; espacio para el préstamo; espacio para el estudio; espacio para la lectura y el divertimento.",
+        "C": "Espacios colaborativos destinados a trabajos en grupo; espacios de silencio destinados al trabajo individual concentrado; espacio de interacción con la biblioteca, sus recursos y el personal; y espacios comunitarios de encuentro en general.",
+        "D": "Espacio colaborativo; espacio santuario; espacio comunitario; y espacio interactivo."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 85,
+      "question": "¿Qué se considera una obra huérfana?",
+      "options": {
+        "A": "Obra cuyos derechos de explotación se han extinguido.",
+        "B": "Obra cuyos titulares de derechos no están identificados o localizados.",
+        "C": "Obra resultado de la colaboración de varios autores.",
+        "D": "Obra no inscrita en el Registro de la Propiedad Intelectual."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 86,
+      "question": "¿Cuál de estas medidas puede tomar una biblioteca contra el crecimiento de hongos en sus colecciones?",
+      "options": {
+        "A": "No colocar las estanterías de libros junto a paredes que den con el exterior.",
+        "B": "Mantener los lugares donde estén los libros con la mayor oscuridad posible.",
+        "C": "Tomar medidas para que no circule el aire.",
+        "D": "Mantener una humedad relativa por encima del 65%."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 87,
+      "question": "La cabecera de un registro MARC está compuesta por:",
+      "options": {
+        "A": "12 caracteres.",
+        "B": "No tiene un número fijo de caracteres.",
+        "C": "24 caracteres.",
+        "D": "18 caracteres."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 88,
+      "question": "¿Cuál es la denominación en inglés de ALFIN (Alfabetización en información)?",
+      "options": {
+        "A": "Information Literacy.",
+        "B": "Information Literary.",
+        "C": "Information Literally.",
+        "D": "Information Literature."
+      },
+      "answer": "A"
+    },
+    {
+      "id": 89,
+      "question": "¿Qué norma ISO regula el Número internacional normalizado de las publicaciones seriadas (ISSN)?",
+      "options": {
+        "A": "ISO 26324.",
+        "B": "ISO 690.",
+        "C": "ISO 2108.",
+        "D": "ISO 3297."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 90,
+      "question": "¿En qué localidad se imprimió el Sinodal de Aguilafuente, considerado el incunable español más antiguo conservado?",
+      "options": {
+        "A": "Valencia.",
+        "B": "Aguilafuente.",
+        "C": "Sevilla.",
+        "D": "Segovia."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 91,
+      "question": "Las ISBD (CF) de 1990, ¿por cuáles son sustituidas en 1997?",
+      "options": {
+        "A": "Las ISBD (CP).",
+        "B": "Las ISBD (ER).",
+        "C": "Las ISBD (CM).",
+        "D": "Las ISBD (PM)."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 92,
+      "question": "¿Quién dirigió los primeros volúmenes de L'Encyclopédie ou dictionnaire raissoné des sciences, des arts et de métiers, conocida como La Enciclopedia y publicada a mediados del siglo XVIII?",
+      "options": {
+        "A": "André François Le Breton y Jean le Rond d'Alembert.",
+        "B": "Denis Diderot y André François Le Breton.",
+        "C": "Denis Diderot y Jean le Rond d'Alembert.",
+        "D": "Denis Diderot dirigió solo toda la obra desde el principio."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 93,
+      "question": "¿Quién redactó el Proyecto de Plan de Bibliotecas del Estado en 1939?",
+      "options": {
+        "A": "Jose Ortega y Gasset.",
+        "B": "Menéndez Pelayo.",
+        "C": "María Moliner.",
+        "D": "Eugenio D'Ors."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 94,
+      "question": "¿Cuál de las siguientes NO es una función de la Biblioteca Nacional de España?",
+      "options": {
+        "A": "Elaborar la bibliografía del Estado español.",
+        "B": "Actuar como Centro Nacional Español del ISSN.",
+        "C": "Tramitar peticiones de números ISNI.",
+        "D": "Elaborar el Catálogo Colectivo de Patrimonio Bibliográfico."
+      },
+      "answer": "D"
+    },
+    {
+      "id": 95,
+      "question": "¿Qué signatura basada en las marcas de Cutter es más correcta en una biblioteca pública para el libro El burlador de Sevilla de Tirso de Molina?",
+      "options": {
+        "A": "N TIR bur",
+        "B": "N MOL bur",
+        "C": "T TIR bur",
+        "D": "T MOL bur"
+      },
+      "answer": "D (MODIFICADA)"
+    },
+    {
+      "id": 96,
+      "question": "Ante una inundación en una biblioteca, ¿cuál de las siguientes decisiones es incorrecta?",
+      "options": {
+        "A": "Documentar, desde el principio, los procesos de salvamento y recuperación.",
+        "B": "Disminuir los niveles de humedad en el ambiente y aumentar la temperatura.",
+        "C": "Ocuparse en primer lugar de los fondos que se hayan caído de las estanterías.",
+        "D": "Transportar siempre los documentos mojados tal y como se encontraron."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 97,
+      "question": "¿Qué medidas de señalización se pueden tomar para personas con deficiencia visual?",
+      "options": {
+        "A": "Que el mobiliario sea accesible para todos.",
+        "B": "Que el color de los pictogramas tenga contraste con el fondo.",
+        "C": "Que los percheros estén a distintas alturas o sean regulables en altura.",
+        "D": "Que se instalen bucles magnéticos en las zonas de atención a usuarios."
+      },
+      "answer": "B"
+    },
+    {
+      "id": 98,
+      "question": "Un usuario quiere llevarse en préstamo El asesinato de Sócrates de Marcos Chicot, ¿a qué signatura le remitiríamos?",
+      "options": {
+        "A": "N CHI soc",
+        "B": "N CHI ase",
+        "C": "1 CHI soc",
+        "D": "1 SOC chi"
+      },
+      "answer": "B"
+    },
+    {
+      "id": 99,
+      "question": "La Ley 10/2007, de 22 de junio, de la lectura, del libro y de las bibliotecas, establece, en su artículo 9, que el precio de venta al público podrá oscilar entre:",
+      "options": {
+        "A": "El 85% y 90% del precio fijo.",
+        "B": "El 90% y 95% del precio fijo.",
+        "C": "El 95% y 100% del precio fijo.",
+        "D": "El 100% y 105% del precio fijo."
+      },
+      "answer": "C"
+    },
+    {
+      "id": 100,
+      "question": "Según la última modificación de la Ley de depósito legal, la Biblioteca Nacional de España conservará al menos:",
+      "options": {
+        "A": "Un ejemplar de la prensa y las revistas y otro en archivo digital que contenga la versión previa a la impresión de la publicación, siempre y cuando exista dicho archivo. En caso de no aportarse el archivo digital previo a la impresión se deberán remitir dos ejemplares en papel.",
+        "B": "Dos ejemplares de la prensa y las revistas y otro en archivo digital que contenga la versión previa a la impresión de la publicación, siempre y cuando exista dicho archivo. En caso de no aportarse el archivo digital previo a la impresión se deberán remitir tres ejemplares en papel.",
+        "C": "Tres ejemplares de la prensa y las revistas y otro en archivo digital que contenga la versión previa a la impresión de la publicación, siempre y cuando exista dicho archivo. En caso de no aportarse el archivo digital previo a la impresión se deberán remitir cuatro ejemplares en papel.",
+        "D": "Un ejemplar de la prensa y las revistas y otro en archivo digital que contenga la versión previa a la impresión de la publicación, siempre y cuando exista dicho archivo. No será necesario aportar el archivo digital previo en el caso de que no exista."
+      },
+      "answer": "A"
+    }
+  ]

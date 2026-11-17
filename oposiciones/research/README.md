@@ -31,6 +31,10 @@ Spanish *oposiciones* Constitution-law question-bank work.
 - [`syllabi.csv`](syllabi.csv): only syllabus facts supported by the research.
 - [`unopened_urls.md`](unopened_urls.md): broken, gated, or unresolved sources.
 - [`notes/`](notes/): source-linked research notes by exam family.
+- [`question_banks/`](question_banks/): question text as JSON, official exam
+  papers only (1,940 archive and library records from Laura's bank).
+- [`official_exams_pdfs/`](official_exams_pdfs/): 49 of the 52 PDFs listed in
+  `official_exams.csv`; `official_exams_downloads.csv` maps lines to files.
 - [`BRIEF_existing_questions.md`](BRIEF_existing_questions.md): governing
   research brief and copyright constraints.
 
