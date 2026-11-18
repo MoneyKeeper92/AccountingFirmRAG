@@ -1,0 +1,165 @@
+{
+ "title": "Examen oficial de Auxiliar y Administrativo del Estado, mayo de 2026",
+ "questions": [
+  {
+   "id": "OF-001",
+   "q": "La Constitución Española de 1978 fue ratificada por:",
+   "o": [
+    "El pueblo español.",
+    "Las Cortes Generales.",
+    "El Rey.",
+    "El Congreso de los Diputados."
+   ],
+   "k": 0,
+   "area": "Estructura",
+   "clave": "Ratificación de la CE: pueblo español en referéndum",
+   "ex": "La CE fue aprobada por las Cortes Generales el 31 de octubre de 1978, ratificada por el pueblo español en referéndum el 6 de diciembre de 1978 y sancionada por el Rey ante las Cortes el 27 de diciembre de 1978. Ratificar fue cosa del pueblo español.",
+   "mark": "ratificada por el pueblo español en referéndum",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 1"
+  },
+  {
+   "id": "OF-002",
+   "q": "Conforme al artículo 8 de la Constitución Española de 1978, las Fuerzas Armadas constituidas por el Ejército de Tierra, la Armada y el Ejército del Aire, tienen como misión:",
+   "o": [
+    "Garantizar la soberanía e independencia de España.",
+    "Defender su integridad patrimonial y el ordenamiento constitucional.",
+    "Defender su integridad territorial y el ordenamiento democrático.",
+    "Garantizar la soberanía e individualidad de España."
+   ],
+   "k": 0,
+   "area": "Título Preliminar",
+   "clave": "Fuerzas Armadas: garantizar soberanía e independencia de España",
+   "ex": "Art. 8.1: «Las Fuerzas Armadas, constituidas por el Ejército de Tierra, la Armada y el Ejército del Aire, tienen como misión garantizar la soberanía e independencia de España, defender su integridad territorial y el ordenamiento constitucional».",
+   "mark": "garantizar la soberanía e independencia de España",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 2"
+  },
+  {
+   "id": "OF-003",
+   "q": "Conforme al artículo 167.1 de la Constitución Española de 1978, los proyectos de reforma constitucional deberán ser aprobados por:",
+   "o": [
+    "Mayoría absoluta de cada una de las Cámaras.",
+    "Una mayoría de dos tercios de ambas Cámaras.",
+    "Una mayoría de dos tercios del Senado y mayoría absoluta del Congreso.",
+    "Una mayoría de tres quintos de cada una de las Cámaras."
+   ],
+   "k": 3,
+   "area": "Reforma",
+   "clave": "Reforma ordinaria (art. 167): tres quintos de cada Cámara",
+   "ex": "Art. 167.1: «Los proyectos de reforma constitucional deberán ser aprobados por una mayoría de tres quintos de cada una de las Cámaras».",
+   "mark": "tres quintos de cada una de las Cámaras",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 3"
+  },
+  {
+   "id": "OF-004",
+   "q": "Según el artículo 57 de la Constitución Española de 1978, las abdicaciones y renuncias y cualquier duda de hecho o de derecho que ocurra en el orden de sucesión a la Corona se resolverán:",
+   "o": [
+    "Por Ley ordinaria.",
+    "Por Real Decreto del Presidente del Gobierno.",
+    "Por resolución judicial o administrativa.",
+    "Por Ley orgánica."
+   ],
+   "k": 3,
+   "area": "La Corona",
+   "clave": "Abdicaciones y renuncias → ley orgánica",
+   "ex": "Art. 57.5: «Las abdicaciones y renuncias y cualquier duda de hecho o de derecho que ocurra en el orden de sucesión a la Corona se resolverán por una ley orgánica». Así se hizo con la abdicación de Juan Carlos I (LO 3/2014).",
+   "mark": "se resolverán por una ley orgánica",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 4"
+  },
+  {
+   "id": "OF-005",
+   "q": "Según el artículo 78 de la Constitución Española de 1978, en cada Cámara habrá una Diputación Permanente compuesta por:",
+   "o": [
+    "Un mínimo de 21 miembros.",
+    "21 miembros.",
+    "Un máximo de 21 miembros.",
+    "Un mínimo de 21 miembros y un máximo de 50."
+   ],
+   "k": 0,
+   "area": "Cortes Generales",
+   "clave": "Diputación Permanente: mínimo 21 miembros",
+   "ex": "Art. 78.1: «En cada Cámara habrá una Diputación Permanente compuesta por un mínimo de veintiún miembros, que representarán a los grupos parlamentarios, en proporción a su importancia numérica».",
+   "mark": "un mínimo de veintiún miembros",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 5"
+  },
+  {
+   "id": "OF-006",
+   "q": "Conforme al artículo 63 de la Constitución Española de 1978, corresponde al Rey declarar la guerra y hacer la paz:",
+   "o": [
+    "Previa autorización de la persona titular del Ministerio de Defensa.",
+    "Previa autorización del Presidente del Gobierno.",
+    "Previa autorización del Consejo de Ministros.",
+    "Previa autorización de las Cortes Generales."
+   ],
+   "k": 3,
+   "area": "La Corona",
+   "clave": "Guerra y paz: Rey, previa autorización de las Cortes",
+   "ex": "Art. 63.3: «Al Rey corresponde, previa autorización de las Cortes Generales, declarar la guerra y hacer la paz».",
+   "mark": "previa autorización de las Cortes Generales",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 6"
+  },
+  {
+   "id": "OF-007",
+   "q": "Conforme al artículo 123 de la Constitución Española de 1978, el Presidente del Tribunal Supremo será nombrado por:",
+   "o": [
+    "El Rey, a propuesta del Consejo General del Poder Judicial.",
+    "El Consejo General del Poder Judicial, a propuesta del Fiscal General del Estado.",
+    "El Rey, a propuesta del presidente del Consejo General del Poder Judicial.",
+    "El presidente del Consejo General del Poder Judicial, a propuesta del Rey."
+   ],
+   "k": 0,
+   "area": "Poder Judicial",
+   "clave": "Presidente del TS: Rey, a propuesta del CGPJ",
+   "ex": "Art. 123.2: «El Presidente del Tribunal Supremo será nombrado por el Rey, a propuesta del Consejo General del Poder Judicial, en la forma que determine la ley».",
+   "mark": "nombrado por el Rey, a propuesta del Consejo General del Poder Judicial",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 7"
+  },
+  {
+   "id": "OF-008",
+   "q": "Según el artículo 102 de la Constitución Española de 1978, la responsabilidad criminal del Presidente y de los demás miembros del Gobierno será exigible, en su caso, ante la Sala de lo Penal:",
+   "o": [
+    "Del Tribunal Superior de Justicia de Madrid.",
+    "De la Audiencia Nacional.",
+    "Del Tribunal Constitucional.",
+    "Del Tribunal Supremo."
+   ],
+   "k": 3,
+   "area": "Gobierno",
+   "clave": "Responsabilidad criminal del Gobierno: Sala de lo Penal del TS",
+   "ex": "Art. 102.1: «La responsabilidad criminal del Presidente y los demás miembros del Gobierno será exigible, en su caso, ante la Sala de lo Penal del Tribunal Supremo».",
+   "mark": "Sala de lo Penal del Tribunal Supremo",
+   "source": "Auxiliar Administrativo del Estado (C2), acceso libre, convocatoria 2025 · primera parte, pregunta 9"
+  },
+  {
+   "id": "OF-013",
+   "q": "De acuerdo con el artículo 112 de la Constitución Española de 1978, la cuestión de confianza planteada por el Presidente de Gobierno se entenderá otorgada cuando vote a favor de la misma:",
+   "o": [
+    "La mayoría simple del Congreso de los Diputados.",
+    "La mayoría simple del Congreso de los Diputados y del Senado.",
+    "La mayoría absoluta del Congreso de los Diputados.",
+    "La mayoría absoluta del Congreso de los Diputados y del Senado."
+   ],
+   "k": 0,
+   "area": "Gobierno",
+   "clave": "Cuestión de confianza: mayoría simple del Congreso",
+   "ex": "Art. 112: la cuestión de confianza se plantea ante el Congreso de los Diputados, y «La confianza se entenderá otorgada cuando vote a favor de la misma la mayoría simple de los Diputados».",
+   "mark": "la mayoría simple de los Diputados",
+   "source": "Administrativo del Estado (C1), acceso libre, convocatoria 2025 · primera parte, pregunta 5"
+  },
+  {
+   "id": "OF-014",
+   "q": "¿A quién le corresponde la representación ordinaria del Estado en la Comunidad Autónoma conforme a lo dispuesto en el artículo 152 de la Constitución Española de 1978?",
+   "o": [
+    "Al Delegado del Gobierno.",
+    "Al Presidente del Gobierno.",
+    "Al Presidente de la Comunidad Autónoma.",
+    "Al Ministro de Política Territorial y Memoria Democrática."
+   ],
+   "k": 2,
+   "area": "Organización territorial",
+   "clave": "Representación ordinaria del Estado en la CA → Presidente autonómico",
+   "ex": "Art. 152.1: al Presidente de la Comunidad Autónoma, nombrado por el Rey, corresponde «la dirección del Consejo de Gobierno, la suprema representación de la respectiva Comunidad y la ordinaria del Estado en aquélla».",
+   "mark": "la ordinaria del Estado en aquélla",
+   "source": "Administrativo del Estado (C1), acceso libre, convocatoria 2025 · primera parte, pregunta 9"
+  }
+ ]
+}
