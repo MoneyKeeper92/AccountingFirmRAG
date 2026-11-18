@@ -86,7 +86,6 @@ async function main() {
         return found;
       };
       const result = {};
-      result.localGate = !!byText(".config-alert", "Versión local no compartible");
       result.dialogLabelled = !!document.querySelector('[role="dialog"][aria-labelledby]');
       byText("button", "No, gracias").click();
       await wait(20);
@@ -114,7 +113,6 @@ async function main() {
     }
     const result = evaluated.result.value;
     assert.deepEqual(result, {
-      localGate: true,
       dialogLabelled: true,
       consentRefused: true,
       quizWorked: true,

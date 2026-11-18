@@ -1,0 +1,192 @@
+---
+import quiz from "../data/quiz.json";
+---
+<section class="qz-section" id="test" aria-labelledby="qz-title">
+  <div class="narrow">
+    <h2 id="qz-title">Pon a prueba tu nivel</h2>
+    <p class="muted">10 preguntas reales del examen oficial de mayo de 2026. Sin registro.</p>
+
+    <div class="qz" id="qz" aria-live="polite">
+      <noscript><p>Activa JavaScript para hacer el test.</p></noscript>
+    </div>
+
+    <div class="qz-end" id="qz-end" hidden>
+      <div class="qz-score"><b id="qz-a">0</b><span>de 10 correctas</span></div>
+      <p class="qz-nota" id="qz-nota"></p>
+      <p class="muted small" id="qz-weak"></p>
+
+      <form class="qz-form" id="qz-form" name="analisis" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="analisis" />
+        <input type="hidden" name="aciertos" />
+        <input type="hidden" name="nota" />
+        <input type="hidden" name="respuestas" />
+        <input type="hidden" name="areas_a_repasar" />
+        <p hidden><label>No rellenar: <input name="bot-field" /></label></p>
+        <h3>¿Quieres un análisis detallado de tu rendimiento?</h3>
+        <p class="muted small">Te enviamos tus puntos fuertes y débiles por área y te avisamos cuando abramos la app de práctica.</p>
+        <label class="qz-label" for="qz-email">Tu email</label>
+        <input id="qz-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="tu@email.com" />
+        <label class="qz-check"><input type="checkbox" name="privacidad" value="si" required /> He leído la <a href="/privacidad/">política de privacidad</a></label>
+        <label class="qz-check"><input type="checkbox" name="avisos_convocatoria" value="si" /> Avísame también de la convocatoria (opcional)</label>
+        <button class="btn btn-primary" type="submit">Quiero mi análisis</button>
+        <p class="qz-msg small" id="qz-msg" role="status"></p>
+      </form>
+      <button class="qz-again" type="button" id="qz-again">Repetir el test</button>
+    </div>
+  </div>
+</section>
+
+<script type="application/json" id="qz-data" set:html={JSON.stringify(quiz)} />
+
+<script>
+  type Q = { id: string; q: string; o: string[]; k: number; area: string; clave: string; ex: string; mark: string; source: string };
+  const data = JSON.parse(document.getElementById("qz-data")!.textContent || "{}") as { questions: Q[] };
+  const qs = data.questions;
+  const root = document.getElementById("qz")!;
+  const end = document.getElementById("qz-end")!;
+  const L = ["A", "B", "C", "D"];
+  let i = 0;
+  let answers: number[] = [];
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function explanation(q: Q) {
+    const box = el("div", "qz-ex");
+    const clave = el("div", "qz-clave");
+    clave.append(el("span", "qz-eyebrow", "La clave"), el("b", undefined, q.clave));
+    const p = el("p");
+    const at = q.ex.indexOf(q.mark);
+    if (at >= 0) p.append(q.ex.slice(0, at), el("mark", undefined, q.mark), q.ex.slice(at + q.mark.length));
+    else p.textContent = q.ex;
+    box.append(clave, p, el("p", "qz-src", "Pregunta oficial: " + q.source + ". Origen de los datos: INAP."));
+    return box;
+  }
+
+  function show() {
+    const q = qs[i];
+    const picked = answers[i];
+    root.innerHTML = "";
+    const head = el("div", "qz-head");
+    head.append(el("span", undefined, "Pregunta " + (i + 1) + " de " + qs.length));
+    const bar = el("div", "qz-bar");
+    const fill = el("i");
+    fill.style.width = ((i + (picked != null ? 1 : 0)) / qs.length) * 100 + "%";
+    bar.append(fill);
+    root.append(head, bar, el("p", "qz-stem", q.q));
+    const opts = el("div", "qz-opts");
+    q.o.forEach((text, j) => {
+      const b = el("button", "qz-opt");
+      b.type = "button";
+      b.append(el("span", "qz-l", L[j]), el("span", undefined, text));
+      if (picked != null) {
+        b.disabled = true;
+        if (j === q.k) b.classList.add("ok");
+        else if (j === picked) b.classList.add("bad");
+      }
+      b.addEventListener("click", () => { answers[i] = j; show(); });
+      opts.append(b);
+    });
+    root.append(opts);
+    if (picked != null) {
+      root.append(el("p", "qz-verdict " + (picked === q.k ? "ok" : "bad"), picked === q.k ? "✓ Correcta" : "✗ La correcta es la " + L[q.k]));
+      root.append(explanation(q));
+      const next = el("button", "btn btn-primary qz-next", i + 1 < qs.length ? "→" : "Ver mi resultado →");
+      next.type = "button";
+      next.setAttribute("aria-label", i + 1 < qs.length ? "Siguiente pregunta" : "Ver mi resultado");
+      next.addEventListener("click", () => {
+        if (i + 1 < qs.length) { i++; show(); root.scrollIntoView({ behavior: "smooth", block: "start" }); }
+        else finish();
+      });
+      root.append(next);
+    }
+  }
+
+  function finish() {
+    const a = answers.filter((x, j) => x === qs[j].k).length;
+    const f = qs.length - a;
+    const nota = Math.max(0, a - f / 3) / qs.length * 10;
+    const notaTxt = nota.toLocaleString("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const weak = Array.from(new Set(qs.filter((q, j) => answers[j] !== q.k).map((q) => q.area)));
+    root.hidden = true;
+    end.hidden = false;
+    document.getElementById("qz-a")!.textContent = String(a);
+    document.getElementById("qz-nota")!.textContent = "Nota con penalización: " + notaTxt + " / 10";
+    document.getElementById("qz-weak")!.textContent = weak.length ? "Para repasar: " + weak.join(", ") + "." : "¡Sin fallos!";
+    const form = document.getElementById("qz-form") as HTMLFormElement;
+    (form.elements.namedItem("aciertos") as HTMLInputElement).value = String(a);
+    (form.elements.namedItem("nota") as HTMLInputElement).value = notaTxt;
+    (form.elements.namedItem("respuestas") as HTMLInputElement).value = qs.map((q, j) => q.id + ":" + L[answers[j]] + (answers[j] === q.k ? "✓" : "✗")).join(" ");
+    (form.elements.namedItem("areas_a_repasar") as HTMLInputElement).value = weak.join(", ");
+    end.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("qz-form")!.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const msg = document.getElementById("qz-msg")!;
+    if (!form.checkValidity()) { msg.textContent = "Escribe un email válido y marca la casilla de privacidad."; return; }
+    const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    btn.disabled = true;
+    try {
+      const body = new URLSearchParams(new FormData(form) as unknown as Record<string, string>).toString();
+      const r = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
+      if (!r.ok) throw new Error(String(r.status));
+      form.innerHTML = "";
+      form.append(el("h3", undefined, "¡Recibido!"), el("p", "muted", "Te escribiremos pronto a tu email con tu análisis."));
+    } catch {
+      btn.disabled = false;
+      msg.textContent = "No se ha podido enviar. Inténtalo de nuevo en un momento.";
+    }
+  });
+
+  document.getElementById("qz-again")!.addEventListener("click", () => {
+    i = 0; answers = []; end.hidden = true; root.hidden = false; show();
+    root.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  show();
+</script>
+
+<style is:global>
+  .qz-section { padding-top: 24px; }
+  .qz, .qz-end { margin-top: 20px; }
+  .qz-head { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); }
+  .qz-bar { height: 4px; border-radius: 999px; background: var(--sunk); margin: 8px 0 18px; overflow: hidden; }
+  .qz-bar i { display: block; height: 100%; background: var(--green); }
+  .qz-stem { font-weight: 650; font-size: 1.1rem; }
+  .qz-opts { display: grid; gap: 8px; }
+  .qz-opt { display: flex; gap: 12px; align-items: flex-start; text-align: left; font: inherit; color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+  .qz-opt:hover:not(:disabled) { border-color: var(--green); }
+  .qz-opt:disabled { cursor: default; }
+  .qz-opt.ok { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--card)); }
+  .qz-opt.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .qz-l { font-weight: 700; color: var(--muted); min-width: 1.2em; }
+  .qz-verdict { font-weight: 700; margin: 16px 0 8px; }
+  .qz-verdict.ok { color: var(--ok); }
+  .qz-verdict.bad { color: var(--bad); }
+  .qz-ex { display: grid; gap: 8px; }
+  .qz-ex p { margin: 0; }
+  .qz-clave { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--amber-soft); }
+  .qz-eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--amber-ink); }
+  .qz-clave b { font-family: var(--display); }
+  .qz-ex mark { background: var(--amber-soft); color: inherit; padding: 0 2px; border-radius: 3px; box-shadow: inset 0 -0.55em 0 rgba(233, 162, 59, .35); }
+  .qz-src { font-size: .82rem; color: var(--muted); }
+  .qz-next { margin-top: 18px; width: 100%; font-size: 1.3rem; }
+  .qz-score { display: flex; align-items: baseline; gap: 10px; }
+  .qz-score b { font: 800 3.4rem/1 var(--display); color: var(--green); }
+  .qz-nota { font-weight: 650; margin: 8px 0 4px; }
+  .qz-form { display: grid; gap: 10px; margin-top: 24px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+  .qz-form h3 { margin: 0; }
+  .qz-form p { margin: 0; }
+  .qz-label { font-weight: 600; font-size: .95rem; }
+  .qz-form input[type="email"] { font: inherit; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); }
+  .qz-form input[type="email"]:focus { border-color: var(--green); outline: none; }
+  .qz-check { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; }
+  .qz-msg { color: var(--bad); min-height: 1.2em; }
+  .qz-again { margin-top: 14px; background: none; border: 0; color: var(--green); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0; }
+</style>

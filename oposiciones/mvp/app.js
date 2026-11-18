@@ -20,6 +20,7 @@
   var CFG = window.TESON_CONFIG || {};
   var BANK = window.TESON_BANK;
   var ESQ = window.TESON_ESQUEMAS || {};
+  var CLAVES = window.TESON_CLAVES || {};
   var APP_VERSION = "mvp-0.2-private-beta";
   var EXP_ID = "adapt-v1";
   var LS_KEY = "teson.v1";
@@ -493,8 +494,15 @@
     clearInterval(timerInt);
     root.innerHTML = "";
     if (needSignIn()) {
+      // Guests can take the diagnostic and see its results; an email is needed to keep practising.
+      var diag = TEST && TEST.session === "diagnostic";
+      if (VIEW === "quiz" && diag) { root.appendChild(viewQuiz()); return; }
       root.appendChild(h("header", { "class": "top" }, h("div", { "class": "top-inner" }, h("span", { "class": "brand" }, "tesón"), h("span", { "class": "beta" }, "Beta"))));
-      var mainS = h("main", { "class": "wrap" }); mainS.appendChild(viewSignIn()); mainS.appendChild(footer()); root.appendChild(mainS);
+      var mainS = h("main", { "class": "wrap" });
+      if (VIEW === "results" && diag && TEST.result) mainS.appendChild(viewResults());
+      else if (!S.exp || (!S.exp.pre && !SIGNIN.wantsAccount)) mainS.appendChild(viewGuest());
+      else mainS.appendChild(viewSignIn());
+      mainS.appendChild(footer()); root.appendChild(mainS);
       return;
     }
     if (VIEW === "quiz") { root.appendChild(viewQuiz()); return; }
@@ -507,7 +515,6 @@
     else if (VIEW === "progreso") main.appendChild(viewProgreso());
     main.appendChild(footer());
     root.appendChild(main);
-    root.appendChild(h("button", { "class": "fab", type: "button", onclick: openFeedback }, "Danos tu opinión"));
   }
 
   function topbar() {
@@ -528,6 +535,7 @@
       h("div", { "class": "row" },
         h("a", { href: "privacidad.html", target: "_blank", rel: "noopener" }, "Privacidad"),
         h("a", { href: "aviso-legal.html", target: "_blank", rel: "noopener" }, "Aviso legal"),
+        h("button", { "class": "linkbtn", type: "button", onclick: openFeedback }, "Danos tu opinión"),
         CFG.contactEmail ? h("span", null, CFG.contactEmail) : null));
   }
 
@@ -572,22 +580,10 @@
           h("button", { "class": "btn quiet", type: "button", onclick: function () { S.exp.postSkipped = true; persist(); track("checkpoint_skipped", { kind: "post" }); render(); } }, "Ahora no"))));
     }
 
-    // Header + areas
+    // Header (areas live in Progreso)
     s.appendChild(h("div", { "class": "stack" },
       h("span", { "class": "eyebrow" }, ad ? "Tu práctica personalizada" : "Tu práctica"),
-      h("h1", null, "Tu Constitución"),
-      h("p", { "class": "lede" }, ad ? (totalAns ? "Hoy vamos a reforzar tus puntos débiles. Elige un área o sigue la práctica recomendada." : "Elige un área o sigue la práctica recomendada.") : "Elige un área o haz una práctica variada del tema.")));
-
-    var list = h("div", { "class": "areas" });
-    AREAS.forEach(function (a) {
-      var info = areaInfo(a), t = trend(a);
-      list.appendChild(h("button", { "class": "arearow", type: "button", onclick: function () { startPractice(10, a); } },
-        h("span", { "class": "an" }, BANK.areas[a]),
-        h("span", { "class": "ap" }, info.pct == null ? "Sin datos" : info.pct + " %"),
-        h("span", { "class": "meter", "aria-hidden": "true" }, h("i", { style: "width:" + (info.pct || 0) + "%;" + (info.pct != null && info.pct < 60 ? "background:var(--amber)" : "") })),
-        h("span", { "class": "at small muted" }, t ? (t > 0 ? "▲ +" + t + " pts en 7 días" : "▼ " + t + " pts en 7 días") : info.questions + " preguntas · practicar 10")));
-    });
-    s.appendChild(list);
+      h("h1", null, "Tu Constitución")));
 
     // Personal plan (adaptive arm): AI-prepared when available, otherwise rules.
     if (ad) { maybeRequestPlan(totalAns); if (planFresh()) s.appendChild(planCard()); }
@@ -626,27 +622,12 @@
       }
     }
 
-    // Stats strip
-    var t2 = totals(), nf = fallos().length, pr = predicted();
-    s.appendChild(h("div", { "class": "stats" + (pr != null ? " four" : "") },
-      h("div", { "class": "stat" }, h("b", null, fmt(t2.seen, 0)), h("span", null, "respuestas")),
-      h("div", { "class": "stat" }, h("b", null, pct(t2.c, t2.seen) + " %"), h("span", null, "aciertos")),
-      h("div", { "class": "stat" }, h("b", null, String(nf)), h("span", null, "fallos por repasar")),
-      pr != null ? h("div", { "class": "stat" }, h("b", null, fmt(pr, 1)), h("span", null, "nota estimada hoy (/10)")) : null));
-    if (pr != null) s.appendChild(h("p", { "class": "small muted", style: "margin-top:-18px" }, "Nota estimada si hicieras hoy un examen de este tema, con la penalización oficial. Es orientativa."));
-
-    s.appendChild(h("div", { "class": "row" },
-      nf ? h("button", { "class": "btn ghost", type: "button", onclick: function () { startReview(dueFallos().length ? dueFallos() : fallos()); } }, "Repasar fallos (" + nf + ")") : null,
-      h("button", { "class": "btn ghost", type: "button", onclick: function () { SETUP = { areas: AREAS.slice(), n: 20, mode: "estudio", pool: "todas" }; go("setup"); } }, "Crear test personalizado")));
-
-    // Official INAP questions
-    var nOf = BANK.questions.filter(function (q) { return q.official; }).length;
-    if (nOf) s.appendChild(h("div", { "class": "card stack" },
-      h("span", { "class": "eyebrow" }, "Exámenes oficiales"),
-      h("p", { style: "margin:0;font-weight:600" }, nOf + " preguntas de la Constitución de exámenes oficiales del INAP (Auxiliar y Administrativo del Estado, 2022–2026), con explicación de cada opción."),
-      h("div", { "class": "row" }, h("button", { "class": "btn ghost", type: "button", onclick: function () {
-        SETUP = { areas: AREAS.slice(), n: 20, mode: "examen", pool: "oficiales" }; go("setup");
-      } }, "Hacer un test de preguntas oficiales"))));
+    // Secondary actions, one quiet row
+    var nf = fallos().length, nOf = BANK.questions.filter(function (q) { return q.official; }).length;
+    s.appendChild(h("div", { "class": "links" },
+      nf ? h("button", { "class": "linkbtn", type: "button", onclick: function () { startReview(dueFallos().length ? dueFallos() : fallos()); } }, "Repasar fallos (" + nf + ")") : null,
+      nOf ? h("button", { "class": "linkbtn", type: "button", onclick: function () { SETUP = { areas: AREAS.slice(), n: 20, mode: "estudio", pool: "oficiales" }; go("setup"); } }, "Preguntas de exámenes oficiales (" + nOf + ")") : null,
+      h("button", { "class": "linkbtn", type: "button", onclick: function () { SETUP = { areas: AREAS.slice(), n: 20, mode: "estudio", pool: "todas" }; go("setup"); } }, "Test personalizado")));
 
     // Other temas
     var others = h("div", { "class": "temas" });
@@ -663,7 +644,7 @@
         h("div", { "class": "d" }, tm.detalle),
         h("div", { "class": "meta" }, h("span", { "class": "pill warn" }, "En preparación"))));
     });
-    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Próximos temas"), others));
+    s.appendChild(h("details", { "class": "settings" }, h("summary", null, "Próximos temas: vota cuál quieres"), others));
     return s;
   }
 
@@ -771,9 +752,7 @@
       h("button", { "class": "iconbtn", type: "button", onclick: togglePause, "aria-label": T.paused ? "Reanudar" : "Pausar" }, T.paused ? "▶" : "❚❚"),
       h("div", { "class": "qtime" }, timerEl, h("span", null, "en esta pregunta")),
       h("span", { "class": "grow" }),
-      h("button", { "class": "btn quiet sm", type: "button", onclick: function () { openReport(q); } }, S.reported[q.id] ? "Impugnada ✓" : "Impugnar"),
-      T.mode === "examen" ? h("button", { "class": "btn sm", type: "button", onclick: function () { stamp(q); confirmFinish(); } }, "Entregar") : null,
-      h("button", { "class": "btn quiet sm", type: "button", onclick: function () { confirmExit(function () { go("home"); }); } }, "Salir"))));
+      T.mode === "examen" ? h("button", { "class": "btn sm", type: "button", onclick: function () { stamp(q); confirmFinish(); } }, "Entregar") : null)));
 
     var main = h("main", { "class": "wrap" });
     var s = h("section", { "class": "view stack", style: "padding-top:16px" });
@@ -786,14 +765,15 @@
       if (T.mode === "estudio" && T.checked[id]) cls += QMAP[id].k === T.ans[id] ? " ok" : " bad";
       else if (T.ans[id] != null && T.ans[id] >= 0) cls += " ans";
       var allowed = T.mode === "examen" || idx <= T.maxI;
-      nav.appendChild(h("button", { "class": cls, type: "button", disabled: !allowed, "aria-current": idx === T.i ? "step" : null, onclick: function () { if (idx !== T.i) jump(idx); } }, String(idx + 1)));
+      nav.appendChild(h("button", { "class": cls, type: "button", disabled: !allowed, "aria-label": "Pregunta " + (idx + 1), "aria-current": idx === T.i ? "step" : null, onclick: function () { if (idx !== T.i) jump(idx); } }, String(idx + 1)));
     });
     s.appendChild(h("div", { "class": "small muted" }, T.title));
     s.appendChild(nav);
     s.appendChild(h("div", { "class": "progress", role: "progressbar", "aria-label": "Progreso del test", "aria-valuemin": "0", "aria-valuemax": String(n), "aria-valuenow": String(T.i + (checked ? 1 : 0)) }, h("i", { style: "width:" + pct(T.i + (checked ? 1 : 0), n) + "%" })));
 
     if (T.paused) {
-      s.appendChild(h("div", { "class": "empty" }, h("b", null, "En pausa"), h("span", { "class": "small" }, "El cronómetro está parado."), h("button", { "class": "btn", type: "button", onclick: togglePause }, "Reanudar")));
+      s.appendChild(h("div", { "class": "empty" }, h("b", null, "En pausa"), h("span", { "class": "small" }, "El cronómetro está parado."), h("div", { "class": "row" }, h("button", { "class": "btn", type: "button", onclick: togglePause }, "Reanudar"),
+        h("button", { "class": "btn quiet", type: "button", onclick: function () { confirmExit(function () { go("home"); }); } }, "Salir del test"))));
       main.appendChild(s); wrap.appendChild(main); return wrap;
     }
 
@@ -831,12 +811,12 @@
         dock.appendChild(h("button", { "class": "btn quiet", type: "button", onclick: function () { check(q, -1); } }, "Dejar en blanco"));
         dock.appendChild(h("button", { "class": "btn", type: "button", disabled: sel == null, onclick: function () { check(q, sel); } }, "Corregir"));
       } else {
-        dock.appendChild(h("button", { "class": "btn", type: "button", onclick: function () { if (T.i + 1 < n) jump(T.i + 1); else finish(); } }, T.i + 1 < n ? "Siguiente" : "Ver resultados"));
+        dock.appendChild(h("button", { "class": "btn arrow", type: "button", "aria-label": T.i + 1 < n ? "Siguiente pregunta" : "Ver resultados", onclick: function () { if (T.i + 1 < n) jump(T.i + 1); else finish(); } }, T.i + 1 < n ? "→" : "Resultados →"));
       }
     } else {
-      dock.appendChild(h("button", { "class": "btn quiet", type: "button", disabled: T.i === 0, onclick: function () { jump(T.i - 1); } }, "Anterior"));
+      dock.appendChild(h("button", { "class": "btn quiet arrow", type: "button", "aria-label": "Pregunta anterior", disabled: T.i === 0, onclick: function () { jump(T.i - 1); } }, "←"));
       dock.appendChild(T.i + 1 < n
-        ? h("button", { "class": "btn", type: "button", onclick: function () { jump(T.i + 1); } }, sel == null ? "Siguiente (en blanco)" : "Siguiente")
+        ? h("button", { "class": "btn arrow", type: "button", "aria-label": "Siguiente pregunta", onclick: function () { jump(T.i + 1); } }, "→")
         : h("button", { "class": "btn", type: "button", onclick: function () { stamp(q); confirmFinish(); } }, "Entregar"));
     }
     s.appendChild(dock);
@@ -867,6 +847,7 @@
   }
   function confirmFinish() {
     var blanks = TEST.ids.filter(function (id) { return TEST.ans[id] == null; }).length;
+    if (!blanks) { finish(); return; }
     sheet(function (close) {
       return [h("h2", null, isCheckpoint() ? "¿Entregar?" : "¿Terminar el examen?"),
         h("p", { "class": "muted" }, blanks ? "Tienes " + blanks + " pregunta" + (blanks === 1 ? "" : "s") + " en blanco. En blanco no restan." : "Has respondido todas las preguntas."),
@@ -935,16 +916,23 @@
     var esq = esquemaFor(q);
     var misNote = sel != null && sel >= 0 && sel !== q.k && q.mis[sel] && BANK.misconceptions[q.mis[sel]]
       ? h("div", { "class": "trap" }, h("b", null, "Confusión detectada: "), BANK.misconceptions[q.mis[sel]].name + "." + (adaptive() ? " Te propondremos más preguntas sobre esto." : "")) : null;
+    var cl = CLAVES[q.id], exP;
+    if (cl && cl.m && q.ex.indexOf(cl.m) !== -1) {
+      var at = q.ex.indexOf(cl.m);
+      exP = h("p", null, q.ex.slice(0, at), h("mark", null, cl.m), q.ex.slice(at + cl.m.length));
+    } else exP = h("p", null, q.ex);
+    var missed = sel != null && sel >= 0 && sel !== q.k;
     return h("div", { "class": "explain" },
+      cl ? h("div", { "class": "clave" }, h("span", { "class": "eyebrow" }, "La clave"), h("b", null, cl.c)) : null,
       h("p", null, h("b", null, "Correcta: " + LETTERS[q.k] + ") " + q.o[q.k])),
-      h("p", null, q.ex),
+      exP,
       h("div", null, h("div", { "class": "small muted", style: "margin-bottom:6px" }, "Por qué no las demás"), wrongs),
       misNote,
       q.trap ? h("div", { "class": "trap" }, h("b", null, "Trampa típica: "), q.trap) : null,
-      esq ? h("details", { "class": "esqbox", ontoggle: function (e) { if (e.target.open) track("esquema_viewed", { esquema: esq, qid: q.id, from: "explanation" }); } },
-        h("summary", null, "Ver esquema: " + ESQ[esq].title), h("p", { "class": "swipehint" }, "Desliza la tabla → para ver todas las columnas"), h("div", { "class": "esqwrap", html: ESQ[esq].html })) : null,
+      esq ? h("details", { "class": "esqbox", open: missed, ontoggle: function (e) { if (e.target.open) track("esquema_viewed", { esquema: esq, qid: q.id, from: missed ? "explanation_auto" : "explanation" }); } },
+        h("summary", null, "Esquema: " + ESQ[esq].title), h("div", { "class": "esqwrap", html: ESQ[esq].html })) : null,
       q.official ? h("div", { "class": "official-src small" },
-        h("p", null, h("b", null, "Pregunta oficial: "), q.paperLabel + " (" + q.sourceRef + "). ",
+        h("p", null, h("b", null, "Pregunta oficial: "), q.paperLabel + " (" + q.sourceRef + ")" + (q.corrected ? ", con erratas del original corregidas" : "") + ". ",
           h("a", { href: q.sourceUrl, target: "_blank", rel: "noopener", onclick: function () { track("official_paper_clicked", { qid: q.id }); } }, "Ver el cuestionario ↗")),
         h("p", null, q.keyBasis === "official"
           ? "Respuesta según la plantilla definitiva publicada por el INAP. La explicación es de Tesón."
@@ -957,7 +945,7 @@
   }
   function openEsquema(id, from) {
     track("esquema_viewed", { esquema: id, from: from });
-    sheet(function (close) { return [h("h2", null, ESQ[id].title), h("p", { "class": "swipehint" }, "Desliza la tabla → para ver todas las columnas"), h("div", { "class": "esqwrap", html: ESQ[id].html }), h("button", { "class": "btn", type: "button", onclick: close }, "Cerrar")]; });
+    sheet(function (close) { return [h("h2", null, ESQ[id].title), h("div", { "class": "esqwrap", html: ESQ[id].html }), h("button", { "class": "btn", type: "button", onclick: close }, "Cerrar")]; });
   }
 
   // ── Results (Maxwell-style review) ──────────────────────────
@@ -968,7 +956,7 @@
     var head = h("div", { "class": "score" },
       h("span", { "class": "eyebrow" }, T.title),
       h("div", { "class": "big" }, fmt(R.nota), h("small", null, " / 10")),
-      h("span", { "class": "small muted" }, "Nota con penalización: (aciertos − fallos ÷ 3) ÷ preguntas × 10 · Tiempo: " + Math.floor(R.secs / 60) + " min " + (R.secs % 60) + " s"));
+      h("span", { "class": "small muted" }, "Tiempo: " + Math.floor(R.secs / 60) + " min " + (R.secs % 60) + " s"));
     s.appendChild(head);
     s.appendChild(h("div", { "class": "tally four" },
       h("div", { "class": "a" }, h("b", null, String(R.a)), "correctas"),
@@ -983,11 +971,19 @@
         h("p", { style: "margin:0;font-weight:600" }, "Diagnóstico: " + fmt(S.exp.pre.score) + " → Control: " + fmt(R.nota) + " (" + (diff >= 0 ? "+" : "") + fmt(diff) + ")"),
         h("p", { "class": "small muted", style: "margin:0" }, "Son preguntas distintas pero de nivel parecido. Gracias por ayudarnos a medir si Tesón te ayuda a aprender.")));
     }
-    if (T.session === "diagnostic") {
-      s.appendChild(h("div", { "class": "card accent stack" },
-        h("span", { "class": "eyebrow" }, "Diagnóstico hecho"),
-        h("p", { style: "margin:0" }, adaptive() ? "Ya sabemos por dónde empezar. Tu práctica recomendada se adaptará a lo que te ha costado más." : "Ya sabemos de dónde partes. Sigue practicando y en unas semanas te propondremos un control de progreso."),
-        h("div", { "class": "row" }, h("button", { "class": "btn", type: "button", onclick: function () { startPractice(20, null); } }, adaptive() ? "Empezar mi práctica recomendada" : "Empezar a practicar"))));
+    var isDiag = T.session === "diagnostic";
+    if (isDiag) {
+      var analysis = h("div", { "class": "card accent stack" },
+        h("span", { "class": "eyebrow" }, "Tu análisis"),
+        h("h2", { style: "margin:0" }, "Conoce tus puntos fuertes y débiles"));
+      if (needSignIn()) {
+        analysis.appendChild(h("p", { "class": "muted", style: "margin:0" }, "Déjanos tu email y verás tu nivel en cada área y concepto, con un plan de práctica para lo que más te cuesta."));
+        SIGNIN.next = "progreso";
+        analysis.appendChild(signInCard());
+      } else {
+        analysis.appendChild(h("div", { "class": "row" }, h("button", { "class": "btn", type: "button", onclick: function () { go("progreso"); } }, "Ver mi análisis")));
+      }
+      s.appendChild(analysis);
     }
 
     // Two actions, like "Review Full Quiz" / "Practice Weak Areas"
@@ -998,10 +994,10 @@
       h("button", { "class": "card actcard", type: "button", onclick: function () { startPractice(10, weakAreas.length === 1 ? weakAreas[0] : null); } },
         h("b", null, adaptive() ? "Practicar tus puntos débiles" : "Seguir practicando"), h("span", { "class": "small muted" }, adaptive() ? "10 preguntas sobre lo que más te ha costado" : "10 preguntas más del tema"))));
 
-    // Performance analysis
+    // Performance analysis (not for the diagnostic: its analysis lives in Progreso)
     var strong = [], improve = [];
     Object.keys(R.byArea).forEach(function (k) { var x = R.byArea[k]; (x.a / x.n >= 0.8 ? strong : x.a / x.n < 0.6 ? improve : []).push(BANK.areas[k] + " (" + x.a + "/" + x.n + ")"); });
-    s.appendChild(h("div", { "class": "perf" },
+    if (!isDiag) s.appendChild(h("div", { "class": "perf" },
       h("div", { "class": "card stack" }, h("h3", null, "Fortalezas"), strong.length ? h("ul", { "class": "plain" }, strong.map(function (t) { return h("li", null, t); })) : h("p", { "class": "small muted", style: "margin:0" }, "Sigue practicando para consolidar tus fortalezas.")),
       h("div", { "class": "card stack" }, h("h3", null, "Áreas a mejorar"), improve.length ? h("ul", { "class": "plain" }, improve.map(function (t) { return h("li", null, t); })) : h("p", { "class": "small muted", style: "margin:0" }, "Nada por debajo del 60 % en este test."))));
 
@@ -1020,7 +1016,7 @@
     });
     s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Preguntas"), rv));
 
-    s.appendChild(h("div", { "class": "empty" },
+    if (!isDiag) s.appendChild(h("div", { "class": "empty" },
       h("b", null, "¿Qué te ha parecido?"),
       h("span", { "class": "small" }, "Estamos construyendo Tesón con los opositores. Dos líneas tuyas nos ayudan muchísimo."),
       h("button", { "class": "btn ghost", type: "button", onclick: openFeedback }, "Dar mi opinión")));
@@ -1056,46 +1052,37 @@
     var t = totals();
     var s = h("section", { "class": "view stack-lg" });
     s.appendChild(h("h1", null, "Tu progreso"));
-    s.appendChild(h("div", { "class": "stats" },
+    s.appendChild(h("div", { "class": "stats" + (predicted() != null ? " four" : "") },
       h("div", { "class": "stat" }, h("b", null, fmt(t.seen, 0)), h("span", null, "respuestas")),
       h("div", { "class": "stat" }, h("b", null, pct(t.c, t.seen) + " %"), h("span", null, "aciertos")),
-      h("div", { "class": "stat" }, h("b", null, String(S.days.length)), h("span", null, "días practicando"))));
+      h("div", { "class": "stat" }, h("b", null, String(S.days.length)), h("span", null, "días practicando")),
+      predicted() != null ? h("div", { "class": "stat" }, h("b", null, fmt(predicted(), 1)), h("span", null, "nota estimada")) : null));
 
-    // Concept detail table
-    var tbl = h("div", { "class": "ctable" });
-    tbl.appendChild(h("div", { "class": "crow head" }, h("span", null, "Concepto"), h("span", null, "Dominio"), h("span", null, "Próximo repaso")));
+    // One row per area; tap to see its concepts and esquemas.
+    var list = h("div", { "class": "alist" });
     AREAS.forEach(function (a) {
-      tbl.appendChild(h("div", { "class": "crow area" }, h("span", null, BANK.areas[a])));
-      conceptsOf(a).forEach(function (c) {
-        var m = mastery(c), x = S.cs[c];
-        var dd = x && x.n ? Math.round((x.due - today()) / DAY) : null;
-        tbl.appendChild(h("div", { "class": "crow" },
-          h("span", null, BANK.concepts[c].name, h("small", { "class": "muted" }, " · art. " + BANK.concepts[c].arts)),
-          h("span", null, m == null ? "—" : h("span", { "class": "pill " + (m < WEAK ? "warn" : "on") }, Math.round(m * 100) + " %")),
-          h("span", { "class": "small muted" }, dd == null ? "Nuevo" : dd <= 0 ? "Hoy" : "En " + dd + " d")));
+      var info = areaInfo(a);
+      var seen = [], unseen = 0;
+      conceptsOf(a).forEach(function (c) { var m = mastery(c); if (m == null) unseen++; else seen.push([c, m]); });
+      var body = h("div", { "class": "abody" });
+      seen.forEach(function (x) {
+        body.appendChild(h("div", { "class": "crow2" }, h("span", null, BANK.concepts[x[0]].name), h("b", { "class": x[1] < WEAK ? "weak" : "" }, Math.round(x[1] * 100) + " %")));
       });
+      if (unseen) body.appendChild(h("p", { "class": "small muted", style: "margin:0" }, unseen === conceptsOf(a).length ? "Aún sin practicar." : unseen + " concepto" + (unseen === 1 ? "" : "s") + " sin practicar."));
+      var esqs = Object.keys(ESQ).filter(function (k) { return ESQ[k].area === a; });
+      body.appendChild(h("div", { "class": "row" },
+        h("button", { "class": "btn sm", type: "button", onclick: function () { startPractice(10, a); } }, "Practicar"),
+        esqs.map(function (k) { return h("button", { "class": "btn quiet sm", type: "button", onclick: function () { openEsquema(k, "progreso"); } }, "Esquema: " + ESQ[k].title.split(" (")[0].split(":")[0]); })));
+      list.appendChild(h("details", { "class": "arow2" },
+        h("summary", null,
+          h("span", { "class": "an" }, BANK.areas[a]),
+          h("span", { "class": "abar", "aria-hidden": "true" }, h("i", { style: "width:" + (info.pct || 0) + "%" })),
+          h("span", { "class": "ap" }, info.pct == null ? "—" : info.pct + " %")),
+        body));
     });
-    s.appendChild(h("div", { "class": "stack" }, h("h2", null, BANK.temas[0].nombre + ", concepto a concepto"),
-      h("p", { "class": "small muted", style: "margin:0" }, "El dominio da más peso a tus respuestas recientes. Por debajo del 70 % lo tratamos como punto débil."), tbl));
+    s.appendChild(list);
 
-    var mis = activeMis();
-    if (mis.length) {
-      s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Confusiones frecuentes"),
-        h("ul", { "class": "plain" }, mis.map(function (m) { return h("li", null, BANK.misconceptions[m.id].name + " · " + m.hits + " veces en 30 días"); }))));
-    }
-
-    if (S.history.length) {
-      var hist = h("div", { "class": "review" });
-      S.history.slice(-10).reverse().forEach(function (x) {
-        var label = { recommended: "Recomendada", area: "Área", mis: "Confusión", custom: "Personalizado", review: "Repaso", diagnostic: "Diagnóstico", control: "Control" }[x.session] || "Test";
-        hist.appendChild(h("div", { "class": "tema" },
-          h("div", { "class": "t" }, fmt(x.nota) + " / 10"),
-          h("span", { "class": "pill" + (x.mode === "examen" ? " warn" : "") }, label),
-          h("div", { "class": "d" }, new Date(x.ts).toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " · " + x.a + " aciertos, " + x.f + " fallos, " + x.b + " en blanco")));
-      });
-      s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Últimos tests"), hist));
-    }
-
+    var settings = h("div", { "class": "stack" });
     var stChips = h("div", { "class": "chips" });
     AREAS.forEach(function (a) {
       var on = studiedAreas().indexOf(a) !== -1;
@@ -1108,17 +1095,17 @@
         render();
       } }, BANK.areas[a]));
     });
-    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Lo que ya has estudiado"),
-      h("p", { "class": "small muted", style: "margin:0" }, "Tu práctica recomendada y tu plan solo usan las partes que marques. Las demás siguen disponibles en el test personalizado y al tocar cada área."),
+    settings.appendChild(h("div", { "class": "stack" }, h("h3", null, "Lo que ya has estudiado"),
+      h("p", { "class": "small muted", style: "margin:0" }, "Tu práctica recomendada solo usa las áreas marcadas."),
       stChips));
-
-    s.appendChild(accountSection());
-    s.appendChild(h("div", { "class": "stack" }, h("h2", null, "Privacidad"),
+    settings.appendChild(accountSection());
+    settings.appendChild(h("div", { "class": "stack" }, h("h3", null, "Privacidad"),
       h("p", { "class": "small muted", style: "margin:0" }, "Compartir datos de uso para mejorar Tesón: " + (S.consent === "yes" ? "activado." : "desactivado.")),
       USER ? null : h("p", { "class": "small muted", style: "margin:0" }, "Identificador para ejercer tus derechos: ", h("code", null, S.uid)),
       h("div", { "class": "row" },
-        h("button", { "class": "btn quiet", type: "button", onclick: function () { openConsent(true); } }, "Cambiar preferencia"),
-        h("button", { "class": "btn quiet", type: "button", onclick: confirmWipe }, "Borrar mi progreso"))));
+        h("button", { "class": "btn quiet sm", type: "button", onclick: function () { openConsent(true); } }, "Cambiar preferencia"),
+        h("button", { "class": "btn quiet sm", type: "button", onclick: confirmWipe }, "Borrar mi progreso"))));
+    s.appendChild(h("details", { "class": "settings" }, h("summary", null, "Ajustes y cuenta"), settings));
     return s;
   }
   function confirmWipe() {
@@ -1352,7 +1339,7 @@
     S.owner = user.id;
     if (DEMO) { try { window.localStorage.setItem("teson.demoUser", JSON.stringify(USER)); } catch (e) {} }
     return loadRemote(marketing).then(function () {
-      ensureExperiment(); go("home");
+      ensureExperiment(); var next = SIGNIN.next || "home"; SIGNIN.next = null; go(next);
       if (S.consent === null) openConsent(false);
       else if (S.consent === "yes") track("session_start", { returning: S.history.length > 0, tests: S.history.length, src: S.src });
     });
@@ -1394,9 +1381,9 @@
   }
 
   function accountSection() {
-    if (!USER) return h("div", { "class": "stack" }, h("h2", null, "Tu cuenta"),
+    if (!USER) return h("div", { "class": "stack" }, h("h3", null, "Tu cuenta"),
       h("p", { "class": "small muted", style: "margin:0" }, "Modo local: tu progreso se guarda solo en este navegador."));
-    return h("div", { "class": "stack" }, h("h2", null, "Tu cuenta"),
+    return h("div", { "class": "stack" }, h("h3", null, "Tu cuenta"),
       h("p", { style: "margin:0;font-weight:600" }, USER.email),
       h("p", { "class": "small muted", style: "margin:0" }, "Tu progreso se guarda en tu cuenta: entra con este email desde cualquier dispositivo."),
       h("label", { "class": "inline" }, h("input", { type: "checkbox", id: "acct-mk", checked: !!S.marketing, onchange: function (e) { setMarketing(e.target.checked); } }),
@@ -1406,12 +1393,31 @@
         h("button", { "class": "btn quiet", type: "button", onclick: confirmDeleteAccount }, "Borrar mi cuenta")));
   }
 
-  function viewSignIn() {
+  function viewGuest() {
+    ensureExperiment();
     var s = h("section", { "class": "view stack-lg" });
     s.appendChild(h("div", { "class": "hero" }, wordmark(),
       h("h1", null, "Practica lo que más necesitas mejorar."),
-      h("p", { "class": "lede" }, "Tests de Auxiliar Administrativo del Estado con cada respuesta explicada. Tesón aprende qué te cuesta y prepara tu plan de práctica."),
+      h("p", { "class": "lede" }, "Tests de Auxiliar Administrativo del Estado con cada respuesta explicada. Tesón aprende qué te cuesta y prepara tu plan de práctica.")));
+    s.appendChild(h("div", { "class": "card accent stack" },
+      h("span", { "class": "eyebrow" }, "Empieza aquí · sin registro"),
+      h("h2", null, "Diagnóstico: 10 preguntas"),
+      h("p", { "class": "muted", style: "margin:0" }, "Unos 5 minutos para saber de dónde partes."),
+      h("div", { "class": "row" }, h("button", { "class": "btn", type: "button", onclick: startDiagnostic }, "Hacer el diagnóstico"))));
+    s.appendChild(h("p", { "class": "small" }, h("button", { "class": "linkbtn", type: "button", onclick: function () { SIGNIN.wantsAccount = true; render(); } }, "Ya tengo cuenta: entrar con mi email")));
+    return s;
+  }
+  function viewSignIn() {
+    var s = h("section", { "class": "view stack-lg" });
+    var resume = S.exp && S.exp.pre;
+    s.appendChild(h("div", { "class": "hero" }, wordmark(),
+      h("h1", null, resume ? "Guarda tu diagnóstico y sigue practicando." : "Practica lo que más necesitas mejorar."),
+      h("p", { "class": "lede" }, resume ? "Entra con tu email: tu progreso se guarda en tu cuenta y Tesón prepara tu práctica con lo que más te ha costado." : "Tests de Auxiliar Administrativo del Estado con cada respuesta explicada. Tesón aprende qué te cuesta y prepara tu plan de práctica."),
       h("p", { "class": "small muted" }, "Gratis durante la beta.")));
+    s.appendChild(signInCard());
+    return s;
+  }
+  function signInCard() {
     var card = h("div", { "class": "card stack signin" });
     if (SIGNIN.step === "email") {
       var em = h("input", { type: "email", id: "signin-email", autocomplete: "email", inputmode: "email", placeholder: "tu@email.com", value: SIGNIN.email, "aria-label": "Tu email" });
@@ -1422,7 +1428,7 @@
         h("label", { "class": "inline small" }, mk, " Quiero recibir mi resumen semanal y avisos de la convocatoria (opcional)"),
         h("button", { "class": "btn block", type: "submit", disabled: SIGNIN.busy }, SIGNIN.busy ? "Enviando…" : "Enviarme el código")));
       card.appendChild(h("p", { "class": "small muted", style: "margin:0" },
-        "Sin contraseña: te enviamos un código de un solo uso y no tendrás que volver a entrar en este dispositivo. Tu progreso se guarda en tu cuenta para que sigas desde cualquier sitio. Para preparar tu plan usamos un asistente de IA con tus resultados, nunca con tu email. ",
+        "Sin contraseña: te enviamos un código. ",
         h("a", { href: "privacidad.html", target: "_blank", rel: "noopener" }, "Privacidad")));
     } else {
       var code = h("input", { type: "text", id: "signin-code", inputmode: "numeric", autocomplete: "one-time-code", maxlength: "10", placeholder: "123456", "aria-label": "Código" });
@@ -1443,8 +1449,7 @@
       }, 1000);
     }
     if (SIGNIN.err) card.appendChild(h("p", { "class": "small", role: "alert", style: "margin:0;color:var(--bad)" }, SIGNIN.err));
-    s.appendChild(card);
-    return s;
+    return card;
   }
   function focusField(id) { var f = document.getElementById(id); if (f) f.focus(); }
   function submitEmail(email, marketing) {
@@ -1472,8 +1477,8 @@
         SIGNIN.err = r.error && r.error.status === 429 ? "Demasiados intentos. Espera un minuto." : "El código no es correcto o ha caducado. Pide uno nuevo.";
         render(); focusField("signin-code"); return;
       }
-      var mk = SIGNIN.marketing;
-      SIGNIN = { step: "email", email: "", marketing: false, busy: false, err: "", resendAt: 0 };
+      var mk = SIGNIN.marketing, nx = SIGNIN.next;
+      SIGNIN = { step: "email", email: "", marketing: false, busy: false, err: "", resendAt: 0, next: nx };
       afterSignIn(user, mk);
     }, function () { SIGNIN.busy = false; SIGNIN.err = "Sin conexión. Inténtalo de nuevo."; render(); });
   }

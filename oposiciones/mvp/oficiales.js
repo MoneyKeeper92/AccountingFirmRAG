@@ -511,10 +511,10 @@
    "El Rey, a propuesta del Presidente del Gobierno, en la forma que determine la ley.",
    "El Presidente del Gobierno, a propuesta del Rey, en la forma que determine la ley.",
    "El Consejo General del Poder Judicial, a propuesta del Rey, en la forma que determine la ley.",
-   "El Rey, a propuesta del Consejo del Poder Judicial, en la forma que determine la ley."
+   "El Rey, a propuesta del Consejo General del Poder Judicial, en la forma que determine la ley."
   ],
   "k": 3,
-  "ex": "Art. 123.2: «El Presidente del Tribunal Supremo será nombrado por el Rey, a propuesta del Consejo General del Poder Judicial, en la forma que determine la ley». La opción d omite «General», pero es la única que recoge el esquema correcto.",
+  "ex": "Art. 123.2: «El Presidente del Tribunal Supremo será nombrado por el Rey, a propuesta del Consejo General del Poder Judicial, en la forma que determine la ley».",
   "w": [
    "Propone el CGPJ, no el Presidente del Gobierno.",
    "Nombra el Rey; el Presidente del Gobierno no interviene.",
@@ -544,7 +544,8 @@
    "0": "mis.quien",
    "1": "mis.quien",
    "2": "mis.quien"
-  }
+  },
+  "corrected": true
  },
  {
   "id": "OF-013",
@@ -552,10 +553,10 @@
   "art": "112",
   "q": "De acuerdo con el artículo 112 de la Constitución Española de 1978, la cuestión de confianza planteada por el Presidente de Gobierno se entenderá otorgada cuando vote a favor de la misma:",
   "o": [
-   "La mayoria simple del Congreso de los Diputados.",
+   "La mayoría simple del Congreso de los Diputados.",
    "La mayoría simple del Congreso de los Diputados y del Senado.",
    "La mayoría absoluta del Congreso de los Diputados.",
-   "La mayoria absoluta del Congreso de los Diputados y del Senado."
+   "La mayoría absoluta del Congreso de los Diputados y del Senado."
   ],
   "k": 0,
   "ex": "Art. 112: la cuestión de confianza se plantea ante el Congreso de los Diputados, y «La confianza se entenderá otorgada cuando vote a favor de la misma la mayoría simple de los Diputados».",
@@ -589,7 +590,8 @@
    "2": "mis.mayorias",
    "3": "mis.quien"
   },
-  "trap": "Confianza: mayoría simple. Censura: mayoría absoluta."
+  "trap": "Confianza: mayoría simple. Censura: mayoría absoluta.",
+  "corrected": true
  },
  {
   "id": "OF-014",
@@ -729,7 +731,7 @@
   "art": "62.h",
   "q": "Conforme al artículo 62 de la Constitución Española de 1978 corresponde al Rey:",
   "o": [
-   "El mando supremo de la Fuerzas Armadas.",
+   "El mando supremo de las Fuerzas Armadas.",
    "Dirigir la Administración civil y militar y la defensa del Estado.",
    "Proteger el libre ejercicio de los derechos y libertades y garantizar la seguridad ciudadana.",
    "Declarar la guerra y hacer la paz, previa autorización del Gobierno."
@@ -765,7 +767,8 @@
    "1": "mis.quien",
    "2": "mis.quien",
    "3": "mis.autoriza"
-  }
+  },
+  "corrected": true
  },
  {
   "id": "OF-018",
@@ -816,7 +819,7 @@
   "id": "OF-019",
   "sub": "PJ",
   "art": "122.3",
-  "q": "Conforme al artículo 122 de la Constitución Española de 1978, los abogados y juristas de reconocido prestigio podrán ser elegidos miembros del Consejo General del Poder Judicial siempre que tengan en el ejercicio de su profesión más de:",
+  "q": "Conforme al artículo 122 de la Constitución Española de 1978, los abogados y juristas de reconocida competencia podrán ser elegidos miembros del Consejo General del Poder Judicial siempre que tengan en el ejercicio de su profesión más de:",
   "o": [
    "Diez años.",
    "Quince años.",
@@ -824,7 +827,7 @@
    "Dos años."
   ],
   "k": 1,
-  "ex": "Art. 122.3: los ocho vocales de procedencia parlamentaria se eligen «entre abogados y otros juristas, todos ellos de reconocida competencia y con más de quince años de ejercicio en su profesión». La CE dice «reconocida competencia», no «reconocido prestigio».",
+  "ex": "Art. 122.3: los ocho vocales de procedencia parlamentaria se eligen «entre abogados y otros juristas, todos ellos de reconocida competencia y con más de quince años de ejercicio en su profesión».",
   "w": [
    "La CE exige más de quince años, no diez.",
    null,
@@ -855,7 +858,8 @@
    "2": "mis.cifras",
    "3": "mis.cifras"
   },
-  "trap": "Quince años también se exige a los juristas del TC (art. 159.2)."
+  "trap": "Quince años también se exige a los juristas del TC (art. 159.2).",
+  "corrected": true
  },
  {
   "id": "OF-020",
@@ -1038,12 +1042,12 @@
   "id": "OF-024",
   "sub": "DF",
   "art": "21.1",
-  "q": "El ejercicio del derecho de reunión segun el artículo 21 de la Constitución Española de 1978:",
+  "q": "El ejercicio del derecho de reunión según el artículo 21 de la Constitución Española de 1978:",
   "o": [
    "Necesita autorización administrativa previa.",
    "Necesita autorización judicial previa.",
-   "No nesesita autorización.",
-   "Necesita autorización previa de la alcaldia correspondiente."
+   "No necesita autorización.",
+   "Necesita autorización previa de la alcaldía correspondiente."
   ],
   "k": 2,
   "ex": "Art. 21.1: «Se reconoce el derecho de reunión pacífica y sin armas. El ejercicio de este derecho no necesitará autorización previa».",
@@ -1076,7 +1080,8 @@
    "0": "mis.literal",
    "3": "mis.literal"
   },
-  "trap": "Comunicación previa (art. 21.2) no es autorización previa."
+  "trap": "Comunicación previa (art. 21.2) no es autorización previa.",
+  "corrected": true
  },
  {
   "id": "OF-025",
@@ -1344,7 +1349,7 @@
   "id": "OF-032",
   "sub": "OT",
   "art": "150.2",
-  "q": "Señala el artículo 150 de la Constitucion que \"El Estado podrá transferir o delegar en las Comunidades Autónomas facultades correspondientes a materia de titularidad estatal que por su propia naturaleza sean susceptibles de transferencia o delegación\". Esta transferencia o delegación se ha de hacer mediante:",
+  "q": "Señala el artículo 150 de la Constitución que \"El Estado podrá transferir o delegar en las Comunidades Autónomas facultades correspondientes a materia de titularidad estatal que por su propia naturaleza sean susceptibles de transferencia o delegación\". Esta transferencia o delegación se ha de hacer mediante:",
   "o": [
    "Ley orgánica.",
    "Ley ordinaria.",
@@ -1383,7 +1388,8 @@
    "2": "mis.ubicacion",
    "3": "mis.ubicacion"
   },
-  "trap": "Art. 150: apdo. 1 leyes marco, apdo. 2 transferencia o delegación por ley orgánica, apdo. 3 leyes de armonización."
+  "trap": "Art. 150: apdo. 1 leyes marco, apdo. 2 transferencia o delegación por ley orgánica, apdo. 3 leyes de armonización.",
+  "corrected": true
  },
  {
   "id": "OF-033",
@@ -1438,7 +1444,7 @@
   "o": [
    "Legalidad, responsabilidad y fraternidad.",
    "Legalidad, libertad y jerarquía normativa.",
-   "Jerarquía normativa, lpublicidad de las normas y seguridad jurídica.",
+   "Jerarquía normativa, publicidad de las normas y seguridad jurídica.",
    "Jerarquía normativa, retroactividad de las disposiciones sancionadoras no favorables o restrictivas de derechos individuales y arbitrariedad de los poderes públicos."
   ],
   "k": 2,
@@ -1473,7 +1479,8 @@
    "1": "mis.valores",
    "3": "mis.literal"
   },
-  "trap": "Cuidado con las opciones que cambian «irretroactividad» por «retroactividad» u omiten «interdicción de» la arbitrariedad."
+  "trap": "Cuidado con las opciones que cambian «irretroactividad» por «retroactividad» u omiten «interdicción de» la arbitrariedad.",
+  "corrected": true
  },
  {
   "id": "OF-035",
@@ -1748,7 +1755,7 @@
   "id": "OF-041",
   "sub": "OT",
   "art": "149.1.17ª",
-  "q": "El artículo 149 de la Constitución atribuye al estado competencia exclusiva sobre una de estas materias:",
+  "q": "El artículo 149 de la Constitución atribuye al Estado competencia exclusiva sobre una de estas materias:",
   "o": [
    "Legislación básica y régimen económico de la Seguridad Social, sin perjuicio de la ejecución de sus servicios por las Comunidades Autónomas.",
    "La artesanía",
@@ -1787,7 +1794,8 @@
    "2": "mis.ubicacion",
    "3": "mis.ubicacion"
   },
-  "trap": "Si la materia habla de «gestión» o tiene alcance local o sectorial (artesanía, sanidad e higiene), piensa en el art. 148."
+  "trap": "Si la materia habla de «gestión» o tiene alcance local o sectorial (artesanía, sanidad e higiene), piensa en el art. 148.",
+  "corrected": true
  },
  {
   "id": "OF-042",
@@ -2425,7 +2433,7 @@
    "La aprobación, modificación o derogación de las leyes orgánicas exigirá mayoría absoluta de las Cortes, en una votación final sobre el conjunto del proyecto.",
    "La iniciativa legislativa corresponde al Gobierno y al Congreso, de acuerdo con la Constitución.",
    "La delegación legislativa deberá otorgarse mediante una ley orgánica cuando su objeto sea la formación de textos articulados o por una ley ordinaria cuando se trate de refundir varios textos legales en uno solo.",
-   "Las Cortes Generales podrán delegar en el Gobierno la potestad de dictar normas con rango de ley sobre materias determinadas, excepto las relativas al desarrollo de los derechos fundamentales y de las libertades públicas, las que aprueben los Estatutos de Autonomía y el régimen lectoral general y las demás previstas en la Constitución."
+   "Las Cortes Generales podrán delegar en el Gobierno la potestad de dictar normas con rango de ley sobre materias determinadas, excepto las relativas al desarrollo de los derechos fundamentales y de las libertades públicas, las que aprueben los Estatutos de Autonomía y el régimen electoral general y las demás previstas en la Constitución."
   ],
   "k": 3,
   "ex": "Art. 82.1: las Cortes pueden delegar en el Gobierno la potestad de dictar normas con rango de ley «sobre materias determinadas no incluidas en el artículo anterior», es decir, excluidas las materias de ley orgánica del art. 81.1 (derechos fundamentales y libertades públicas, Estatutos de Autonomía, régimen electoral general y demás previstas en la CE).",
@@ -2459,7 +2467,8 @@
    "1": "mis.quien",
    "2": "mis.rango"
   },
-  "trap": "La opción correcta no es literal: el art. 82.1 remite a las materias del art. 81.1, que la opción enumera."
+  "trap": "La opción correcta no es literal: el art. 82.1 remite a las materias del art. 81.1, que la opción enumera.",
+  "corrected": true
  },
  {
   "id": "OF-057",
@@ -2863,7 +2872,7 @@
   "id": "OF-066",
   "sub": "GA",
   "art": "102.2",
-  "q": "Según el artículo 102 de la Constitución Española de 1978, si el Presidente del Gobierno fuere acusado de un delito contra la seguridad del estado en el ejercicio de sus funciones, la iniciativa sólo podrá ser planteada por:",
+  "q": "Según el artículo 102 de la Constitución Española de 1978, si el Presidente del Gobierno fuere acusado de un delito contra la seguridad del Estado en el ejercicio de sus funciones, la iniciativa sólo podrá ser planteada por:",
   "o": [
    "La quinta parte de los miembros del Congreso y aprobada con mayoría simple.",
    "La cuarta parte de los miembros del Congreso y aprobada con mayoría simple.",
@@ -2902,7 +2911,8 @@
    "1": "mis.mayorias",
    "3": "mis.cifras"
   },
-  "trap": "Art. 102.2: «cuarta parte» + «mayoría absoluta» del Congreso; no lo confundas con la décima parte de la moción de censura (art. 113.2)."
+  "trap": "Art. 102.2: «cuarta parte» + «mayoría absoluta» del Congreso; no lo confundas con la décima parte de la moción de censura (art. 113.2).",
+  "corrected": true
  },
  {
   "id": "OF-067",
@@ -3220,9 +3230,9 @@
   "q": "Según el artículo 117 de la CE, los Jueces y Magistrados del poder judicial son:",
   "o": [
    "Independientes, inamovibles, responsables y sometidos únicamente al imperio de la ley.",
-   "Independientes, libres, iguales y sometidos al estado de derecho.",
+   "Independientes, libres, iguales y sometidos al Estado de Derecho.",
    "Libres, responsables, neutrales y sometidos al imperio de la ley.",
-   "Responsables, profesionales, neutrales y sometidos al estado de derecho."
+   "Responsables, profesionales, neutrales y sometidos al Estado de Derecho."
   ],
   "k": 0,
   "ex": "Art. 117.1: la justicia se administra por Jueces y Magistrados integrantes del poder judicial, «independientes, inamovibles, responsables y sometidos únicamente al imperio de la ley».",
@@ -3256,7 +3266,8 @@
    "2": "mis.literal",
    "3": "mis.literal"
   },
-  "trap": "Las cuatro notas del art. 117.1: independientes, inamovibles, responsables y sometidos únicamente al imperio de la ley."
+  "trap": "Las cuatro notas del art. 117.1: independientes, inamovibles, responsables y sometidos únicamente al imperio de la ley.",
+  "corrected": true
  },
  {
   "id": "OF-076",

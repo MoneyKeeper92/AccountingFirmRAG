@@ -9,6 +9,9 @@ const root = path.resolve(__dirname, "..");
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, "questions.js"), "utf8"), context);
 vm.runInNewContext(fs.readFileSync(path.join(root, "oficiales.js"), "utf8"), context);
+vm.runInNewContext(fs.readFileSync(path.join(root, "claves.js"), "utf8"), context);
+vm.runInNewContext(fs.readFileSync(path.join(root, "tags.js"), "utf8"), context);
+vm.runInNewContext(fs.readFileSync(path.join(root, "esquemas.js"), "utf8"), context);
 
 const bank = context.window.TESON_BANK;
 const review = JSON.parse(fs.readFileSync(path.join(root, "review.json"), "utf8"));
@@ -64,5 +67,14 @@ bank.questions.forEach((q, index) => {
   assert(["pending", "approved"].includes(review.items[q.id]), `${q.id}: missing review ledger entry`);
 });
 
+const claves = context.window.TESON_CLAVES, esq = context.window.TESON_ESQUEMAS;
+bank.questions.forEach((q) => {
+  const c = claves[q.id];
+  assert(c && c.c && c.m, `${q.id}: missing "la clave"`);
+  assert(q.ex.includes(c.m), `${q.id}: highlighted text is not in the explanation`);
+  assert(c.c.split(/\s+/).length <= 10 && !c.c.includes("—"), `${q.id}: clave must be a short phrase`);
+  q.concepts.forEach((k) => assert(esq[bank.esquemaFor[k]], `${q.id}: concept ${k} has no esquema`));
+});
+Object.values(bank.misconceptions).forEach((m) => assert(m.esquema == null || esq[m.esquema], `misconception esquema ${m.esquema} missing`));
 assert.deepEqual(Object.keys(review.items).sort(), [...ids].sort(), "Review ledger IDs must exactly match the bank");
 console.log(`Bank validation passed: ${own.length} Tesón + ${official.length} official INAP questions, ${ids.size} unique IDs.`);

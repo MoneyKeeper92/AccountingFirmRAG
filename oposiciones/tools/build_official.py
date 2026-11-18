@@ -43,6 +43,8 @@ for item in data["questions"]:
     }
     if item.get("trap"):
         q["trap"] = item["trap"]
+    if item.get("corrections"):
+        q["corrected"] = True  # typos in the INAP original fixed; details in content/oficiales_inap_ce.json
     questions.append(q)
 
 js = f"""/*

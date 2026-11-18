@@ -94,14 +94,14 @@
     "mis.amparo": { name: "Qué derechos tienen amparo y procedimiento preferente", esquema: "titulo1" },
     "mis.literal": { name: "La literalidad exacta del texto (villa/ciudad, deber/derecho…)", esquema: null },
     "mis.partidos": { name: "Partidos políticos (art. 6) y sindicatos (art. 7)", esquema: null },
-    "mis.autoriza": { name: "Quién puede autorizar: un juez o la Administración", esquema: null },
+    "mis.autoriza": { name: "Quién puede autorizar: un juez o la Administración", esquema: "derechos" },
     "mis.suspension": { name: "Qué derechos pueden suspenderse (art. 55)", esquema: "suspension" },
-    "mis.rango": { name: "Ley orgánica, ley ordinaria o reglamento", esquema: null },
+    "mis.rango": { name: "Ley orgánica, ley ordinaria o reglamento", esquema: "leyes" },
     "mis.cifras": { name: "Plazos y cifras (72 horas, 15/30 días, 169 artículos…)", esquema: null },
-    "mis.valores": { name: "Valores superiores (art. 1.1) frente a otros principios", esquema: null },
+    "mis.valores": { name: "Valores superiores (art. 1.1) frente a otros principios", esquema: "valores" },
     "mis.ubicacion": { name: "Dónde está cada precepto (capítulos y secciones)", esquema: "titulo1" },
-    "mis.quien": { name: "Quién propone y quién nombra (Rey, Gobierno, Cortes, CGPJ…)", esquema: null },
-    "mis.mayorias": { name: "Mayorías: simple, absoluta, tres quintos y dos tercios", esquema: null }
+    "mis.quien": { name: "Quién propone y quién nombra (Rey, Gobierno, Cortes, CGPJ…)", esquema: "nombramientos" },
+    "mis.mayorias": { name: "Mayorías: simple, absoluta, tres quintos y dos tercios", esquema: "mayorias" }
   };
 
   // id: [conceptos], dificultad inicial (1–3), confusiones por índice de opción.
@@ -203,8 +203,22 @@
 
   // Esquema visual por concepto (se muestra en la explicación).
   B.esquemaFor = {
-    "gs.estados": "estados", "ref.ordinaria": "reforma", "ref.agravada": "reforma", "ref.iniciativa": "reforma",
-    "ref.limites": "reforma", "df.titulo1": "titulo1", "gs.tutela": "titulo1", "gs.suspension": "suspension"
+    "est.estructura": "estructura", "est.fechas": "historia", "est.reformas": "historia",
+    "tp.valores": "valores", "tp.soberania": "valores", "tp.art9": "art9",
+    "tp.autonomia": "preliminar", "tp.lenguas": "preliminar", "tp.simbolos": "preliminar", "tp.partidos": "preliminar", "tp.ffaa": "preliminar",
+    "df.titulo1": "titulo1", "df.igualdad": "titulo1", "df.vida_religion": "titulo1", "df.legalidad": "titulo1", "df.educacion": "titulo1", "df.participacion": "titulo1",
+    "df.detencion": "derechos", "df.intimidad": "derechos", "df.expresion": "derechos", "df.reunion": "derechos",
+    "df.nacionalidad": "nacionalidad", "df.extranjeros": "nacionalidad",
+    "dc.deberes": "titulo1", "dc.rectores": "titulo1", "gs.tutela": "titulo1",
+    "gs.defensor": "defensor", "gs.suspension": "suspension", "gs.estados": "estados",
+    "co.funciones": "corona", "co.refrendo": "corona", "co.sucesion": "sucesion", "co.regencia": "sucesion",
+    "cg.composicion": "cortes", "cg.funcionamiento": "cortes_func", "cg.leyes": "leyes", "cg.tratados": "tratados",
+    "ga.gobierno": "gobierno", "ga.relaciones": "gobierno_cortes", "ga.administracion": "administracion",
+    "pj.principios": "poder_judicial", "pj.cgpj": "cgpj", "pj.ts_fiscal": "nombramientos",
+    "eh.hacienda": "hacienda",
+    "ot.principios": "territorial", "ot.local": "territorial", "ot.control": "territorial", "ot.estatutos": "competencias", "ot.competencias": "competencias",
+    "tc.composicion": "tc", "tc.competencias": "tc",
+    "ref.iniciativa": "reforma", "ref.ordinaria": "reforma", "ref.agravada": "reforma", "ref.limites": "reforma"
   };
 
   // Formularios de control (diagnóstico y control de progreso) para el experimento.
